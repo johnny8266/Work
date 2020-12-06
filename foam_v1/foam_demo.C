@@ -1,0 +1,141 @@
+/// \file
+/// \ingroup tutorial_FOAM
+/// \notebook -nodraw
+/// Demonstrate the TFoam class.
+///
+///  To run this macro type from CINT command line
+///
+/// ~~~{.cpp}
+///  root [0] gSystem->Load("libFoam.so")
+///  root [1] .x foam_demo.C+
+/// ~~~
+///
+/// \macro_code
+///
+/// \author Stascek Jadach
+
+
+#include "Riostream.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TFoam.h"
+#include "TH1F.h"
+#include "TH1.h"
+#include "TMath.h"
+#include "TFoamIntegrand.h"
+#include "TRandom2.h"
+#include "TFDISTR.h"
+#include "Info.h"
+using namespace std;
+
+Int_t main()
+{
+  // gSystem->Load("libFoa.so");
+   TFile RootFile("DVCS_4Pars.root","RECREATE");
+   TTree *T = new TTree("T", "Fill simulated DVCS parameters");
+   long   loop;
+   Double_t MCresult, MCerror, MCwt;      
+   Double_t M = 0.93827231, xb=0., Q2_max=0., Q2=0., t_var=0., phi=0., xsec=0., xsec_err=0.;
+
+   T->Branch("Q2", &Q2, "Q2/D");
+   T->Branch("xb", &xb, "xb/D");
+   T->Branch("t_var", &t_var, "t_var/D");
+   T->Branch("phi", &phi, "phi/D");
+   T->Branch("xsec", &xsec, "xsec/D");
+   
+   TH1F *h1 = new TH1F("h1", "h1", 80, 0., 20.);
+   TH1F *h2 = new TH1F("h2", "h2", 100, 0., 0.05);
+   TH1F *h3 = new TH1F("h3", "h3", 100, -1., 0.);
+   TH1F *h4 = new TH1F("h4", "h4", 63, 0., 6.3);
+
+
+
+
+   //-----------------------------------------
+   long NevTot   =    100000;   // Total MC statistics
+   Int_t  kDim   =         4;   // total dimension
+   Int_t  nCells   =    8000;   // Number of Cells
+   Int_t  nSampl   =      25;   // Number of MC events per cell in build-up
+   Int_t  nBin     =      15;   // Number of bins in build-up
+   Int_t  OptRej   =       1;   // Wted events for OptRej=0; wt=1 for OptRej=1 (default)
+   Int_t  OptDrive =       2;   // (D=2) Option, type of Drive =0,1,2 for TrueVol,Sigma,WtMax
+   Int_t  EvPerBin =      25;   // Maximum events (equiv.) per bin in buid-up
+   Int_t  Chat     =       1;   // Chat level
+   TRandom *PseRan   = new TRandom2();  // Create random number generator
+   long int tim = (long int)time(NULL);   PseRan->SetSeed(tim);
+   //   long int tim = 1029384759;   PseRan->SetSeed(tim);
+   TFoam   *FoamX    = new TFoam("FoamX");   // Create Simulator
+   TFoamIntegrand *rho = new TFDISTR();
+   Double_t *MCvect = new Double_t[kDim]; // vector generated in the MC run
+      
+   cout << "*****   Demonstration Program for Foam version " << FoamX->GetVersion() << "    *****" << endl;
+   FoamX->SetkDim(        kDim);      // Mandatory!!!
+   FoamX->SetnCells(      nCells);    // optional
+   FoamX->SetnSampl(      nSampl);    // optional
+   FoamX->SetnBin(        nBin);      // optional
+   FoamX->SetOptRej(      OptRej);    // optional
+   FoamX->SetOptDrive(    OptDrive);  // optional
+   FoamX->SetEvPerBin(    EvPerBin);  // optional
+   FoamX->SetChat(        Chat);      // optional
+   FoamX->SetRho(rho);
+   FoamX->SetPseRan(PseRan);
+   FoamX->Initialize(); // Initialize simulator
+   FoamX->Write("FoamX");     // Writing Foam on the disk, TESTING PERSISTENCY!!!
+   long nCalls = FoamX->GetnCalls();
+   cout << "====== Initialization done, entering MC loop" << endl;
+
+   
+
+   // Run the simulator
+   //
+   for(loop = 0 ; loop < NevTot ; loop++)
+     {
+       FoamX->MakeEvent();           // generate MC event
+       FoamX->GetMCvect(MCvect);
+       MCwt=FoamX->GetMCwt();
+
+       FoamX->GetIntegMC(xsec, xsec_err);
+       xb = MCvect[0] * (0.1-0.001) + 0.001;
+       Q2_max = 2. * M * 2132.03 * xb;
+       if(Q2_max > 20.) Q2_max = 19.;
+       Q2 = MCvect[1] * Q2_max + 1.;
+       t_var = -MCvect[2];
+       phi = MCvect[3] * 2. * TMath::Pi();
+       /*      
+       h1->Fill(Q2);
+       h2->Fill(xb);
+       h3->Fill(t);
+       h4->Fill(phi);
+       */
+
+       T->Fill();
+       
+       if( ((loop)%10000) == 0 )
+       	 cout << "loop = " << loop << ", " << Q2 << ", " << xb << ", " << t_var << ", " << phi << " || Cross section: " << xsec << endl;
+     }
+
+   T->Write();
+
+   Double_t eps = 0.0005;
+   Double_t Effic, WtMax, AveWt, Sigma;
+   Double_t IntNorm, Errel;
+   FoamX->Finalize(   IntNorm, Errel);     // final printout
+   FoamX->GetIntegMC( MCresult, MCerror);  // get MC intnegral
+   FoamX->GetWtParams(eps, AveWt, WtMax, Sigma); // get MC wt parameters
+   Effic=0; if(WtMax>0) Effic=AveWt/WtMax;
+   cout << "================================================================" << endl;
+   cout << " MCresult= " << MCresult << " +- " << MCerror << " RelErr= "<< MCerror/MCresult << endl;
+   cout << " Dispersion/<wt>= " << Sigma/AveWt << endl;
+   cout << "      <wt>/WtMax= " << Effic <<",    for epsilon = "<<eps << endl;
+   cout << " nCalls (initialization only) =   " << nCalls << endl;
+   cout << "================================================================" << endl;
+
+   
+   delete [] MCvect;
+   RootFile.ls();
+   RootFile.Write();
+   RootFile.Close();
+   cout << "***** End of Demonstration Program  *****" << endl;
+   
+   return 0;
+} 
