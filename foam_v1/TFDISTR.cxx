@@ -22,42 +22,28 @@ TFDISTR::TFDISTR()
 Double_t TFDISTR::Density(int nDim, Double_t *Xarg)
 {
   // Integrand for mFOAM
-  TRandom *R = new TRandom();
   Double_t M = 0.93827231;
 
   // Double_t xBMin = 2.*Eb*Q2/(M*(4*TMath::Power(Eb,2)-Q2));
   // Double_t xBMax = Q2/(Q2-TMath::Power(M,2));
   Double_t xB = Xarg[0]*(0.1-0.01)+0.01;
-  //  Double_t xB = 0.01;
 
-  Double_t Q2max = 2*M*Eb*xB;
+  Double_t Q2max = 2. * M * Eb * xB;
   if( Q2max > 20. ) Q2max = 19.;
   Double_t Q2 = Xarg[1] * Q2max + 1.;
-  //  Double_t Q2 = 10.;
 
   Double_t t = -Xarg[2];
-  //  Double_t t = -0.1;
   
   Double_t phi = Xarg[3] * 2. * TMath::Pi();
-  //  Double_t phi = 0.5;
 
   
   Double_t ConvGeV2nbarn = 0.389379304e+6; // Unit conversion
   Double_t BHp, BHm, VCSp, VCSm, Ip, Im;
   Double_t SigmaTotPlus, SigmaTotMoins;
   Double_t* cffs = gEv->Interpol_CFF(Q2,xB,t);
-  /*
-  for(int i = 0 ; i < 8 ; i++)
-    cout << cffs[i] << ", ";
-  cout << endl;
+
 
   
-  TFDISTR::Set_Q2(Q2);
-  TFDISTR::Set_Xb(xB);
-  TFDISTR::Set_t(t);
-  TFDISTR::Set_phi(phi);
-  */
-   
   ////////////:
   BHp = tgv->CrossSectionBH( Q2, xB, t, -phi, 1, 0, kTRUE );
   VCSp = tgv->CrossSectionVCS( Q2, xB, t, -phi, 1, 0, cffs[0], cffs[1], cffs[2], cffs[3], cffs[4], cffs[5], cffs[6], cffs[7], kTRUE );
