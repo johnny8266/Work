@@ -34,17 +34,17 @@ using namespace std;
 Int_t main()
 {
   //  gSystem->Load("libFoa.so");
-  //  TFile RootFile("DVCS_4Pars.root","RECREATE");
-  //  TTree *T = new TTree("T", "Fill simulated DVCS parameters");
+  TFile RootFile("DVCS_4Pars.root","RECREATE");
+  TTree *T = new TTree("T", "Fill simulated DVCS parameters");
   long   loop;
   Double_t MCresult, MCerror, MCwt;      
   Double_t M = 0.93827231, xb=0., Q2_max=0., Q2=0., t_var=0., phi=0., xsec=0., xsec_err=0.;
 
-  //  T->Branch("Q2", &Q2, "Q2/D");
-  //  T->Branch("xb", &xb, "xb/D");
-  //  T->Branch("t_var", &t_var, "t_var/D");
-  //  T->Branch("phi", &phi, "phi/D");
-  //  T->Branch("xsec", &xsec, "xsec/D");
+  T->Branch("Q2", &Q2, "Q2/D");
+  T->Branch("xb", &xb, "xb/D");
+  T->Branch("t_var", &t_var, "t_var/D");
+  T->Branch("phi", &phi, "phi/D");
+  T->Branch("xsec", &xsec, "xsec/D");
    
   TH1F *h1 = new TH1F("h1", "h1", 90, 0., 45.);
   TH1F *h2 = new TH1F("h2", "h2", 100, 0., 0.1);
@@ -55,7 +55,7 @@ Int_t main()
 
 
   //-----------------------------------------
-  long NevTot   =     10000;   // Total MC statistics
+  long NevTot   =    100000;   // Total MC statistics
   Int_t  kDim   =         4;   // total dimension
   Int_t  nCells   =    3000;   // Number of Cells
   Int_t  nSampl   =     500;   // Number of MC events per cell in build-up
@@ -109,17 +109,19 @@ Int_t main()
       t_var = -MCvect[2];
       phi = MCvect[3] * 2. * TMath::Pi();
 
+      T->Fill();
+      
       xb_vec.push_back(xb);
       Q2_vec.push_back(Q2);
       t_var_vec.push_back(t_var);
       phi_vec.push_back(phi);
       xsec_vec.push_back(xsec);
-      //      T->Fill();
        
       if( ((loop)%1000) == 0 )
       	cout << "loop = " << loop << ", " << Q2 << ", " << xb << ", " << t_var << ", " << phi << " || Cross section: " << xsec << endl;
     }
-
+  T->Write();
+  
   Double_t D_Q2, D_xb, D_t, psf, SLdt=10., NTOT=0.;
   
   D_Q2 = (*max_element(Q2_vec.begin(), Q2_vec.end())) - (*min_element(Q2_vec.begin(), Q2_vec.end()));
@@ -151,8 +153,6 @@ Int_t main()
   c1->cd(4); 
   h4->Draw();
   
-  //  T->Write();
-
   Double_t eps = 0.0005;
   Double_t Effic, WtMax, AveWt, Sigma;
   Double_t IntNorm, Errel;
@@ -169,9 +169,9 @@ Int_t main()
 
    
   delete [] MCvect;
-  //  RootFile.ls();
-  //  RootFile.Write();
-  //  RootFile.Close();
+  RootFile.ls();
+  RootFile.Write();
+  RootFile.Close();
   cout << "***** End of Demonstration Program  *****" << endl;
    
   return 0;

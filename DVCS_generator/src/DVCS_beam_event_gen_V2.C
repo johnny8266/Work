@@ -10,7 +10,7 @@ using namespace std;
 
 void DVCS_beam_event_gen_V2()
 {
-  TFile *rfile = new TFile("DVCS_4Pars_8000cell.root");
+  TFile *rfile = new TFile("DVCS_4Pars.root");
   TTree *T = (TTree*)rfile->Get("T");
   Int_t Iteration = (Int_t)T->GetEntries();
   Double_t Q2, xb, Eb, M, s_var, t_var, t0_min, t0_max, phi, phi_def, xsec, psf;
@@ -60,6 +60,7 @@ void DVCS_beam_event_gen_V2()
   Double_t e1_S_angle, p1_S_angle, photon_S_angle;
   Double_t e1_px, e1_py, e1_pz, e1_E, Vg_px, Vg_py, Vg_pz, Vg_E;
   Double_t p1_px, p1_py, p1_pz, p1_E, g_px, g_py, g_pz, g_E, g_p_amp;
+  Int_t count=0;
   //  long int t = (long int)time(NULL);  R->SetSeed(t);  //Get current time & set the random seed
 
   
@@ -94,8 +95,8 @@ void DVCS_beam_event_gen_V2()
   
   // Run the Event Generator
   //
-  for(int i = 0 ; i < Iteration ; i++)
-    //  for(int i = 0 ; i < 20 ; i++)
+  //  for(int i = 0 ; i < Iteration ; i++)
+  for(int i = 0 ; i < 10 ; i++)
     {
       if(i % 10000 == 0) cout << i << " events are generated ......" << endl;
       
@@ -103,7 +104,7 @@ void DVCS_beam_event_gen_V2()
       // =================================
       // Boost the beam-beam collider to fix target, then calculation
       // =================================
-      TLorentzVector e0(0, 0., 10., 10.), p0(0., 0., -100., 100.0044);
+      TLorentzVector e0(0, 0., -10., 10.), p0(0., 0., 100., 100.0044);
       //      TLorentzVector e0(0, 0., 2132.03, 2132.03), p0(0., 0., 0., 0.938);
       CM_frame_fix_beam_3 = p0.BoostVector();
       p0.Boost(-CM_frame_fix_beam_3);
@@ -128,24 +129,32 @@ void DVCS_beam_event_gen_V2()
       // Calculate the leptonic reaction
       // =================================
       Virtual_photon_E = Q2 / (2. * M * xb);  // Energy of Virtual photon
+      if ( Virtual_photon_E > Eb )
+	{
+	  cout << i << "th event exceed the range: " << Q2 << " " << xb << " " << t_var << " " << phi << " " << endl; 
+	}
+	
       //      cout << Eb << " " << Virtual_photon_E << endl;
       e1E = Eb - Virtual_photon_E; //cout << e1E << endl; // Energy of scattering electron
       e1_S_angle_cos = 1. - Q2 /(2. * Eb * e1E);  // Cos theta value of electron scattering
       e1_S_angle_sin = sqrt(1. - e1_S_angle_cos * e1_S_angle_cos);  
       e1_S_angle = TMath::ACos(e1_S_angle_cos);  // !!! this angle is under fix target scenario, in collider kinematic the angle will be different
       //      cout << "Electron Scattering angle: " << e1_S_angle << endl; 
-      e1.SetE(e1E); e1.SetPz(e1E * e1_S_angle_cos); e1.SetPy(0.); e1.SetPx(e1E * e1_S_angle_sin);
+      e1.SetE(e1E);
+      e1.SetPz(-e1E * e1_S_angle_cos);
+      e1.SetPy(0.);
+      e1.SetPx(e1E * e1_S_angle_sin);      
       Virtual_photon = e0 - e1;
       e1.Boost(CM_frame_fix_beam_3);
       e1_px = e1.Px(); e1_py = e1.Py(); e1_pz = e1.Pz(); e1_E = e1.E();
 
       //      cout << e1_S_angle_cos << "  " << e1_S_angle_sin << "  " << e1_S_angle << endl;
 
-      /*
+      
       cout << "Leptonic reaction: " << endl << "====================================" << endl;
       cout << "Scattering Electron: ";  e1.Print();  cout << "Virtual photon in fix target frame: ";  Virtual_photon.Print();
       cout << "====================================" << endl;
-      */
+      
 
       // =================================
       // Calculate the hadronic reaction
@@ -170,8 +179,9 @@ void DVCS_beam_event_gen_V2()
       P_CMS[0] = sqrt(E_CMS[0] * E_CMS[0] - M0_square[0]);   P_CMS[1] = sqrt(E_CMS[1] * E_CMS[1] - M0_square[1]);
       P_CMS[2] = sqrt(E_CMS[2] * E_CMS[2] - M0_square[2]);   P_CMS[3] = sqrt(E_CMS[3] * E_CMS[3] - M0_square[3]); 
 
-      //      for(int j = 0 ; j < 4 ; j++)
-      //	cout << E_CMS[j] << " || " << P_CMS[j] << endl;
+      for(int j = 0 ; j < 4 ; j++)
+	if( isnan(E_CMS[j]) ) 
+	  cout << i << "th: " << E_CMS[j] << " || " << P_CMS[j] << endl;
       
       t0_min = (E_CMS[0] - E_CMS[2]) * (E_CMS[0] - E_CMS[2]) - (P_CMS[0] - P_CMS[2]) * (P_CMS[0] - P_CMS[2]);
       t0_max = (E_CMS[0] - E_CMS[2]) * (E_CMS[0] - E_CMS[2]) - (P_CMS[0] + P_CMS[2]) * (P_CMS[0] + P_CMS[2]);
@@ -181,12 +191,21 @@ void DVCS_beam_event_gen_V2()
 
       S_angle_cos_CMS = 1. - ( (t0_min - t_var) / (2. * P_CMS[0] * P_CMS[2]) );
       S_angle_sin_CMS = sqrt(1. - S_angle_cos_CMS * S_angle_cos_CMS);
+      
+      if( isnan( S_angle_sin_CMS ) ) 
+	{
+	  cout << i << "th: " << (t0_min - t_var) << " " << P_CMS[0] << " " << P_CMS[2] << " " << S_angle_cos_CMS << " " << S_angle_sin_CMS << endl;
+	  count++;
+	}
 
       //      cout << "Cos: " << S_angle_cos_CMS << " || Sin: " << S_angle_sin_CMS << endl << endl;
       
       photon.SetE(E_CMS[2]);   photon.SetPz(E_CMS[2] * S_angle_cos_CMS);   photon.SetPy(0.);    photon.SetPx(E_CMS[2] * S_angle_sin_CMS);
       p1 = Virtual_photon + p0 - photon;
 
+      //      if( isnan( p1.Px() ) )
+      //      	cout << i << " " << p1.Px() << " " << photon.Px() << endl;
+      
       photon.Rotate(-rotate_angle, rotate_axis);  // Rotate the particle back to origin direction
       p1.Rotate(-rotate_angle, rotate_axis);
       Virtual_photon.Rotate(-rotate_angle, rotate_axis);
@@ -195,6 +214,7 @@ void DVCS_beam_event_gen_V2()
       p1.Boost(CM_frame_HR_3);
       Virtual_photon.Boost(CM_frame_HR_3);
 
+      
       rotate_angle = (Virtual_photon.Vect()).Angle(z_axis);  // Rotate in phi direction
       //      p1.Print();  photon.Print(); cout << endl;
       p1.RotateY(rotate_angle);  photon.RotateY(rotate_angle);
@@ -203,6 +223,8 @@ void DVCS_beam_event_gen_V2()
       p1.RotateZ(phi);  photon.RotateZ(phi);
       //      p1.Print();  photon.Print();
       p1.RotateY(-rotate_angle);  photon.RotateY(-rotate_angle);
+
+
       
       photon.Boost(CM_frame_fix_beam_3); // Boost fix-target frame back to beam-beam frame
       p1.Boost(CM_frame_fix_beam_3);
@@ -231,6 +253,8 @@ void DVCS_beam_event_gen_V2()
       Vg_px = Virtual_photon.Px(); Vg_py = Virtual_photon.Py(); Vg_pz = Virtual_photon.Pz(); Vg_E = Virtual_photon.E();
       g_px = photon.Px(); g_py = photon.Py(); g_pz = photon.Pz(); g_E = photon.E();
 
+
+      
       p1_S_angle = TMath::Pi() - (p1.Vect()).Angle(z_axis); // cout << p1_S_angle << "  ";
       //      p1_S_angle = TMath::ACos( p1_pz / TMath::Sqrt(p1_px * p1_px + p1_py * p1_py + p1_pz * p1_pz) ); cout << TMath::Pi() - p1_S_angle << endl << endl;
       //      cout << "Proton angle in beam-beam: " << (TMath::Pi() - p1_S_angle) << endl << endl;
@@ -240,15 +264,16 @@ void DVCS_beam_event_gen_V2()
       
       //      cout << "Proton Scattering angle: " << p1_S_angle << endl << endl;
 
-      /*
+      
       cout << "Hadronic reaction: " << endl << "====================================" << endl;
       cout << "Virtual Photon: "; Virtual_photon.Print(); cout << "Scattering Photon: ";  photon.Print();  cout << "Scattering proton: ";  p1.Print();
       cout << "====================================" << endl << endl << endl;
-      */
+      
   
     }  
   cout << "Finish the event generated !" << endl;
-
+  cout << "Event number of t_var smaller than the t_min: " << count << endl;
+  
   DVCS->Write();
 
   delete hfile;

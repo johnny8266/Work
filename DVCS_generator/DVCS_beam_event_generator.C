@@ -23,7 +23,7 @@ void DVCS_beam_event_generator()
   Double_t phi, phi_def, e1_S_angle, p1_S_angle, photon_S_angle;
   Double_t e1_px, e1_py, e1_pz, e1_E, Vg_px, Vg_py, Vg_pz, Vg_E;
   Double_t p1_px, p1_py, p1_pz, p1_E, g_px, g_py, g_pz, g_E;
-  Int_t Iteration=1000000;
+  Int_t Iteration=5;
   long int t = (long int)time(NULL);  R->SetSeed(t);  //Get current time & set the random seed
 
   
@@ -65,11 +65,12 @@ void DVCS_beam_event_generator()
       // =================================
       // Boost the beam-beam collider to fix target, then calculation
       // =================================
-      TLorentzVector e0(0, 0., 10., 10.), p0(0., 0., -100., 100.0044);      
+      TLorentzVector e0(0, 0., -10., 10.), p0(0., 0., 100., 100.0044);      
       CM_frame_fix_beam_3 = p0.BoostVector();
       p0.Boost(-CM_frame_fix_beam_3);
       e0.Boost(-CM_frame_fix_beam_3);
-      //      p0.Print();  e0.Print();  cout << endl;
+      //      cout << "proton 4-momentum after boost: ";  p0.Print();
+      //      cout << "electron 4-momentum after boost: ";  e0.Print();  cout << endl;
       Eb = e0.E();
       //      cout << Eb << endl;
       
@@ -94,13 +95,20 @@ void DVCS_beam_event_generator()
       // Calculate the leptonic reaction
       // =================================
       Virtual_photon_E = Q2 / (2. * M * xb);  // Energy of Virtual photon
+      if ( Virtual_photon_E > Eb )
+	{
+	  cout << i << "th event exceed the range: " << Q2 << " " << xb << " " << t_var << " " << phi << " " << endl; 
+	}
       //      cout << Eb << " " << Virtual_photon_E << endl;
       e1E = Eb - Virtual_photon_E; //cout << e1E << endl; // Energy of scattering electron
-      e1_S_angle_cos = 1. - Q2 /(2. * Eb * e1E);  // Cos theta value of electron scattering
+      e1_S_angle_cos = 1. - Q2 / (2. * Eb * e1E);  // Cos theta value of electron scattering
       e1_S_angle_sin = sqrt(1. - e1_S_angle_cos * e1_S_angle_cos);  
       e1_S_angle = TMath::ACos(e1_S_angle_cos);  
       //      cout << "Electron Scattering angle: " << e1_S_angle << endl; 
-      e1.SetE(e1E); e1.SetPz(e1E * e1_S_angle_cos); e1.SetPy(0.); e1.SetPx(e1E * e1_S_angle_sin);
+      e1.SetE(e1E);
+      e1.SetPz(-e1E * e1_S_angle_cos);  // the original direction of electron is toward -z
+      e1.SetPy(0.);
+      e1.SetPx(e1E * e1_S_angle_sin);
       Virtual_photon = e0 - e1;
       e1.Boost(CM_frame_fix_beam_3);
       e1_px = e1.Px(); e1_py = e1.Py(); e1_pz = e1.Pz(); e1_E = e1.E(); 
@@ -115,7 +123,7 @@ void DVCS_beam_event_generator()
       // Calculate the hadronic reaction
       // =================================
       s_var = (Virtual_photon + p0) * (Virtual_photon + p0);
-      //      cout << "S Var: " << s_var << endl;
+      cout << "S Var: " << s_var << endl;
       CM_frame_HR_4 = Virtual_photon + p0;
       CM_frame_HR_3 = CM_frame_HR_4.BoostVector();
       Virtual_photon.Boost(-CM_frame_HR_3);  // Boost the Tlorentzvector to the CMS frame
