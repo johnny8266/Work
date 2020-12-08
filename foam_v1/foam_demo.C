@@ -34,17 +34,17 @@ using namespace std;
 Int_t main()
 {
   //  gSystem->Load("libFoa.so");
-  TFile RootFile("DVCS_4Pars.root","RECREATE");
-  TTree *T = new TTree("T", "Fill simulated DVCS parameters");
+  //  TFile RootFile("DVCS_4Pars.root","RECREATE");
+  //  TTree *T = new TTree("T", "Fill simulated DVCS parameters");
   long   loop;
   Double_t MCresult, MCerror, MCwt;      
   Double_t M = 0.93827231, xb=0., Q2_max=0., Q2=0., t_var=0., phi=0., xsec=0., xsec_err=0.;
 
-  T->Branch("Q2", &Q2, "Q2/D");
-  T->Branch("xb", &xb, "xb/D");
-  T->Branch("t_var", &t_var, "t_var/D");
-  T->Branch("phi", &phi, "phi/D");
-  T->Branch("xsec", &xsec, "xsec/D");
+  //  T->Branch("Q2", &Q2, "Q2/D");
+  //  T->Branch("xb", &xb, "xb/D");
+  //  T->Branch("t_var", &t_var, "t_var/D");
+  //  T->Branch("phi", &phi, "phi/D");
+  //  T->Branch("xsec", &xsec, "xsec/D");
    
   TH1F *h1 = new TH1F("h1", "h1", 90, 0., 45.);
   TH1F *h2 = new TH1F("h2", "h2", 100, 0., 0.1);
@@ -55,14 +55,14 @@ Int_t main()
 
 
   //-----------------------------------------
-  long NevTot   =    100000;   // Total MC statistics
+  long NevTot   =     10000;   // Total MC statistics
   Int_t  kDim   =         4;   // total dimension
-  Int_t  nCells   =    3000;   // Number of Cells
-  Int_t  nSampl   =     500;   // Number of MC events per cell in build-up
-  Int_t  nBin     =      15;   // Number of bins in build-up
+  Int_t  nCells   =    2000;   // Number of Cells
+  Int_t  nSampl   =     250;   // Number of MC events per cell in build-up
+  Int_t  nBin     =      25;   // Number of bins in build-up
   Int_t  OptRej   =       1;   // Wted events for OptRej=0; wt=1 for OptRej=1 (default)
   Int_t  OptDrive =       2;   // (D=2) Option, type of Drive =0,1,2 for TrueVol,Sigma,WtMax
-  Int_t  EvPerBin =      25;   // Maximum events (equiv.) per bin in buid-up
+  Int_t  EvPerBin =      35;   // Maximum events (equiv.) per bin in buid-up
   Int_t  Chat     =       1;   // Chat level
   TRandom *PseRan   = new TRandom2();  // Create random number generator
   long int tim = (long int)time(NULL);  cout << "time: " << tim << endl << endl;  PseRan->SetSeed(tim);
@@ -102,14 +102,14 @@ Int_t main()
       FoamX->GetIntegMC(xsec, xsec_err);
       MCwt=FoamX->GetMCwt();
 
-      xb = MCvect[0] * (0.1-0.01) + 0.01;
+      xb = MCvect[0] * (0.1-0.005) + 0.005;
       Q2_max = 2. * M * 2132.03 * xb;
-      if(Q2_max > 20.) Q2_max = 19.;
+      if(Q2_max > 15.) Q2_max = 14.;
       Q2 = MCvect[1] * Q2_max + 1.;
       t_var = -MCvect[2];
       phi = MCvect[3] * 2. * TMath::Pi();
 
-      T->Fill();
+      //      T->Fill();
       
       xb_vec.push_back(xb);
       Q2_vec.push_back(Q2);
@@ -120,7 +120,7 @@ Int_t main()
       if( ((loop)%1000) == 0 )
       	cout << "loop = " << loop << ", " << Q2 << ", " << xb << ", " << t_var << ", " << phi << " || Cross section: " << xsec << endl;
     }
-  T->Write();
+  //  T->Write();
   
   Double_t D_Q2, D_xb, D_t, psf, SLdt=10., NTOT=0.;
   
@@ -169,9 +169,9 @@ Int_t main()
 
    
   delete [] MCvect;
-  RootFile.ls();
-  RootFile.Write();
-  RootFile.Close();
+  //  RootFile.ls();
+  //  RootFile.Write();
+  //  RootFile.Close();
   cout << "***** End of Demonstration Program  *****" << endl;
    
   return 0;
