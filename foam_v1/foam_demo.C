@@ -25,6 +25,7 @@
 #include "TCanvas.h"
 #include "TFoamIntegrand.h"
 #include "TRandom2.h"
+#include "TRandom3.h"
 #include "TFDISTR.h"
 #include <time.h>
 #include <vector>
@@ -34,17 +35,18 @@ using namespace std;
 Int_t main()
 {
   //  gSystem->Load("libFoa.so");
-  //  TFile RootFile("DVCS_4Pars.root","RECREATE");
-  //  TTree *T = new TTree("T", "Fill simulated DVCS parameters");
+  TFile RootFile("DVCS_4Pars.root","RECREATE");
+  TTree *T = new TTree("T", "Fill simulated DVCS parameters");
   long   loop;
   Double_t MCresult, MCerror, MCwt;      
-  Double_t M = 0.93827231, xb=0., Q2_max=0., Q2=0., t_var=0., phi=0., xsec=0., xsec_err=0.;
+  Double_t M = 0.93827231, xb=0., Q2_max=0., Q2=0., t_var=0., phi=0., psf=0., xsec_Integral=0., xsec_Integral_err=0.;
 
-  //  T->Branch("Q2", &Q2, "Q2/D");
-  //  T->Branch("xb", &xb, "xb/D");
-  //  T->Branch("t_var", &t_var, "t_var/D");
-  //  T->Branch("phi", &phi, "phi/D");
-  //  T->Branch("xsec", &xsec, "xsec/D");
+  T->Branch("Q2", &Q2, "Q2/D");
+  T->Branch("xb", &xb, "xb/D");
+  T->Branch("t_var", &t_var, "t_var/D");
+  T->Branch("phi", &phi, "phi/D");
+  T->Branch("psf", &psf, "psf/D");
+  T->Branch("xsec_Integral", &xsec_Integral, "xsec_Integral/D");
    
   TH1F *h1 = new TH1F("h1", "h1", 90, 0., 45.);
   TH1F *h2 = new TH1F("h2", "h2", 100, 0., 0.1);
@@ -57,14 +59,14 @@ Int_t main()
   //-----------------------------------------
   long NevTot   =     10000;   // Total MC statistics
   Int_t  kDim   =         4;   // total dimension
-  Int_t  nCells   =    2000;   // Number of Cells
-  Int_t  nSampl   =     250;   // Number of MC events per cell in build-up
-  Int_t  nBin     =      25;   // Number of bins in build-up
+  Int_t  nCells   =     500;   // Number of Cells
+  Int_t  nSampl   =     100;   // Number of MC events per cell in build-up
+  Int_t  nBin     =      10;   // Number of bins in build-up
   Int_t  OptRej   =       1;   // Wted events for OptRej=0; wt=1 for OptRej=1 (default)
-  Int_t  OptDrive =       2;   // (D=2) Option, type of Drive =0,1,2 for TrueVol,Sigma,WtMax
-  Int_t  EvPerBin =      35;   // Maximum events (equiv.) per bin in buid-up
+  Int_t  OptDrive =       1;   // (D=2) Option, type of Drive =0,1,2 for TrueVol,Sigma,WtMax
+  Int_t  EvPerBin =      25;   // Maximum events (equiv.) per bin in buid-up
   Int_t  Chat     =       1;   // Chat level
-  TRandom *PseRan   = new TRandom2();  // Create random number generator
+  TRandom3 *PseRan   = new TRandom3();  // Create random number generator
   long int tim = (long int)time(NULL);  cout << "time: " << tim << endl << endl;  PseRan->SetSeed(tim);
   //   long int tim = 1029384759;   PseRan->SetSeed(tim);
   TFoam   *FoamX    = new TFoam("FoamX");   // Create Simulator
@@ -73,22 +75,26 @@ Int_t main()
       
   cout << "*****   Demonstration Program for Foam version " << FoamX->GetVersion() << "    *****" << endl;
   FoamX->SetkDim(        kDim);      // Mandatory!!!
-  FoamX->SetnCells(      nCells);    // optional
-  FoamX->SetnSampl(      nSampl);    // optional
-  FoamX->SetnBin(        nBin);      // optional
-  FoamX->SetOptRej(      OptRej);    // optional
-  FoamX->SetOptDrive(    OptDrive);  // optional
-  FoamX->SetEvPerBin(    EvPerBin);  // optional
+  //  FoamX->SetnCells(      nCells);    // optional
+  //  FoamX->SetnSampl(      nSampl);    // optional
+  //  FoamX->SetnBin(        nBin);      // optional
+  //  FoamX->SetOptRej(      OptRej);    // optional
+  //  FoamX->SetOptDrive(    OptDrive);  // optional
+  //  FoamX->SetEvPerBin(    EvPerBin);  // optional
   FoamX->SetChat(        Chat);      // optional
+  //  FoamX->SetOptPeek(        1);      // optional
+  FoamX->SetInhiDiv(3, 1);           // optional
+  
   FoamX->SetRho(rho);
   FoamX->SetPseRan(PseRan);
+  
   FoamX->Initialize(); // Initialize simulator
   FoamX->Write("FoamX");     // Writing Foam on the disk, TESTING PERSISTENCY!!!
   long nCalls = FoamX->GetnCalls();
   cout << "====== Initialization done, entering MC loop" << endl;
 
 
-  vector<Double_t> Q2_vec, xb_vec, t_var_vec, phi_vec, xsec_vec;
+  vector<Double_t> Q2_vec, xb_vec, t_var_vec, phi_vec, xsec_Integral_vec;
 
 
   // Run the simulator
@@ -99,7 +105,7 @@ Int_t main()
 
       FoamX->MakeEvent();           // generate MC event
       FoamX->GetMCvect(MCvect);
-      FoamX->GetIntegMC(xsec, xsec_err);
+      FoamX->GetIntegMC(xsec_Integral, xsec_Integral_err);
       MCwt=FoamX->GetMCwt();
 
       xb = MCvect[0] * (0.1-0.005) + 0.005;
@@ -108,21 +114,18 @@ Int_t main()
       Q2 = MCvect[1] * Q2_max + 1.;
       t_var = -MCvect[2];
       phi = MCvect[3] * 2. * TMath::Pi();
-
-      //      T->Fill();
       
       xb_vec.push_back(xb);
       Q2_vec.push_back(Q2);
       t_var_vec.push_back(t_var);
       phi_vec.push_back(phi);
-      xsec_vec.push_back(xsec);
+      xsec_Integral_vec.push_back(xsec_Integral);
        
       if( ((loop)%1000) == 0 )
-      	cout << "loop = " << loop << ", " << Q2 << ", " << xb << ", " << t_var << ", " << phi << " || Cross section: " << xsec << endl;
+      	cout << "loop = " << loop << ", " << Q2 << ", " << xb << ", " << t_var << ", " << phi << " || Simulation integral: " << xsec_Integral << endl;
     }
-  //  T->Write();
   
-  Double_t D_Q2, D_xb, D_t, psf, SLdt=10., NTOT=0.;
+  Double_t D_Q2, D_xb, D_t, SLdt=10., NTOT=0.;
   
   D_Q2 = (*max_element(Q2_vec.begin(), Q2_vec.end())) - (*min_element(Q2_vec.begin(), Q2_vec.end()));
   D_xb = (*max_element(xb_vec.begin(), xb_vec.end())) - (*min_element(xb_vec.begin(), xb_vec.end()));
@@ -134,13 +137,20 @@ Int_t main()
   
   for(Int_t i = 0 ; i < NevTot ; i++ )
     {
-      NTOT = SLdt * xsec_vec[i] * psf * 1000000. / NevTot;
+      NTOT = SLdt * xsec_Integral_vec[i] * psf * 1000000. / NevTot;
       h1->Fill( (Q2_vec[i]), NTOT);
       h2->Fill( (xb_vec[i]), NTOT);
       h3->Fill( (t_var_vec[i]), NTOT);
       h4->Fill( (phi_vec[i]), NTOT);
 
+      xb = xb_vec[i];
+      Q2 = Q2_vec[i];
+      t_var = t_var_vec[i];
+      phi = phi_vec[i];
+      //      T->Fill();
     }
+  //  T->Write();
+    
 
   TCanvas* c1 = new TCanvas("c1", "c1", 800, 800);
   c1->Divide(2,2);
@@ -169,9 +179,11 @@ Int_t main()
 
    
   delete [] MCvect;
-  //  RootFile.ls();
-  //  RootFile.Write();
-  //  RootFile.Close();
+  RootFile.cd();
+  RootFile.ls();
+  RootFile.Map();
+  RootFile.Write();
+  RootFile.Close();
   cout << "***** End of Demonstration Program  *****" << endl;
    
   return 0;
