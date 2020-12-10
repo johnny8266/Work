@@ -9,6 +9,8 @@ using namespace std;
 
 void Read_test()
 { 
+  TFile RootFile("plot.root","RECREATE");
+  TTree *Tree = new TTree("Tree", "Fill simulated DVCS parameters");
   string line, whichbook; //for storing words 
   vector<string> words; //unspecified size vector 
   vector<double> wave_length, transmittance;
@@ -109,6 +111,9 @@ void Read_test()
 	  gr1[k]->SetLineWidth(2);
 	  gr1[k]->Draw("same");
 	}
+      gr1[k]->Write();
     }
+
+  RootFile.Write();
 
 }
