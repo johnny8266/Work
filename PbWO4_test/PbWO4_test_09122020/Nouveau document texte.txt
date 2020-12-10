@@ -1,0 +1,3 @@
+No.2~5 test is short & clean crystal
+
+No.6~11 test is long & "pink" crystal, 10 & 11 are displacement and rotation test :)
