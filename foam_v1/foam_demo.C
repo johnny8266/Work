@@ -57,7 +57,7 @@ Int_t main()
 
 
   //-----------------------------------------
-  long NevTot   =     10000;   // Total MC statistics
+  long NevTot   =   1000000;   // Total MC statistics
   Int_t  kDim   =         4;   // total dimension
   Int_t  nCells   =     500;   // Number of Cells
   Int_t  nSampl   =     100;   // Number of MC events per cell in build-up
@@ -121,7 +121,7 @@ Int_t main()
       phi_vec.push_back(phi);
       xsec_Integral_vec.push_back(xsec_Integral);
        
-      if( ((loop)%1000) == 0 )
+      if( ((loop)%20000) == 0 )
       	cout << "loop = " << loop << ", " << Q2 << ", " << xb << ", " << t_var << ", " << phi << " || Simulation integral: " << xsec_Integral << endl;
     }
   
@@ -147,9 +147,9 @@ Int_t main()
       Q2 = Q2_vec[i];
       t_var = t_var_vec[i];
       phi = phi_vec[i];
-      //      T->Fill();
+      T->Fill();
     }
-  //  T->Write();
+  T->Write();
     
 
   TCanvas* c1 = new TCanvas("c1", "c1", 800, 800);
@@ -179,9 +179,9 @@ Int_t main()
 
    
   delete [] MCvect;
-  RootFile.cd();
-  RootFile.ls();
-  RootFile.Map();
+  //  RootFile.cd();
+  //  RootFile.ls();
+  //  RootFile.Map();
   RootFile.Write();
   RootFile.Close();
   cout << "***** End of Demonstration Program  *****" << endl;
