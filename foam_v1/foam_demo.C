@@ -40,7 +40,7 @@ Int_t main()
   //  TTree *T = new TTree("T", "Fill simulated DVCS parameters");
   long   loop;
   Double_t MCresult, MCerror, MCwt;      
-  Double_t M = 0.93827231, xb=0., Q2_max=0., Q2=0., t_var=0., phi=0., psf=0., xsec_Integral=0., xsec_Integral_err=0.;
+  Double_t M = 0.93827231, xb=0., Q2_max=0., Q2=0., t_var=0., phi=0., psf=0., xsec=0., xsec_Integral=0., xsec_Integral_err=0.;
 
   //  T->Branch("Q2", &Q2, "Q2/D");
   //  T->Branch("xb", &xb, "xb/D");
@@ -59,9 +59,9 @@ Int_t main()
 
   //-----------------------------------------
   long NevTot   =     10000;   // Total MC statistics
-  Int_t  kDim   =         3;   // total dimension
-  Int_t  nCells   =   10000;   // Number of Cells
-  Int_t  nSampl   =     500;   // Number of MC events per cell in build-up
+  Int_t  kDim   =         4;   // total dimension
+  Int_t  nCells   =    1000;   // Number of Cells
+  Int_t  nSampl   =     100;   // Number of MC events per cell in build-up
   Int_t  nBin     =       5;   // Number of bins in build-up
   Int_t  OptRej   =       1;   // Wted events for OptRej=0; wt=1 for OptRej=1 (default)
   Int_t  OptDrive =       1;   // (D=2) Option, type of Drive =0,1,2 for TrueVol,Sigma,WtMax
@@ -74,6 +74,7 @@ Int_t main()
   TFoam   *FoamX    = new TFoam("FoamX");   // Create Simulator
   TFoamIntegrand *rho = new TFDISTR();
   Double_t *MCvect = new Double_t[kDim]; // vector generated in the MC run
+  TFDISTR *tfdi = new TFDISTR();
       
   cout << "*****   Demonstration Program for Foam version " << FoamX->GetVersion() << "    *****" << endl;
   FoamX->SetkDim(        kDim);      // Mandatory!!!
@@ -93,8 +94,7 @@ Int_t main()
   FoamX->Write("FoamX");     // Writing Foam on the disk, TESTING PERSISTENCY!!!
   long nCalls = FoamX->GetnCalls();
   cout << "====== Initialization done, entering MC loop" << endl;
-
-
+  
   vector<Double_t> Q2_vec, xb_vec, t_var_vec, phi_vec, xsec_Integral_vec;
 
 
@@ -105,17 +105,24 @@ Int_t main()
       //      FoamX->InitCells();   // this will cause crash and take lots of time to run
 
       FoamX->MakeEvent();           // generate MC event
+      /*
+      xsec = tfdi->Get_xsec();
+      cout << "======================" << endl;
+      cout << xsec << endl;
+      cout << "======================" << endl << endl; 
+      */
       FoamX->GetMCvect(MCvect);
       FoamX->GetIntegMC(xsec_Integral, xsec_Integral_err);
       MCwt=FoamX->GetMCwt();
 
-      //      xb = MCvect[0] * (0.1-0.005) + 0.005;
-      xb = 0.015;
+      
+      xb = MCvect[0] * (0.03-0.01) + 0.01;
+      //      xb = 0.015;
       Q2_max = 2. * M * 2132.03 * xb;
-      if(Q2_max > 15.) Q2_max = 14.;
-      Q2 = MCvect[0] * Q2_max + 1.;
-      t_var = -MCvect[1];
-      phi = MCvect[2] * 2. * TMath::Pi();
+      if(Q2_max > 6.) Q2_max = 2.;
+      Q2 = MCvect[1] * Q2_max + 4.;
+      t_var = -MCvect[2];
+      phi = MCvect[3] * 2. * TMath::Pi();
 
 
       //      Q2 = 10.;
@@ -123,7 +130,7 @@ Int_t main()
       //      phi = 2.5;
 
       h1->Fill(Q2);
-      //      h2->Fill(xb);
+      h2->Fill(xb);
       h3->Fill(t_var);
       h4->Fill(phi);
       
@@ -133,9 +140,10 @@ Int_t main()
       phi_vec.push_back(phi);
       xsec_Integral_vec.push_back(xsec_Integral);
        
-      if( ((loop)%2000) == 0 )
-      	cout << "loop = " << loop << ", " << Q2 << ", " << xb << ", " << t_var << ", " << phi << " || Simulation integral: " << xsec_Integral << endl;
+      //      if( ((loop)%20) == 0 )
+      //      	cout << "loop = " << loop << ", " << Q2 << ", " << xb << ", " << t_var << ", " << phi << " || Simulation integral: " << xsec_Integral << " || xsec value: " << xsec << endl;
     }
+
   /*
   Double_t D_Q2, D_xb, D_t, SLdt=10., NTOT=0.;
   

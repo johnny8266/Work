@@ -37,7 +37,6 @@ void Read_test()
 	      line = ""; 
 	      getline(bookread, line); 
 
-	      string lineToAdd = "";
 	      if( (line.size() == 21) || (line.size() == 20) )
 		{
 		  count++;
