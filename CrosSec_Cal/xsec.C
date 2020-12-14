@@ -23,7 +23,7 @@ double xsec(void)
   gSystem->Load("./libTGenDVCS.so");
 
   //  TFile *hfile = new TFile("result.root", "update");
-  TFile *hfile = new TFile("C1000_S200_B8_1M_2nd.root", "update");
+  TFile *hfile = new TFile("Inte_4_252_C1000_S100.root", "update");
   TTree *T = (TTree*)hfile->Get("T");
   Int_t N_events = (Int_t)T->GetEntries();
   Double_t Eb=2132.03, Q2, xb, t_var, phi, psf, phi_def, xsec, SLdt=10., NTOT;  //Eb is energy for fixed target.

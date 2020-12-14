@@ -30,8 +30,8 @@ Double_t TFDISTR::Density(int nDim, Double_t *Xarg)
   //  Double_t xB = 0.015;
 
   Double_t Q2max = 2. * M * Eb * xB;
-  if( Q2max > 6. ) Q2max = 2.;
-  Double_t Q2 = Xarg[1] * Q2max + 4.;
+  if( Q2max > 10. ) Q2max = 2.;
+  Double_t Q2 = Xarg[1] * Q2max + 8.;
   //  Double_t Q2 = 10.;
 
   Double_t t = -Xarg[2];
@@ -61,7 +61,7 @@ Double_t TFDISTR::Density(int nDim, Double_t *Xarg)
 
   //  cout << "The four pars: " << Q2 << ", " << xB << ", " << t << ", " << phi << endl;
   //  cout << BHp << ", " << VCSp << ", " << Ip << ", " << BHm << ", " << VCSm << ", " << Im << endl;
-  cout << DVCSxsec << endl;
+  //  cout << DVCSxsec << endl;
   
   //  TFDISTR::Set_xsec(DVCSxsec);
   
