@@ -59,9 +59,9 @@ Int_t main()
 
   //-----------------------------------------
   long NevTot   =     10000;   // Total MC statistics
-  Int_t  kDim   =         1;   // total dimension
-  Int_t  nCells   =    2000;   // Number of Cells
-  Int_t  nSampl   =     100;   // Number of MC events per cell in build-up
+  Int_t  kDim   =         3;   // total dimension
+  Int_t  nCells   =   10000;   // Number of Cells
+  Int_t  nSampl   =     500;   // Number of MC events per cell in build-up
   Int_t  nBin     =       5;   // Number of bins in build-up
   Int_t  OptRej   =       1;   // Wted events for OptRej=0; wt=1 for OptRej=1 (default)
   Int_t  OptDrive =       1;   // (D=2) Option, type of Drive =0,1,2 for TrueVol,Sigma,WtMax
@@ -77,13 +77,13 @@ Int_t main()
       
   cout << "*****   Demonstration Program for Foam version " << FoamX->GetVersion() << "    *****" << endl;
   FoamX->SetkDim(        kDim);      // Mandatory!!!
-  //  FoamX->SetnCells(      nCells);    // optional
-  //  FoamX->SetnSampl(      nSampl);    // optional
-  //  FoamX->SetnBin(        nBin);      // optional
-  //  FoamX->SetOptRej(      OptRej);    // optional
-  //  FoamX->SetOptDrive(    OptDrive);  // optional
-  //  FoamX->SetEvPerBin(    EvPerBin);  // optional
-  //  FoamX->SetChat(        Chat);      // optional
+  FoamX->SetnCells(      nCells);    // optional
+  FoamX->SetnSampl(      nSampl);    // optional
+  FoamX->SetnBin(        nBin);      // optional
+  FoamX->SetOptRej(      OptRej);    // optional
+  FoamX->SetOptDrive(    OptDrive);  // optional
+  FoamX->SetEvPerBin(    EvPerBin);  // optional
+  FoamX->SetChat(        Chat);      // optional
   //  FoamX->SetInhiDiv(3, 1);           // optional
   
   FoamX->SetRho(rho);
@@ -114,18 +114,18 @@ Int_t main()
       Q2_max = 2. * M * 2132.03 * xb;
       if(Q2_max > 15.) Q2_max = 14.;
       Q2 = MCvect[0] * Q2_max + 1.;
-      //      t_var = -MCvect[0];
-      //      phi = MCvect[0] * 2. * TMath::Pi();
+      t_var = -MCvect[1];
+      phi = MCvect[2] * 2. * TMath::Pi();
 
 
       //      Q2 = 10.;
-      t_var = -0.3;
-      phi = 2.5;
+      //      t_var = -0.3;
+      //      phi = 2.5;
 
       h1->Fill(Q2);
       //      h2->Fill(xb);
-      //      h3->Fill(t_var);
-      //      h4->Fill(phi);
+      h3->Fill(t_var);
+      h4->Fill(phi);
       
       xb_vec.push_back(xb);
       Q2_vec.push_back(Q2);

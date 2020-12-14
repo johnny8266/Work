@@ -34,11 +34,11 @@ Double_t TFDISTR::Density(int nDim, Double_t *Xarg)
   Double_t Q2 = Xarg[0] * Q2max + 1.;
   //  Double_t Q2 = 10.;
 
-  //  Double_t t = -Xarg[0];
-  Double_t t = -0.3;
+  Double_t t = -Xarg[1];
+  //  Double_t t = -0.3;
   
-  //  Double_t phi = Xarg[0] * 2. * TMath::Pi();
-  Double_t phi = 2.5;
+  Double_t phi = Xarg[2] * 2. * TMath::Pi();
+  //  Double_t phi = 2.5;
 
   
   Double_t ConvGeV2nbarn = 0.389379304e+6; // Unit conversion
