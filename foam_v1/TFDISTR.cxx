@@ -61,7 +61,7 @@ Double_t TFDISTR::Density(int nDim, Double_t *Xarg)
 
   //  cout << "The four pars: " << Q2 << ", " << xB << ", " << t << ", " << phi << endl;
   //  cout << BHp << ", " << VCSp << ", " << Ip << ", " << BHm << ", " << VCSm << ", " << Im << endl;
-  //  cout << DVCSxsec << endl;
+  cout << DVCSxsec << endl;
   
   //  TFDISTR::Set_xsec(DVCSxsec);
   
