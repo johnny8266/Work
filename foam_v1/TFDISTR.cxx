@@ -22,15 +22,15 @@ TFDISTR::TFDISTR()
 Double_t TFDISTR::Density(int nDim, Double_t *Xarg)
 {
   // Integrand for mFOAM
-  Double_t M = 0.93827231;
+  Double_t M = 0.938271998;
 
   // Double_t xBMin = 2.*Eb*Q2/(M*(4*TMath::Power(Eb,2)-Q2));
   // Double_t xBMax = Q2/(Q2-TMath::Power(M,2));
-  Double_t xB = Xarg[0]*(0.03-0.01)+0.01;
+  Double_t xB = Xarg[0]*(0.03-0.005)+0.005;
   //  Double_t xB = 0.015;
 
   Double_t Q2max = 2. * M * Eb * xB;
-  if( Q2max > 10. ) Q2max = 2.;
+  if( Q2max > 16. ) Q2max = 8.;
   Double_t Q2 = Xarg[1] * Q2max + 8.;
   //  Double_t Q2 = 10.;
 
@@ -61,7 +61,7 @@ Double_t TFDISTR::Density(int nDim, Double_t *Xarg)
 
   //  cout << "The four pars: " << Q2 << ", " << xB << ", " << t << ", " << phi << endl;
   //  cout << BHp << ", " << VCSp << ", " << Ip << ", " << BHm << ", " << VCSm << ", " << Im << endl;
-  cout << DVCSxsec << endl;
+  //  cout << DVCSxsec << endl;
   
   //  TFDISTR::Set_xsec(DVCSxsec);
   

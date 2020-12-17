@@ -58,23 +58,23 @@ Int_t main()
 
 
   //-----------------------------------------
-  long NevTot   =     50000;   // Total MC statistics
+  long NevTot   =      5000;   // Total MC statistics
   Int_t  kDim   =         4;   // total dimension
-  Int_t  nCells   =    1000;   // Number of Cells
-  Int_t  nSampl   =     100;   // Number of MC events per cell in build-up
-  Int_t  nBin     =       5;   // Number of bins in build-up
+  Int_t  nCells   =   10000;   // Number of Cells
+  Int_t  nSampl   =     300;   // Number of MC events per cell in build-up
+  Int_t  nBin     =       8;   // Number of bins in build-up
   Int_t  OptRej   =       1;   // Wted events for OptRej=0; wt=1 for OptRej=1 (default)
-  Int_t  OptDrive =       1;   // (D=2) Option, type of Drive =0,1,2 for TrueVol,Sigma,WtMax
+  Int_t  OptDrive =       2;   // (D=2) Option, type of Drive =0,1,2 for TrueVol,Sigma,WtMax
   Int_t  EvPerBin =      25;   // Maximum events (equiv.) per bin in buid-up
   Int_t  Chat     =       1;   // Chat level
   TRandom3 *PseRan   = new TRandom3();  // Create random number generator
+  TFoam   *FoamX    = new TFoam("FoamX");   // Create Simulator
+  TFoamIntegrand *rho = new TFDISTR();
   PseRan->SetSeed(0);
   //  long int tim = (long int)time(NULL);  cout << "time: " << tim << endl << endl;  PseRan->SetSeed(tim);
   //  long int tim = 1029384759;   PseRan->SetSeed(tim);
-  TFoam   *FoamX    = new TFoam("FoamX");   // Create Simulator
-  TFoamIntegrand *rho = new TFDISTR();
   Double_t *MCvect = new Double_t[kDim]; // vector generated in the MC run
-  TFDISTR *tfdi = new TFDISTR();
+  //  TFDISTR *tfdi = new TFDISTR();
       
   cout << "*****   Demonstration Program for Foam version " << FoamX->GetVersion() << "    *****" << endl;
   FoamX->SetkDim(        kDim);      // Mandatory!!!
@@ -85,13 +85,14 @@ Int_t main()
   FoamX->SetOptDrive(    OptDrive);  // optional
   FoamX->SetEvPerBin(    EvPerBin);  // optional
   FoamX->SetChat(        Chat);      // optional
+  //  FoamX->SetMaxWtRej(0.5);           // Maximum weight used to get w=1 MC events d=1.1	      
   //  FoamX->SetInhiDiv(3, 1);           // optional
   
   FoamX->SetRho(rho);
-  FoamX->SetPseRan(PseRan);
-  
+  FoamX->SetPseRan(PseRan);  
   FoamX->Initialize(); // Initialize simulator
   FoamX->Write("FoamX");     // Writing Foam on the disk, TESTING PERSISTENCY!!!
+  
   long nCalls = FoamX->GetnCalls();
   cout << "====== Initialization done, entering MC loop" << endl;
   
@@ -112,14 +113,15 @@ Int_t main()
       cout << "======================" << endl << endl; 
       */
       FoamX->GetMCvect(MCvect);
-      FoamX->GetIntegMC(xsec_Integral, xsec_Integral_err);
+      //      FoamX->GetIntegMC(xsec_Integral, xsec_Integral_err);
+      FoamX->GetIntNorm(xsec_Integral, xsec_Integral_err);
       MCwt=FoamX->GetMCwt();
 
       
-      xb = MCvect[0] * (0.03-0.01) + 0.01;
+      xb = MCvect[0] * (0.03-0.005) + 0.005;
       //      xb = 0.015;
       Q2_max = 2. * M * 2132.03 * xb;
-      if(Q2_max > 10.) Q2_max = 2.;
+      if(Q2_max > 16.) Q2_max = 8.;
       Q2 = MCvect[1] * Q2_max + 8.;
       t_var = -MCvect[2];
       phi = MCvect[3] * 2. * TMath::Pi();
@@ -208,7 +210,7 @@ Int_t main()
   delete [] MCvect;
   //  RootFile.cd();
   //  RootFile.ls();
-  RootFile.Map();
+  //  RootFile.Map();
   RootFile.Write();
   RootFile.Close();
   cout << "***** End of Demonstration Program  *****" << endl;

@@ -72,8 +72,8 @@ ClassImp(TGenDVCS)
   fpipole=1;
 
   // Initialization of TGV + read datafile
-  //Int_t nQ2=10, nxB=10, nt=10;
-  Int_t nQ2=13, nxB=80, nt=90;
+  Int_t nQ2=10, nxB=10, nt=10;
+  //  Int_t nQ2=13, nxB=80, nt=90;
   V=new Double_t***[8];
   for(Int_t i=0;i<8;i++){
     V[i]=new Double_t**[nQ2];
@@ -145,7 +145,7 @@ Double_t* TGenDVCS::Interpol_CFF(Double_t Q2, Double_t xb, Double_t t)
 
   //  if(Q2<1||Q2>10||xb<0.2||xb>0.7||t>tmin||t<tmin-1)
   // cout<<Q2<<" "<<xb<<" "<<t<<" ==========="<<endl;
-  Double_t eps2=4.*xb*xb*0.938272*0.938272/Q2;
+  Double_t eps2=4.*xb*xb*0.938271998*0.938271998/Q2;
   Double_t tmin = -Q2*(2.*(1.-xb)*(1-TMath::Sqrt(1+eps2))+eps2)/(4.*xb*(1.-xb)+eps2);
 
     Double_t Q2min=1, Q2max=100;

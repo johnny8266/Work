@@ -1,6 +1,7 @@
 #include <vector> 
 #include <sstream> 
-#include <string> 
+#include <string>
+#include <cstring>
 #include <iostream> 
 #include <iomanip> 
 #include <fstream>
@@ -9,26 +10,39 @@ using namespace std;
 
 void Read_test()
 { 
-  TFile RootFile("plot.root","RECREATE");
-  TTree *Tree = new TTree("Tree", "Fill simulated DVCS parameters");
-  string line, whichbook; //for storing words 
+  string line, Crtstal_ID, root_file_name, data_file_path, file_0_str; //for storing words 
+
+  cout << "Please input the Crystal ID you would like to analyze: "; 
+  cin >> Crtstal_ID; 
+  cout << endl << "Please input the start file number: ";
+  cin >> file_0_str;
+  cout << endl << endl;
+
+  root_file_name = "Crystal_" + Crtstal_ID + ".root";
+
+  const char *rfn = root_file_name.c_str();
+  
+  TFile RootFile(rfn,"RECREATE");
+  TTree *Tree = new TTree("Tree", "PbWO4 test result");
+
   vector<string> words; //unspecified size vector 
   vector<double> wave_length, transmittance;
   stringstream line_string;
-  int count=0;
+  int count=0, file_0;
   double L, T;
-  TGraph *gr1[11];
+  TGraph *gr1[8];
 
-  //    cout << "Welcome to the book analysis program. Please input the filename of the book you would like to analyze: "; 
-  //    cin >> whichbook; 
-  //    cout << endl; 
-
+  
   ifstream bookread; 
+  file_0 = atoi(file_0_str.c_str());
 
-  //    bookread.open(whichbook.c_str());
-  for(int i = 1 ; i < 12 ; i++)
+  //Read the raw files
+  //
+  for(int i = file_0 ; i < (file_0 + 8) ; i++)
     {
-      bookread.open(Form("./PbWO4_test_09122020/Sample%d.Sample.Raw.asc", i));
+      data_file_path = "./PbWO4_test_15122020_New_crystal/Crystal_" + Crtstal_ID + "/Sample"+ i +".Sample.Raw.asc";
+      const char *dfp = data_file_path.c_str();
+      bookread.open(dfp);
 
       if(bookread.is_open())
 	{ 
@@ -54,7 +68,7 @@ void Read_test()
 	      x[j] = wave_length[j];
 	      y[j] = transmittance[j];
 	    }
-	  int a = i - 1;
+	  int a = i - file_0;
 	  gr1[a] = new TGraph (count, x, y);
 	  //	  gr1[i]->Draw("same");
 	}
@@ -64,51 +78,25 @@ void Read_test()
       bookread.close();
     }
 
-  TCanvas *c1, *c2, *c3;
   
-  for(int k = 0 ; k < 11 ; k++)
+  // Draw the plots
+  //
+  TCanvas *c1, *c2;  
+  for(int k = 0 ; k < 8 ; k++)
     {
-      if( k == 0 )
-	continue;
-      //      gr1[k]->Draw();
-      else if( k == 1 )
+      if( k < 4 )
 	{
 	  c1 = new TCanvas("c1", "c1", 600, 600);
 	  gr1[k]->SetLineColor(k);
 	  gr1[k]->SetLineWidth(2);
 	  gr1[k]->Draw();
 	}
-      else if( k < 5 )
-	{
-	  gr1[k]->SetLineColor(k);
-	  gr1[k]->SetLineWidth(2);
-	  gr1[k]->Draw("same");
-	}
-      else if( k == 5 )
+      else 
 	{
 	  c2 = new TCanvas("c2", "c2", 600, 600);
 	  gr1[k]->SetLineColor(k);
 	  gr1[k]->SetLineWidth(2);
 	  gr1[k]->Draw();
-	}
-      else if( k < 9 )
-	{
-	  gr1[k]->SetLineColor(k);
-	  gr1[k]->SetLineWidth(2);
-	  gr1[k]->Draw("same");
-	}
-      else if( k == 9 )
-	{
-	  c3 = new TCanvas("c3", "c3", 600, 600);
-	  gr1[k]->SetLineColor(k);
-	  gr1[k]->SetLineWidth(2);
-	  gr1[k]->Draw();
-	}
-      else if( k < 11 )
-	{
-	  gr1[k]->SetLineColor(k);
-	  gr1[k]->SetLineWidth(2);
-	  gr1[k]->Draw("same");
 	}
       gr1[k]->Write();
     }
