@@ -30,8 +30,8 @@ Double_t TFDISTR::Density(int nDim, Double_t *Xarg)
   //  Double_t xB = 0.015;
 
   Double_t Q2max = 2. * M * Eb * xB;
-  if( Q2max > 16. ) Q2max = 8.;
-  Double_t Q2 = Xarg[1] * Q2max + 8.;
+  if( Q2max > 30. ) Q2max = 28.;
+  Double_t Q2 = Xarg[1] * Q2max + 2.;
   //  Double_t Q2 = 10.;
 
   Double_t t = -Xarg[2];

@@ -78,23 +78,26 @@ void Read_test()
       bookread.close();
     }
 
-  
+
   // Draw the plots
   //
   TCanvas *c1, *c2;  
   for(int k = 0 ; k < 8 ; k++)
     {
+      int linecolor = 1;
       if( k < 4 )
 	{
 	  c1 = new TCanvas("c1", "c1", 600, 600);
-	  gr1[k]->SetLineColor(k);
+	  linecolor+=k;
+	  gr1[k]->SetLineColor(linecolor);
 	  gr1[k]->SetLineWidth(2);
 	  gr1[k]->Draw();
 	}
       else 
 	{
 	  c2 = new TCanvas("c2", "c2", 600, 600);
-	  gr1[k]->SetLineColor(k);
+	  linecolor+=k;
+	  gr1[k]->SetLineColor(linecolor);
 	  gr1[k]->SetLineWidth(2);
 	  gr1[k]->Draw();
 	}
