@@ -31,7 +31,7 @@ void Read_test()
   int count=0, file_0[10] = {68, 77, 33, 115, 41, 97, 88, 52, 106, 60}, pic_count=0;
   double L, T;
   TGraph *gr1[90], *gr_mark[10];
-  TLegend *legend[10], *legend_mark[10];
+  TLegend *legend[11], *legend_mark[10];
 
   
   ifstream bookread; 
@@ -87,23 +87,24 @@ void Read_test()
   
   // Draw the plots
   //
-  
+  int linecolor;
   double mark_x[3] = {360, 420, 620}, mark_y[3] = {35, 60, 70};
-  TCanvas *c1 = new TCanvas("c1", "c1", 1400, 1050);
+  TCanvas *c1 = new TCanvas("c1", "c1", 1200, 900);
+  const char *CID;
   c1->Divide(4,3);
   for(int k = 0 ; k < 10 ; k++)
     {
       c1->cd((k+1));
       legend[k] = new TLegend(0.5, 0.3, 0.8, 0.6);
       legend[k]->SetBorderSize(0);
-      legend_mark[k] = new TLegend(0.5, 0.2, 0.8, 0.25);
+      legend_mark[k] = new TLegend(0.5, 0.2, 0.88, 0.25);
       legend_mark[k]->SetBorderSize(0);
-      int linecolor = 1;
+      linecolor = 1;
       for(int l = 0 ; l < 9 ; l++)
 	{
 	  int m = k * 9 + l;
 	  crystal = "PbWO4 Crystal " + Crtstal_ID_str[k];
-	  const char *CID = (crystal).c_str();
+	  CID = (crystal).c_str();
 	  gr1[m]->SetName(Form("gr_%d", m));
 	  gr1[m]->SetTitle(CID);
 	  gr1[m]->GetXaxis()->SetTitle("#lambda [nm]");
@@ -114,9 +115,9 @@ void Read_test()
 	    continue;
 	  else if( m % 9 == 1 )
 	    {
-	      linecolor+=l;
 	      gr1[m]->SetLineColor(linecolor);
-	      gr1[m]->SetLineWidth(2);
+	      linecolor++;
+	      gr1[m]->SetLineWidth(1);
 	      gr1[m]->Draw();
 	    }
 	  else if( m % 9 == 8 )
@@ -139,8 +140,8 @@ void Read_test()
 	      gr_mark[k]->SetMarkerStyle(2);
 	      gr_mark[k]->SetMarkerSize(5);
 
-	      linecolor+=l;
 	      gr1[m]->SetLineColor(linecolor);
+	      linecolor++;
 	      gr1[m]->SetLineWidth(1);
 	      gr1[m]->Draw("same");
 	      gr_mark[k]->Draw("same p");
@@ -158,33 +159,70 @@ void Read_test()
 	    }
 	  else
 	    {
-	      linecolor+=l;
 	      gr1[m]->SetLineColor(linecolor);
-	      gr1[m]->SetLineWidth(2);
+	      linecolor++;
+	      gr1[m]->SetLineWidth(1);
 	      gr1[m]->Draw("same");
 	    }
 	  if(m % 9 == 1)
-	    legend[k]->AddEntry(Form("gr_%d",m), "rotate 0 deg", "l");
+	    legend[k]->AddEntry(Form("gr_%d",m), "rotate 0 #circ", "l");
 	  if(m % 9 == 2)
-	    legend[k]->AddEntry(Form("gr_%d",m), "rotate 90 deg", "l");
+	    legend[k]->AddEntry(Form("gr_%d",m), "rotate 90 #circ", "l");
 	  if(m % 9 == 3)
-	    legend[k]->AddEntry(Form("gr_%d",m), "rotate 180 deg", "l");
+	    legend[k]->AddEntry(Form("gr_%d",m), "rotate 180 #circ", "l");
 	  if(m % 9 == 4)
-	    legend[k]->AddEntry(Form("gr_%d",m), "rotate 270 deg", "l");
+	    legend[k]->AddEntry(Form("gr_%d",m), "rotate 270 #circ", "l");
 	  if(m % 9 == 5)
-	    legend[k]->AddEntry(Form("gr_%d",m), "rotate 0 deg", "l");
+	    legend[k]->AddEntry(Form("gr_%d",m), "rotate 0 #circ", "l");
 	  if(m % 9 == 6)
-	    legend[k]->AddEntry(Form("gr_%d",m), "rotate 90 deg", "l");
+	    legend[k]->AddEntry(Form("gr_%d",m), "rotate 90 #circ", "l");
 	  if(m % 9 == 7)
-	    legend[k]->AddEntry(Form("gr_%d",m), "rotate 180 deg", "l");
+	    legend[k]->AddEntry(Form("gr_%d",m), "rotate 180 #circ", "l");
 	  if(m % 9 == 8)
-	    legend[k]->AddEntry(Form("gr_%d",m), "rotate 270 deg", "l");
+	    legend[k]->AddEntry(Form("gr_%d",m), "rotate 270 #circ", "l");
 	}
-      legend_mark[k]->AddEntry(Form("mark_%d", k), "     Criteria", "p");
+      legend_mark[k]->AddEntry(Form("mark_%d", k), "       Transmittance Criteria", "p");
       legend[k]->Draw("same");
-      legend_mark[k]->Draw("same");
-      
+      legend_mark[k]->Draw("same");      
     }
+
+  c1->cd(11);
+  linecolor = 1;
+  legend[10] = new TLegend(0.5, 0.3, 0.8, 0.65);
+  legend[10]->SetBorderSize(0);
+  for(int i = 0 ; i < 90 ; i++)
+    {
+      if( i == 0 )
+	{
+	  gr1[i]->GetXaxis()->SetRangeUser(260., 800.);
+	  gr1[i]->GetHistogram()->SetMaximum(80.);
+	  gr1[i]->SetTitle("First setup of 10 Crystals");
+	  gr1[i]->SetLineColor(linecolor);
+	  gr1[i]->SetLineWidth(1);
+	  gr1[i]->Draw();
+	  linecolor++;
+	  int k = i / 9;
+	  crystal = "Crystal " + Crtstal_ID_str[k];
+	  CID = (crystal).c_str();
+	  legend[10]->AddEntry(Form("gr_%d",i), CID, "l");
+	}
+      else if( (i % 9 == 0) && (i > 1) )
+	{
+	  gr1[i]->SetLineColor(linecolor);
+	  gr1[i]->SetLineWidth(1);
+	  gr1[i]->Draw("same");
+	  linecolor++;
+	  if(linecolor == 10) linecolor++;
+
+	  int k = i / 9;
+	  crystal = "Crystal " + Crtstal_ID_str[k];
+	  CID = (crystal).c_str();
+	  legend[10]->AddEntry(Form("gr_%d",i), CID, "l");
+	}      
+    }
+  gr_mark[9]->Draw("same p");
+  legend[10]->Draw("same");
+  legend_mark[9]->Draw("same");
 
   //  RootFile.Write();
 

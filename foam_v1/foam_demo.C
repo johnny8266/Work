@@ -36,18 +36,18 @@ using namespace std;
 Int_t main()
 {
   //  gSystem->Load("libFoa.so");
-  TFile RootFile("DVCS_4Pars.root","RECREATE");
-  TTree *T = new TTree("T", "Fill simulated DVCS parameters");
+  //  TFile RootFile("DVCS_4Pars.root","RECREATE");
+  //  TTree *T = new TTree("T", "Fill simulated DVCS parameters");
   long   loop;
   Double_t MCresult, MCerror, MCwt;      
   Double_t M = 0.938271998, xb=0., Q2_max=0., Q2=0., t_var=0., phi=0., psf=0., xsec=0., xsec_Integral=0., xsec_Integral_err=0.;
 
-  T->Branch("Q2", &Q2, "Q2/D");
-  T->Branch("xb", &xb, "xb/D");
-  T->Branch("t_var", &t_var, "t_var/D");
-  T->Branch("phi", &phi, "phi/D");
-  T->Branch("psf", &psf, "psf/D");
-  T->Branch("xsec_Integral", &xsec_Integral, "xsec_Integral/D");
+  //  T->Branch("Q2", &Q2, "Q2/D");
+  //  T->Branch("xb", &xb, "xb/D");
+  //  T->Branch("t_var", &t_var, "t_var/D");
+  //  T->Branch("phi", &phi, "phi/D");
+  //  T->Branch("psf", &psf, "psf/D");
+  //  T->Branch("xsec_Integral", &xsec_Integral, "xsec_Integral/D");
    
   TH1F *h1 = new TH1F("h1", "h1", 90, 0., 45.);
   TH1F *h2 = new TH1F("h2", "h2", 100, 0., 0.1);
@@ -58,7 +58,7 @@ Int_t main()
 
 
   //-----------------------------------------
-  long NevTot   =      5000;   // Total MC statistics
+  long NevTot   =     10000;   // Total MC statistics
   Int_t  kDim   =         4;   // total dimension
   Int_t  nCells   =   10000;   // Number of Cells
   Int_t  nSampl   =     300;   // Number of MC events per cell in build-up
@@ -74,7 +74,6 @@ Int_t main()
   //  long int tim = (long int)time(NULL);  cout << "time: " << tim << endl << endl;  PseRan->SetSeed(tim);
   //  long int tim = 1029384759;   PseRan->SetSeed(tim);
   Double_t *MCvect = new Double_t[kDim]; // vector generated in the MC run
-  //  TFDISTR *tfdi = new TFDISTR();
       
   cout << "*****   Demonstration Program for Foam version " << FoamX->GetVersion() << "    *****" << endl;
   FoamX->SetkDim(        kDim);      // Mandatory!!!
@@ -103,15 +102,7 @@ Int_t main()
   //
   for(loop = 0 ; loop < NevTot ; loop++)
     {
-      //      FoamX->InitCells();   // this will cause crash and take lots of time to run
-
       FoamX->MakeEvent();           // generate MC event
-      /*
-      xsec = tfdi->Get_xsec();
-      cout << "======================" << endl;
-      cout << xsec << endl;
-      cout << "======================" << endl << endl; 
-      */
       FoamX->GetMCvect(MCvect);
       //      FoamX->GetIntegMC(xsec_Integral, xsec_Integral_err);
       FoamX->GetIntNorm(xsec_Integral, xsec_Integral_err);
@@ -121,7 +112,7 @@ Int_t main()
       xb = MCvect[0] * (0.03-0.005) + 0.005;
       //      xb = 0.015;
       Q2_max = 2. * M * 2132.03 * xb;
-      if(Q2_max > 30.) Q2_max = 28.;
+      if(Q2_max > 15) Q2_max = 13.;
       Q2 = MCvect[1] * Q2_max + 2.;
       t_var = -MCvect[2];
       phi = MCvect[3] * 2. * TMath::Pi();
@@ -131,11 +122,11 @@ Int_t main()
       //      t_var = -0.3;
       //      phi = 2.5;
 
-      //      h1->Fill(Q2);
-      //      h2->Fill(xb);
-      //      h3->Fill(t_var);
-      //      h4->Fill(phi);
-      
+      h1->Fill(Q2);
+      h2->Fill(xb);
+      h3->Fill(t_var);
+      h4->Fill(phi);
+   
       xb_vec.push_back(xb);
       Q2_vec.push_back(Q2);
       t_var_vec.push_back(t_var);
@@ -169,9 +160,9 @@ Int_t main()
       Q2 = Q2_vec[i];
       t_var = t_var_vec[i];
       phi = phi_vec[i];
-      T->Fill();
+      //      T->Fill();
     }
-  T->Write();
+  //  T->Write();
   
 
   TCanvas* c1 = new TCanvas("c1", "c1", 800, 800);
@@ -211,8 +202,8 @@ Int_t main()
   //  RootFile.cd();
   //  RootFile.ls();
   //  RootFile.Map();
-  RootFile.Write();
-  RootFile.Close();
+  //  RootFile.Write();
+  //  RootFile.Close();
   cout << "***** End of Demonstration Program  *****" << endl;
    
   return 0;
