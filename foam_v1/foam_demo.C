@@ -36,18 +36,18 @@ using namespace std;
 Int_t main()
 {
   //  gSystem->Load("libFoa.so");
-  //  TFile RootFile("DVCS_4Pars.root","RECREATE");
-  //  TTree *T = new TTree("T", "Fill simulated DVCS parameters");
+  TFile RootFile("DVCS_4Pars.root","RECREATE");
+  TTree *T = new TTree("T", "Fill simulated DVCS parameters");
   long   loop;
   Double_t MCresult, MCerror, MCwt;      
   Double_t M = 0.938271998, xb=0., Q2_max=0., Q2=0., t_var=0., phi=0., psf=0., xsec=0., xsec_Integral=0., xsec_Integral_err=0.;
 
-  //  T->Branch("Q2", &Q2, "Q2/D");
-  //  T->Branch("xb", &xb, "xb/D");
-  //  T->Branch("t_var", &t_var, "t_var/D");
-  //  T->Branch("phi", &phi, "phi/D");
-  //  T->Branch("psf", &psf, "psf/D");
-  //  T->Branch("xsec_Integral", &xsec_Integral, "xsec_Integral/D");
+  T->Branch("Q2", &Q2, "Q2/D");
+  T->Branch("xb", &xb, "xb/D");
+  T->Branch("t_var", &t_var, "t_var/D");
+  T->Branch("phi", &phi, "phi/D");
+  T->Branch("psf", &psf, "psf/D");
+  T->Branch("xsec_Integral", &xsec_Integral, "xsec_Integral/D");
    
   TH1F *h1 = new TH1F("h1", "h1", 90, 0., 45.);
   TH1F *h2 = new TH1F("h2", "h2", 100, 0., 0.1);
@@ -60,7 +60,7 @@ Int_t main()
   //-----------------------------------------
   long NevTot   =     10000;   // Total MC statistics
   Int_t  kDim   =         4;   // total dimension
-  Int_t  nCells   =   10000;   // Number of Cells
+  Int_t  nCells   =    5000;   // Number of Cells
   Int_t  nSampl   =     300;   // Number of MC events per cell in build-up
   Int_t  nBin     =       8;   // Number of bins in build-up
   Int_t  OptRej   =       1;   // Wted events for OptRej=0; wt=1 for OptRej=1 (default)
@@ -160,9 +160,9 @@ Int_t main()
       Q2 = Q2_vec[i];
       t_var = t_var_vec[i];
       phi = phi_vec[i];
-      //      T->Fill();
+      T->Fill();
     }
-  //  T->Write();
+  T->Write();
   
 
   TCanvas* c1 = new TCanvas("c1", "c1", 800, 800);
@@ -202,8 +202,8 @@ Int_t main()
   //  RootFile.cd();
   //  RootFile.ls();
   //  RootFile.Map();
-  //  RootFile.Write();
-  //  RootFile.Close();
+  RootFile.Write();
+  RootFile.Close();
   cout << "***** End of Demonstration Program  *****" << endl;
    
   return 0;

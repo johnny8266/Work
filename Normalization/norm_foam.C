@@ -14,7 +14,7 @@ void norm_foam()
   TVector3 z_axis(0., 0., 1.), electron;
   Int_t N_events = (Int_t)DVCS->GetEntries(), count=0;
   
-  //  cout << "N_events: " << N_events << endl;
+  cout << "N_events: " << N_events << endl;
   //  cout << "count: " << count << endl;
 
 
@@ -43,20 +43,22 @@ void norm_foam()
   DVCS->SetBranchAddress("g_py", &g_py);
   DVCS->SetBranchAddress("g_pz", &g_pz);
   DVCS->SetBranchAddress("g_E", &g_E);
-  DVCS->SetBranchAddress("xsec", &xsec);
+  //  DVCS->SetBranchAddress("xsec", &xsec);
 
   Double_t SLdt=10., Q2_weight=0., NTOT=0.;
 
   TH1F* Q2_norm = new TH1F("Q2_norm", "Q2_norm", 90, 0., 45.);
   ofstream myfile;
-  myfile.open ("/home/pu-kai/mnt/g4e/DVCS/dvcs_input.txt");
-  
+  //  myfile.open ("/home/pu-kai/mnt/g4e/DVCS/dvcs_input.txt");
+  myfile.open ("/vol0/pwang-l/g4e/DVCS/dvcs_input.txt");
+    
   for(int i = 0 ; i < N_events ; i++)
     {
       DVCS->GetEntry(i);
       Q2_weight = SLdt / N_events * xsec * psf;
-      if( i % 10 == 0 )
+      if( i % 1 == 0 )
       	{
+	  cout <<  Q2 << " " << xb << " " << t_var << " " << phi_def << " " << psf << endl;
 	  //	  cout << xsec << "  " << psf << "  " << Q2_weight << endl;
 	  myfile << "3 " << Q2 << " " << xb << " " << t_var << " " << phi_def << " " << psf << " " << e1_S_angle << " " << p1_S_angle << " " << photon_S_angle << " " << xsec << endl;
 	  myfile << "1 " << "-1 " << "1 " << "11 " << "1 " << "1 " << e1_px << " " << e1_py << " " << e1_pz << " " << e1_E << " " << "0.000511 " << "0.0 0.0 0.0" << endl;

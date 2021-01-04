@@ -72,8 +72,8 @@ ClassImp(TGenDVCS)
   fpipole=1;
 
   // Initialization of TGV + read datafile
-  Int_t nQ2=10, nxB=10, nt=10;
-  //  Int_t nQ2=13, nxB=80, nt=90;
+  //  Int_t nQ2=10, nxB=10, nt=10;
+  Int_t nQ2=13, nxB=80, nt=90;
   V=new Double_t***[8];
   for(Int_t i=0;i<8;i++){
     V[i]=new Double_t**[nQ2];

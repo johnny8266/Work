@@ -10,7 +10,7 @@ using namespace std;
 
 void DVCS_beam_event_gen_V2()
 {
-  TFile *rfile = new TFile("DVCS_4Pars.root");
+  TFile *rfile = new TFile("DVCS_4Pars_04_01_2021.root");
   TTree *T = (TTree*)rfile->Get("T");
   Int_t Iteration = (Int_t)T->GetEntries();
   Double_t Q2, xb, Eb, M, s_var, t_var, t0_min, t0_max, phi, phi_def, xsec, psf;
@@ -95,8 +95,8 @@ void DVCS_beam_event_gen_V2()
   
   // Run the Event Generator
   //
-  //  for(int i = 0 ; i < Iteration ; i++)
-  for(int i = 0 ; i < 10 ; i++)
+  for(int i = 0 ; i < Iteration ; i++)
+  //  for(int i = 0 ; i < 10 ; i++)
     {
       if(i % 10000 == 0) cout << i << " events are generated ......" << endl;
       
@@ -150,11 +150,11 @@ void DVCS_beam_event_gen_V2()
 
       //      cout << e1_S_angle_cos << "  " << e1_S_angle_sin << "  " << e1_S_angle << endl;
 
-      
+      /*
       cout << "Leptonic reaction: " << endl << "====================================" << endl;
       cout << "Scattering Electron: ";  e1.Print();  cout << "Virtual photon in fix target frame: ";  Virtual_photon.Print();
       cout << "====================================" << endl;
-      
+      */
 
       // =================================
       // Calculate the hadronic reaction
@@ -196,6 +196,7 @@ void DVCS_beam_event_gen_V2()
 	{
 	  cout << i << "th: " << (t0_min - t_var) << " " << P_CMS[0] << " " << P_CMS[2] << " " << S_angle_cos_CMS << " " << S_angle_sin_CMS << endl;
 	  count++;
+	  continue;
 	}
 
       //      cout << "Cos: " << S_angle_cos_CMS << " || Sin: " << S_angle_sin_CMS << endl << endl;
@@ -264,11 +265,11 @@ void DVCS_beam_event_gen_V2()
       
       //      cout << "Proton Scattering angle: " << p1_S_angle << endl << endl;
 
-      
+      /*
       cout << "Hadronic reaction: " << endl << "====================================" << endl;
       cout << "Virtual Photon: "; Virtual_photon.Print(); cout << "Scattering Photon: ";  photon.Print();  cout << "Scattering proton: ";  p1.Print();
       cout << "====================================" << endl << endl << endl;
-      
+      */
   
     }  
   cout << "Finish the event generated !" << endl;
