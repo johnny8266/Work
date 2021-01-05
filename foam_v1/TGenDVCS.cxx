@@ -72,30 +72,39 @@ ClassImp(TGenDVCS)
   fpipole=1;
 
   // Initialization of TGV + read datafile
-  //  Int_t nQ2=10, nxB=10, nt=10;
-  Int_t nQ2=13, nxB=80, nt=90;
+  Int_t nQ2=10, nxB=10, nt=10;
+  //  Int_t nQ2=13, nxB=80, nt=90;
+
   V=new Double_t***[8];
-  for(Int_t i=0;i<8;i++){
-    V[i]=new Double_t**[nQ2];
-    for(Int_t j=0;j<nQ2;j++){
-      V[i][j]=new Double_t*[nxB];
-      for(Int_t k=0;k<nxB;k++) V[i][j][k]=new Double_t[nt];
+  for(Int_t i=0;i<8;i++)
+    {
+      V[i]=new Double_t**[nQ2];
+      for(Int_t j=0;j<nQ2;j++)
+	{
+	  V[i][j]=new Double_t*[nxB];
+
+	  for(Int_t k=0;k<nxB;k++)
+	    V[i][j][k]=new Double_t[nt];
+	}
     }
-  }
 
   CFF=new Double_t[8];
   //ifstream f("./CFFoutput_LO.dat");
   ifstream f("./out.txt");
   Double_t dum1,dum2,dum3;
-  for ( register unsigned int iQ2 = 0; iQ2 < nQ2; iQ2++ ) {
-    for ( register unsigned int iXb = 0; iXb < nxB; iXb++ ) {
-      for ( register unsigned int it = 0; it < nt; it++ ) {
-	f>>dum1>>dum2>>dum3;
-	for(Int_t j=0;j<8;j++) f>>V[j][iQ2][iXb][it];
-	//	cout<<"carlos "<<V[0][iQ2][iXb][it]<<endl;
-      }
+  for ( register unsigned int iQ2 = 0; iQ2 < nQ2; iQ2++ )
+    {
+      for ( register unsigned int iXb = 0; iXb < nxB; iXb++ )
+	{
+	  for ( register unsigned int it = 0; it < nt; it++ )
+	    {
+	      f >> dum1 >> dum2 >> dum3;
+	      for(Int_t j=0;j<8;j++)
+		f>>V[j][iQ2][iXb][it];
+	      //	cout<<"carlos "<<V[0][iQ2][iXb][it]<<endl;
+	    }
+	}
     }
-  }
   tgv=new TGVKelly(Ebeam,kFALSE,kTRUE);
 }
 
@@ -106,15 +115,16 @@ Double_t TGenDVCS::KellyE(Double_t q2)
   Double_t a[1]={-0.24};
   Double_t b[3]={10.98, 12.82, 21.97};
   Double_t Mp = 0.938271998;
-  Double_t tau = -q2/(4.*pow(Mp,2));
+  Double_t tau = -q2/(4. * pow(Mp,2));
   Double_t GEKn = 1.0;
   Double_t GEKd = 1.0;
-  for (int ja=0; ja<ia; ja++){
+  
+  for (int ja=0; ja<ia; ja++)
     GEKn+=a[ja]*pow(tau,ja+1);
-  }
-  for (int jb=0; jb<ib; jb++){
+    
+  for (int jb=0; jb<ib; jb++)
     GEKd+=b[jb]*pow(tau,jb+1);
-  }
+  
   return GEKn/GEKd;
 }
 
@@ -145,7 +155,7 @@ Double_t* TGenDVCS::Interpol_CFF(Double_t Q2, Double_t xb, Double_t t)
 
   //  if(Q2<1||Q2>10||xb<0.2||xb>0.7||t>tmin||t<tmin-1)
   // cout<<Q2<<" "<<xb<<" "<<t<<" ==========="<<endl;
-  Double_t eps2=4.*xb*xb*0.938271998*0.938271998/Q2;
+  Double_t eps2= 4. * xb * xb * 0.938271998 * 0.938271998 / Q2;
   Double_t tmin = -Q2*(2.*(1.-xb)*(1-TMath::Sqrt(1+eps2))+eps2)/(4.*xb*(1.-xb)+eps2);
 
     Double_t Q2min=1, Q2max=100;
@@ -157,14 +167,15 @@ Double_t* TGenDVCS::Interpol_CFF(Double_t Q2, Double_t xb, Double_t t)
     //   Double_t xBmin=0.1, xBmax=0.9;
     //    Int_t nQ2=13, nxB=80, nt=90;
 
-  if(Q2<Q2min||Q2>Q2max||xb<xBmin||xb>xBmax||t<Tmax){
-    cout<<"Kinematics (Q2,xb,t,tmin) out of range for cross-section evaluation: "<<Q2<<" "<<xb<<" "<<t<<" "<<tmin<<endl;
-    return 0;
-  }
+  if(Q2<Q2min||Q2>Q2max||xb<xBmin||xb>xBmax||t<Tmax)
+    {
+      cout<<"Kinematics (Q2,xb,t,tmin) out of range for cross-section evaluation: "<<Q2<<" "<<xb<<" "<<t<<" "<<tmin<<endl;
+      return 0;
+    }
 
-  
-  Int_t Q2_0=int(Q2-Q2min)*(nQ2-1)/(Q2max-Q2min);
-  Int_t Q2_1=int(Q2-Q2min)*(nQ2-1)/(Q2max-Q2min)+1;
+ 
+  Int_t Q2_0=int( (Q2-Q2min)*(nQ2-1)/(Q2max-Q2min) );
+  Int_t Q2_1=int( (Q2-Q2min)*(nQ2-1)/(Q2max-Q2min) )+1;
   Int_t xb_0=int( (xb-xBmin)*(nxB-1)/(xBmax-xBmin) );
   Int_t xb_1=int( (xb-xBmin)*(nxB-1)/(xBmax-xBmin) )+1;
   Int_t t_0=int( -(t-Tmin)*(nt-1)/(Tmin-Tmax) );
@@ -174,19 +185,19 @@ Double_t* TGenDVCS::Interpol_CFF(Double_t Q2, Double_t xb, Double_t t)
   Double_t xbd=(xb-(xBmin+(xBmax-xBmin)*xb_0/(nxB-1.)))/((xBmin+(xBmax-xBmin)*xb_1/(nxB-1.))-(xBmin+(xBmax-xBmin)*xb_0/(nxB-1.)));
   Double_t td=(t-(Tmin+(Tmax-Tmin)*t_0/(nt-1.)))/((Tmin+(Tmax-Tmin)*t_1/(nt-1.))-(Tmin+(Tmax-Tmin)*t_0/(nt-1.)));
 
-  for(Int_t GPD=0;GPD<8;GPD++){
+  for(Int_t GPD = 0 ; GPD < 8 ; GPD++)
+    {
+      Double_t c00=V[GPD][Q2_0][xb_0][t_0]*(1-Q2d)+V[GPD][Q2_1][xb_0][t_0]*Q2d;
+      Double_t c10=V[GPD][Q2_0][xb_1][t_0]*(1-Q2d)+V[GPD][Q2_1][xb_1][t_0]*Q2d;
+      Double_t c01=V[GPD][Q2_0][xb_0][t_1]*(1-Q2d)+V[GPD][Q2_1][xb_0][t_1]*Q2d;
+      Double_t c11=V[GPD][Q2_0][xb_1][t_1]*(1-Q2d)+V[GPD][Q2_1][xb_1][t_1]*Q2d;
     
-    Double_t c00=V[GPD][Q2_0][xb_0][t_0]*(1-Q2d)+V[GPD][Q2_1][xb_0][t_0]*Q2d;
-    Double_t c10=V[GPD][Q2_0][xb_1][t_0]*(1-Q2d)+V[GPD][Q2_1][xb_1][t_0]*Q2d;
-    Double_t c01=V[GPD][Q2_0][xb_0][t_1]*(1-Q2d)+V[GPD][Q2_1][xb_0][t_1]*Q2d;
-    Double_t c11=V[GPD][Q2_0][xb_1][t_1]*(1-Q2d)+V[GPD][Q2_1][xb_1][t_1]*Q2d;
+      Double_t c0=c00*(1-xbd)+c10*xbd;
+      Double_t c1=c01*(1-xbd)+c11*xbd;
     
-    Double_t c0=c00*(1-xbd)+c10*xbd;
-    Double_t c1=c01*(1-xbd)+c11*xbd;
-    
-    CFF[GPD]=c0*(1-td)+c1*td;
-    //    cout<<GPD<<" "<<CFF[GPD]<<endl;
-  }
+      CFF[GPD]=c0*(1-td)+c1*td;
+      //    cout<<GPD<<" "<<CFF[GPD]<<endl;
+    }
   return CFF;
 
 }
@@ -197,9 +208,10 @@ Double_t TGenDVCS::XSecSum(int opt)
   // returns d4sigma/dQ2dxdtdphi in nb/GeV4
   
   Double_t* check=Interpol_CFF(fQ2,fxb,ft);
-  if(!check) return 0;
+  if(!check)
+    return 0;
   
-  TGVKelly *tgv2=new TGVKelly(fEbeam,kFALSE,kTRUE);
+  TGVKelly *tgv2 = new TGVKelly(fEbeam,kFALSE,kTRUE);
 
   Double_t ConvGeV2nbarn = 0.389379304e+6; // Changement d'unités !
   Double_t BHp, BHm, VCSp, VCSm, Ip, Im;
@@ -217,9 +229,10 @@ Double_t TGenDVCS::XSecSum(int opt)
   // cout<<" here "<<fQ2<<" "<<fxb<<" "<<ft<<" "<<fphi<<" "<<TMath::Pi() * ( SigmaTotPlus + SigmaTotMoins ) * ConvGeV2nbarn<<endl;
 
   delete tgv2;
-  if(opt==1) return TMath::Pi()*(BHp+BHm)* ConvGeV2nbarn;
-  return TMath::Pi() * ( SigmaTotPlus + SigmaTotMoins ) * ConvGeV2nbarn;
+  if( opt==1 )
+    return TMath::Pi() * (BHp+BHm) * ConvGeV2nbarn;
   
+  return TMath::Pi() * ( SigmaTotPlus + SigmaTotMoins ) * ConvGeV2nbarn;
 }
 
 //_____________________________________________________________________________
@@ -227,8 +240,9 @@ Double_t TGenDVCS::XSecDif(void)
 {
   // returns d4Sigma/dQ2dxdtdphi in nb/GeV4
   
-  Double_t* check=Interpol_CFF(fQ2,fxb,ft);
-  if(!check) return 0;
+  Double_t* check = Interpol_CFF(fQ2,fxb,ft);
+  if(!check)
+    return 0;
 
   TGVKelly *tgv2=new TGVKelly(fEbeam,kFALSE,kTRUE);
 
@@ -291,7 +305,7 @@ void TGenDVCS::IntRCAft(void)
   fRadCor=kTRUE;
   Double_t nu=2.*0.007297352533*(TMath::Log(fQ2/TMath::Power(0.000510998902,2))-1.)/TMath::Pi(); 
   
-  Double_t deel=1-TMath::Power(fRan->Rndm(),1./(nu/2.));
+  Double_t deel=1-TMath::Power(fRan->Rndm(), 1./(nu/2.));
 
   *feprerad=(*fe); // keep vertex scattered electron
 
@@ -365,7 +379,7 @@ ftmin=tmin ;
 
   do {
     ft=ftmax+(ftmin-ftmax)*fRan->Rndm();
-  } while (ft/fQ2>1.);
+  } while ( (ft/fQ2) > 1. );
 
   //  cout<<ft<<" "<<ftmax<<" "<<ftmin<<endl;
 
@@ -421,9 +435,9 @@ ftmin=tmin ;
   thetacm=TMath::ACos(thetacm);
 
   if(!fg) {
-    fg=new TLorentzVector(pcm*TMath::Sin(thetacm),0.,TMath::Cos(thetacm)*pcm,ecm);
+    fg=new TLorentzVector(pcm*TMath::Sin(thetacm), 0., TMath::Cos(thetacm)*pcm, ecm);
   }else{
-    fg->SetPxPyPzE(pcm*TMath::Sin(thetacm),0.,TMath::Cos(thetacm)*pcm,ecm);
+    fg->SetPxPyPzE(pcm*TMath::Sin(thetacm), 0., TMath::Cos(thetacm)*pcm, ecm);
   }
   
   if(!fp){

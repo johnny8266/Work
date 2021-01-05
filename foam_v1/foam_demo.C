@@ -112,8 +112,8 @@ Int_t main()
       xb = MCvect[0] * (0.03-0.005) + 0.005;
       //      xb = 0.015;
       Q2_max = 2. * M * 2132.03 * xb;
-      if(Q2_max > 15) Q2_max = 13.;
-      Q2 = MCvect[1] * Q2_max + 2.;
+      if(Q2_max > 18) Q2_max = 14.;
+      Q2 = MCvect[1] * Q2_max + 4.;
       t_var = -MCvect[2];
       phi = MCvect[3] * 2. * TMath::Pi();
 
