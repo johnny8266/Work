@@ -1,0 +1,10 @@
+YR/*.txt
+*.d
+*.so
+*.pcm
+*.tgz
+*.o
+*.swp
+*.root
+*.gif
+topeg

@@ -26,9 +26,6 @@ public:
   Double_t Density(int nDim, Double_t *Xarg);
   Double_t Q2_foam, Xb_foam, t_foam, phi_foam, xsec_value;
 
-  //  void Set_xsec(Double_t xs);
-  Double_t Get_xsec();
-
   ClassDef(TFDISTR,1) //Class of testing functions for FOAM
 
 };

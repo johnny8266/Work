@@ -40,34 +40,35 @@ Int_t main()
   TTree *T = new TTree("T", "Fill simulated DVCS parameters");
   long   loop;
   Double_t MCresult, MCerror, MCwt;      
-  Double_t M = 0.938271998, xb=0., Q2_max=0., Q2=0., t_var=0., phi=0., psf=0., xsec=0., xsec_Integral=0., xsec_Integral_err=0.;
+  Double_t M = 0.938271998, xb=0., Q2_max=0., Q2=0., t_var=0., phi=0., psf=0., xsec_Integral=0., xsec_Integral_err=0.;
 
   T->Branch("Q2", &Q2, "Q2/D");
   T->Branch("xb", &xb, "xb/D");
   T->Branch("t_var", &t_var, "t_var/D");
   T->Branch("phi", &phi, "phi/D");
   T->Branch("psf", &psf, "psf/D");
-  T->Branch("xsec_Integral", &xsec_Integral, "xsec_Integral/D");
-   
+
+  /*
   TH1F *h1 = new TH1F("h1", "h1", 90, 0., 45.);
   TH1F *h2 = new TH1F("h2", "h2", 100, 0., 0.1);
   TH1F *h3 = new TH1F("h3", "h3", 100, -2., 0.);
   TH1F *h4 = new TH1F("h4", "h4", 63, 0., 6.3);
-
+  */
 
 
 
   //-----------------------------------------
-  long NevTot   =     10000;   // Total MC statistics
+  long NevTot   =   1000000;   // Total MC statistics
   Int_t  kDim   =         4;   // total dimension
-  Int_t  nCells   =    5000;   // Number of Cells
-  Int_t  nSampl   =     300;   // Number of MC events per cell in build-up
+  Int_t  nCells   =    2000;   // Number of Cells
+  Int_t  nSampl   =     100;   // Number of MC events per cell in build-up
   Int_t  nBin     =       8;   // Number of bins in build-up
   Int_t  OptRej   =       1;   // Wted events for OptRej=0; wt=1 for OptRej=1 (default)
   Int_t  OptDrive =       2;   // (D=2) Option, type of Drive =0,1,2 for TrueVol,Sigma,WtMax
   Int_t  EvPerBin =      25;   // Maximum events (equiv.) per bin in buid-up
   Int_t  Chat     =       1;   // Chat level
   TRandom3 *PseRan   = new TRandom3();  // Create random number generator
+  //  TFoam   *FoamX    = new TFoam("FoamX");   // Create Simulator
   TFoam   *FoamX    = new TFoam("FoamX");   // Create Simulator
   TFoamIntegrand *rho = new TFDISTR();
   PseRan->SetSeed(0);
@@ -84,7 +85,7 @@ Int_t main()
   FoamX->SetOptDrive(    OptDrive);  // optional
   FoamX->SetEvPerBin(    EvPerBin);  // optional
   FoamX->SetChat(        Chat);      // optional
-  //  FoamX->SetMaxWtRej(0.5);           // Maximum weight used to get w=1 MC events d=1.1	      
+  FoamX->SetMaxWtRej(1.1);           // Maximum weight used to get w=1 MC events d=1.1	      
   //  FoamX->SetInhiDiv(3, 1);           // optional
   
   FoamX->SetRho(rho);
@@ -109,32 +110,24 @@ Int_t main()
       MCwt=FoamX->GetMCwt();
 
       
-      xb = MCvect[0] * (0.03-0.005) + 0.005;
-      //      xb = 0.015;
-      Q2_max = 2. * M * 2132.03 * xb;
-      if(Q2_max > 15) Q2_max = 13.;
-      Q2 = MCvect[1] * Q2_max + 2.;
+      Q2 = MCvect[0] * 98. + 2.;
+      xb = MCvect[1] * (0.1-0.0001) + 0.0001;
       t_var = -MCvect[2];
       phi = MCvect[3] * 2. * TMath::Pi();
 
-
-      //      Q2 = 10.;
-      //      t_var = -0.3;
-      //      phi = 2.5;
-
+      /*
       h1->Fill(Q2);
       h2->Fill(xb);
       h3->Fill(t_var);
       h4->Fill(phi);
-   
+      */
       xb_vec.push_back(xb);
       Q2_vec.push_back(Q2);
       t_var_vec.push_back(t_var);
       phi_vec.push_back(phi);
-      xsec_Integral_vec.push_back(xsec_Integral);
        
-      if( ((loop)%2000) == 0 )
-	cout << "loop = " << loop << ", " << Q2 << ", " << xb << ", " << t_var << ", " << phi << " || Simulation integral: " << xsec_Integral << " || xsec value: " << xsec << endl;
+      if( ((loop)%20000) == 0 )
+	cout << "loop = " << loop << ", " << Q2 << ", " << xb << ", " << t_var << ", " << phi << " || Simulation integral: " << xsec_Integral << " || xsec value: " << endl;
     }
 
   
@@ -164,7 +157,7 @@ Int_t main()
     }
   T->Write();
   
-
+  /*
   TCanvas* c1 = new TCanvas("c1", "c1", 800, 800);
   c1->Divide(2,2);
   c1->cd(1);
@@ -175,12 +168,14 @@ Int_t main()
   h3->Draw();
   c1->cd(4); 
   h4->Draw();
+  */
   
   Double_t eps = 0.0005;
   Double_t Effic, WtMax, AveWt, Sigma;
   Double_t IntNorm, Errel;
   FoamX->Finalize(   IntNorm, Errel);     // final printout
-  FoamX->GetIntegMC( MCresult, MCerror);  // get MC intnegral
+  FoamX->GetIntegMC( MCresult, MCerror );  // get MC intnegral
+  FoamX->GetIntNorm( xsec_Integral, xsec_Integral_err );
   FoamX->GetWtParams(eps, AveWt, WtMax, Sigma); // get MC wt parameters
   Effic=0; if(WtMax>0) Effic=AveWt/WtMax;
   cout << "================================================================" << endl;
@@ -195,13 +190,11 @@ Int_t main()
   // =======================================
   fstream file;
   file.open("integral_vs_pars.txt", ios::app);
-  file << nCells << " " << nSampl << " " << nBin << " " << MCresult << " " << MCerror << " " << Sigma/AveWt << " " << Effic << " " << eps << " " << nCalls << endl;
+  file << nCells << " " << nSampl << " " << nBin << " " << MCresult << " " << MCerror << " " << xsec_Integral << " " << xsec_Integral_err << " " << Sigma/AveWt << " " << Effic << " " << eps << " " << nCalls << endl;
   file.close();
    
   delete [] MCvect;
-  //  RootFile.cd();
-  //  RootFile.ls();
-  //  RootFile.Map();
+  
   RootFile.Write();
   RootFile.Close();
   cout << "***** End of Demonstration Program  *****" << endl;

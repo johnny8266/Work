@@ -13,7 +13,7 @@ TFDISTR::TFDISTR()
 {
   Eb = 2132.03;
   ConvGeV2nbarn = 0.389379304e+6;
-  tgv=new TGVKelly(Eb,kFALSE,kTRUE);
+  //  tgv=new TGVKelly(Eb,kFALSE,kTRUE);
   gEv=new TGenDVCS(Eb,0,0,0);
 }
 
@@ -21,24 +21,26 @@ TFDISTR::TFDISTR()
 
 Double_t TFDISTR::Density(int nDim, Double_t *Xarg)
 {
+  tgv=new TGVKelly(Eb,kFALSE,kTRUE);
+  
   // Integrand for mFOAM
   Double_t M = 0.938271998;
-
-  // Double_t xBMin = 2.*Eb*Q2/(M*(4*TMath::Power(Eb,2)-Q2));
-  // Double_t xBMax = Q2/(Q2-TMath::Power(M,2));
-  Double_t xB = Xarg[0]*(0.03-0.005)+0.005;
-  //  Double_t xB = 0.015;
-
-  Double_t Q2max = 2. * M * Eb * xB;
-  if( Q2max > 15. ) Q2max = 13.;
-  Double_t Q2 = Xarg[1] * Q2max + 2.;
-  //  Double_t Q2 = 10.;
-
-  Double_t t = -Xarg[2];
-  //  Double_t t = -0.3;
+  Double_t Q2 = Xarg[0] * 98. + 2.;
   
+  Double_t xBMin = 2. * Eb * Q2 / (M * (4 * TMath::Power(Eb, 2)-Q2));
+  Double_t xB = Xarg[1]*(0.1-0.0001) + 0.0001;
+  if( xB<xBMin )
+    return 0;
+  Double_t t = -Xarg[2];  
   Double_t phi = Xarg[3] * 2. * TMath::Pi();
-  //  Double_t phi = 2.5;
+
+  // Double_t xBMax = Q2/(Q2-TMath::Power(M,2));
+
+  //  Double_t Q2max = 2. * M * Eb * xB;
+  //  if( Q2max > 30. ) Q2max = 30.;
+  //  Double_t Q2 = Xarg[0] * (Q2max - 1.) + 2.;
+
+
 
   
   Double_t ConvGeV2nbarn = 0.389379304e+6; // Unit conversion
@@ -59,14 +61,12 @@ Double_t TFDISTR::Density(int nDim, Double_t *Xarg)
   SigmaTotMoins = BHm + VCSm + Im;
   DVCSxsec = TMath::Pi() * ( SigmaTotPlus + SigmaTotMoins ) * ConvGeV2nbarn;// Total DVCS cross section in nb/GeV4
 
-  //  cout << "The four pars: " << Q2 << ", " << xB << ", " << t << ", " << phi << endl;
-  //  cout << BHp << ", " << VCSp << ", " << Ip << ", " << BHm << ", " << VCSm << ", " << Im << endl;
-  //  cout << DVCSxsec << endl;
+
   
-  //  TFDISTR::Set_xsec(DVCSxsec);
+  delete tgv;
+  
+  if(TMath::IsNaN(DVCSxsec))
+    return 0.;
   
   return DVCSxsec;
 }
-
-Double_t TFDISTR::Get_xsec()
-{ return DVCSxsec; }

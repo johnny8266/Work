@@ -23,18 +23,18 @@ double xsec(void)
   gSystem->Load("./libTGenDVCS.so");
 
   //  TFile *hfile = new TFile("result.root", "update");
-  TFile *hfile = new TFile("Inte_4_252_C1000_S100.root", "update");
-  TTree *T = (TTree*)hfile->Get("T");
-  Int_t N_events = (Int_t)T->GetEntries();
+  TFile *hfile = new TFile("result.root", "update");
+  TTree *DVCS = (TTree*)hfile->Get("DVCS");
+  Int_t N_events = (Int_t)DVCS->GetEntries();
   Double_t Eb=2132.03, Q2, xb, t_var, phi, psf, phi_def, xsec, SLdt=10., NTOT;  //Eb is energy for fixed target.
 
-  TBranch *add_br = T->Branch("xsec", &xsec, "xsec/D");
-  T->SetBranchAddress("Q2", &Q2);
-  T->SetBranchAddress("xb", &xb);
-  T->SetBranchAddress("t_var", &t_var);
-  T->SetBranchAddress("phi", &phi);
-  T->SetBranchAddress("psf", &psf);
-  //  T->SetBranchAddress("phi_def", &phi_def);
+  TBranch *add_br = DVCS->Branch("xsec", &xsec, "xsec/D");
+  DVCS->SetBranchAddress("Q2", &Q2);
+  DVCS->SetBranchAddress("xb", &xb);
+  DVCS->SetBranchAddress("t_var", &t_var);
+  DVCS->SetBranchAddress("phi", &phi);
+  DVCS->SetBranchAddress("psf", &psf);
+  //  DVCS->SetBranchAddress("phi_def", &phi_def);
 
   TH1F *h_norm1 = new TH1F("h_norm1", "h_norm1", 90, 0., 45.);
   TH1F *h_norm2 = new TH1F("h_norm2", "h_norm2", 100, 0., 0.1);
@@ -47,7 +47,7 @@ double xsec(void)
   cout << "Number of events: " << N_events << endl << endl;
   cout << "Cross section  ||  Q2  ||  xb  ||  t  ||  phi" << endl;
 
-  TGVKelly *tgv2 = new TGVKelly(Eb, kFALSE, kTRUE);
+
   TGenDVCS *gEv = new TGenDVCS(Eb, 0, 0, 0);
   Double_t ConvGeV2nbarn = 0.389379304e+6; // Unit conversion
   Double_t BHp, BHm, VCSp, VCSm, Ip, Im, SigmaTotPlus, SigmaTotMoins;
@@ -55,10 +55,10 @@ double xsec(void)
   
   for(int i = 0 ; i < N_events ; i++)
     {
-      T->GetEntry(i);
-
-      Eb = 2132.03;
+      TGVKelly *tgv2 = new TGVKelly(Eb, kFALSE, kTRUE);
       ConvGeV2nbarn = 0.389379304e+6; // Unit conversion
+      
+      DVCS->GetEntry(i);
       
       Double_t* CFF = gEv->Interpol_CFF(Q2, xb, t_var);
       if(!CFF)
@@ -66,9 +66,6 @@ double xsec(void)
 	  cout << "Error !!" << endl;
 	  return 0;
 	}
-
-      //      Double_t BHp, BHm, VCSp, VCSm, Ip, Im;
-      //      Double_t SigmaTotPlus, SigmaTotMoins;
   
       BHp = tgv2->CrossSectionBH( Q2, xb, t_var, -phi, 1, 0, kTRUE );
       VCSp = tgv2->CrossSectionVCS( Q2, xb, t_var, -phi, 1, 0, CFF[0], CFF[1], CFF[2], CFF[3], CFF[4], CFF[5], CFF[6], CFF[7], kTRUE );
@@ -80,7 +77,7 @@ double xsec(void)
       SigmaTotMoins = BHm + VCSm + Im;
       //  if(opt==1) return TMath::Pi()*(BHp+BHm)* ConvGeV2nbarn;
       xsec = TMath::Pi() * ( SigmaTotPlus + SigmaTotMoins ) * ConvGeV2nbarn;
-
+      /*
       NTOT = SLdt * xsec * psf * 1000000. / N_events;
       h_norm1->Fill(Q2, NTOT);
       h_norm2->Fill(xb, NTOT);
@@ -89,7 +86,7 @@ double xsec(void)
       Q2_xsec->Fill(Q2, xsec);
       xb_xsec->Fill(xb, xsec);
       t_var_xsec->Fill(t_var, xsec);
-
+      */
       
       add_br->Fill();
       
@@ -97,13 +94,13 @@ double xsec(void)
 	cout << i << "th value: " << xsec << ", " << Q2 << ", " << xb << ", " << t_var << ", " << phi << endl;
 	//	cout << i << "th value: " << xsec << ", " << Q2 << ", " << xb << ", " << t_var << ", " << phi_def << endl;
 
+      delete tgv2;    
       //    myfile << xsec << endl;
     }
 
   
-  delete tgv2;  
   //  myfile.close();
-  T->Write();
+  DVCS->Write();
   hfile->Write();
   delete hfile;
   

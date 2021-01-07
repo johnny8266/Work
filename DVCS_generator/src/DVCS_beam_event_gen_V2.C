@@ -10,7 +10,7 @@ using namespace std;
 
 void DVCS_beam_event_gen_V2()
 {
-  TFile *rfile = new TFile("DVCS_4Pars_04_01_2021.root");
+  TFile *rfile = new TFile("DVCS_4Pars_new_1.root");
   TTree *T = (TTree*)rfile->Get("T");
   Int_t Iteration = (Int_t)T->GetEntries();
   Double_t Q2, xb, Eb, M, s_var, t_var, t0_min, t0_max, phi, phi_def, xsec, psf;
@@ -41,7 +41,7 @@ void DVCS_beam_event_gen_V2()
   D_xb = (*max_element(X_B.begin(), X_B.end())) - (*min_element(X_B.begin(), X_B.end()));
   D_t = (*max_element(T_Var.begin(), T_Var.end())) - (*min_element(T_Var.begin(), T_Var.end()));
 
-  cout << D_Q2 << "  " << D_xb << "  " << D_t << endl;
+  cout << "Q2 max - min: " << D_Q2 << " || XB max - min: " << D_xb << " || t max - min: " << D_t << endl;
   
   delete rfile;
   
@@ -118,11 +118,11 @@ void DVCS_beam_event_gen_V2()
       // =================================
       // Initialze all parameters
       // =================================
-      Q2=0.; xb=0.; M=0.938; s_var=0.; t_var=0.; t0_min=0.; t0_max=0.;
+      Q2=0.; xb=0.; M=0.938271998; s_var=0.; t_var=0.; t0_min=0.; t0_max=0.;
 
       Q2 = Q_2[i];  xb = X_B[i];  t_var = T_Var[i];  phi = P_hi[i];  xsec = X_sec[i];
       
-      M0_square[0] = -Q2;  M0_square[1] = 0.879844;  M0_square[2] = 0;  M0_square[3] = 0.879844;  
+      M0_square[0] = -Q2;  M0_square[1] = M * M;  M0_square[2] = 0;  M0_square[3] = M * M;  
       
       
       // =================================
@@ -131,8 +131,10 @@ void DVCS_beam_event_gen_V2()
       Virtual_photon_E = Q2 / (2. * M * xb);  // Energy of Virtual photon
       if ( Virtual_photon_E > Eb )
 	{
-	  cout << i << "th event exceed the range: " << Q2 << " " << xb << " " << t_var << " " << phi << " " << endl; 
+	  cout << i << "th event exceed the range: " << Q2 << " " << xb << " " << t_var << " " << phi << " " << endl;
+	  continue;
 	}
+      
 	
       //      cout << Eb << " " << Virtual_photon_E << endl;
       e1E = Eb - Virtual_photon_E; //cout << e1E << endl; // Energy of scattering electron
@@ -179,9 +181,11 @@ void DVCS_beam_event_gen_V2()
       P_CMS[0] = sqrt(E_CMS[0] * E_CMS[0] - M0_square[0]);   P_CMS[1] = sqrt(E_CMS[1] * E_CMS[1] - M0_square[1]);
       P_CMS[2] = sqrt(E_CMS[2] * E_CMS[2] - M0_square[2]);   P_CMS[3] = sqrt(E_CMS[3] * E_CMS[3] - M0_square[3]); 
 
+      /*
       for(int j = 0 ; j < 4 ; j++)
 	if( isnan(E_CMS[j]) ) 
-	  cout << i << "th: " << E_CMS[j] << " || " << P_CMS[j] << endl;
+	  cout << i << "th: E[" << E_CMS[j] << "] || P[" << P_CMS[j] << "]" << endl;
+      */
       
       t0_min = (E_CMS[0] - E_CMS[2]) * (E_CMS[0] - E_CMS[2]) - (P_CMS[0] - P_CMS[2]) * (P_CMS[0] - P_CMS[2]);
       t0_max = (E_CMS[0] - E_CMS[2]) * (E_CMS[0] - E_CMS[2]) - (P_CMS[0] + P_CMS[2]) * (P_CMS[0] + P_CMS[2]);

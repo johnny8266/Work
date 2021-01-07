@@ -72,8 +72,8 @@ ClassImp(TGenDVCS)
   fpipole=1;
 
   // Initialization of TGV + read datafile
-  //Int_t nQ2=10, nxB=10, nt=10;
-  Int_t nQ2=13, nxB=80, nt=90;
+  Int_t nQ2=100, nxB=1000, nt=100;
+  //  Int_t nQ2=13, nxB=80, nt=90;
   V=new Double_t***[8];
   for(Int_t i=0;i<8;i++){
     V[i]=new Double_t**[nQ2];
@@ -150,8 +150,8 @@ Double_t* TGenDVCS::Interpol_CFF(Double_t Q2, Double_t xb, Double_t t)
 
     Double_t Q2min=1, Q2max=100;
     Double_t Tmin=0, Tmax=-4;
-    Double_t xBmin=0.001, xBmax=0.3;
-    Int_t nQ2=10, nxB=10, nt=10;
+    Double_t xBmin=0.0001, xBmax=0.3;
+    Int_t nQ2=100, nxB=1000, nt=100;
     // Double_t Q2min=1, Q2max=13;
     //    Double_t Tmin=0, Tmax=-3;
     //   Double_t xBmin=0.1, xBmax=0.9;
@@ -163,8 +163,8 @@ Double_t* TGenDVCS::Interpol_CFF(Double_t Q2, Double_t xb, Double_t t)
   }
 
   
-  Int_t Q2_0=int(Q2-Q2min)*(nQ2-1)/(Q2max-Q2min);
-  Int_t Q2_1=int(Q2-Q2min)*(nQ2-1)/(Q2max-Q2min)+1;
+  Int_t Q2_0=int( (Q2-Q2min)*(nQ2-1)/(Q2max-Q2min) );
+  Int_t Q2_1=int( (Q2-Q2min)*(nQ2-1)/(Q2max-Q2min) )+1;
   Int_t xb_0=int( (xb-xBmin)*(nxB-1)/(xBmax-xBmin) );
   Int_t xb_1=int( (xb-xBmin)*(nxB-1)/(xBmax-xBmin) )+1;
   Int_t t_0=int( -(t-Tmin)*(nt-1)/(Tmin-Tmax) );
