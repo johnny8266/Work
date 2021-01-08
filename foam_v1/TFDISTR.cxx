@@ -55,6 +55,5 @@ Double_t TFDISTR::Density(int nDim, Double_t *Xarg)
   SigmaTotMoins = BHm + VCSm + Im;
   DVCSxsec = TMath::Pi() * ( SigmaTotPlus + SigmaTotMoins ) * ConvGeV2nbarn;// Total DVCS cross section in nb/GeV4
 
-
   return DVCSxsec;
 }
