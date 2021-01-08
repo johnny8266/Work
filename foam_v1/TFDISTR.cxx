@@ -36,12 +36,6 @@ Double_t TFDISTR::Density(int nDim, Double_t *Xarg)
 
   // Double_t xBMax = Q2/(Q2-TMath::Power(M,2));
 
-  //  Double_t Q2max = 2. * M * Eb * xB;
-  //  if( Q2max > 30. ) Q2max = 30.;
-  //  Double_t Q2 = Xarg[0] * (Q2max - 1.) + 2.;
-
-
-
   
   Double_t ConvGeV2nbarn = 0.389379304e+6; // Unit conversion
   Double_t BHp, BHm, VCSp, VCSm, Ip, Im;
@@ -62,11 +56,5 @@ Double_t TFDISTR::Density(int nDim, Double_t *Xarg)
   DVCSxsec = TMath::Pi() * ( SigmaTotPlus + SigmaTotMoins ) * ConvGeV2nbarn;// Total DVCS cross section in nb/GeV4
 
 
-  
-  delete tgv;
-  
-  if(TMath::IsNaN(DVCSxsec))
-    return 0.;
-  
   return DVCSxsec;
 }

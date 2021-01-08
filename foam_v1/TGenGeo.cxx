@@ -166,7 +166,7 @@ ClassImp(TGenGeo)
   // Sets default acceptances for the spectrometer, calorimeter and
   // proton array
   
-  SetSpectroAcceptanceGen(0.1,0.2,0.07);
+  SetSpectroAcceptanceGen(0.1, 0.2, 0.07);
   //SetSpectroAcceptanceGen(0.2,0.3,0.1);//modification Frederic
 
 }
@@ -176,8 +176,10 @@ ClassImp(TGenGeo)
 { 
   // Returns the radiation length of the LH2 target
 
-  if(fTargDens==0.) cout<<"Target not initialized !"<<endl; 
-  return 61.28/fTargDens ; 
+  if(fTargDens==0.)
+    cout<<"Target not initialized !"<<endl;
+  
+  return (61.28/fTargDens) ; 
 }
 
 //_____________________________________________________________________________
@@ -185,8 +187,10 @@ ClassImp(TGenGeo)
 { 
   // Returns the radiation length of the LD2 target
 
-  if(fTargDens==0.) cout<<"Target not initialized !"<<endl; 
-  return 122.4/fTargDens ; 
+  if(fTargDens==0.)
+    cout<<"Target not initialized !"<<endl;
+  
+  return (122.4/fTargDens) ; 
 }
 
 //_____________________________________________________________________________
@@ -206,12 +210,11 @@ ClassImp(TGenGeo)
   Double_t Thetae=TMath::ATan2(e->Px(),e->Pz());
   Double_t Phie=TMath::ATan2(e->Py(),Pe);
 
-  if(Pe>pemin && Pe<pemax && Thetae>thetaemin && Thetae<thetaemax &&
-     Phie>-fSpecVerAcc && Phie<fSpecVerAcc) {
+  if( (Pe>pemin) && (Pe<pemax) && (Thetae>thetaemin) && (Thetae<thetaemax) && (Phie>(-fSpecVerAcc)) && (Phie<fSpecVerAcc) )
     return kTRUE;
-  }else{
+  else
     return kFALSE;
-  }
+  
 }
 //_____________________________________________________________________________
  Bool_t TGenGeo::HitsCalo(TLorentzVector* g) 

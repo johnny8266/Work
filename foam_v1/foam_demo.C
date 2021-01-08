@@ -110,8 +110,11 @@ Int_t main()
       MCwt=FoamX->GetMCwt();
 
       
-      Q2 = MCvect[0] * 98. + 2.;
-      xb = MCvect[1] * (0.1-0.0001) + 0.0001;
+      xb = MCvect[0] * (0.03-0.005) + 0.005;
+      //      xb = 0.015;
+      Q2_max = 2. * M * 2132.03 * xb;
+      if(Q2_max > 18) Q2_max = 14.;
+      Q2 = MCvect[1] * Q2_max + 4.;
       t_var = -MCvect[2];
       phi = MCvect[3] * 2. * TMath::Pi();
 

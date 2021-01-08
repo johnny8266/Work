@@ -3,10 +3,10 @@ output/ProtonEIC-Ph.root  % Output file name
 109.937                       % Nuclear beam momentum (GeV)
 1                             % Z of nucleus
 1                             % A of nucleus
-10000                         % Nb of events to generate
-10000                         % Nb of TFoam cells
-300                           % Nb of samples per cell 
-13042                          % Seed 
+500                           % Nb of events to generate
+2000                          % Nb of TFoam cells
+100                           % Nb of samples per cell 
+15042                         % Seed 
 0.05                          % y min 
 0.85                          % y Max
 4.0                           % Q2 min (GeV^2)

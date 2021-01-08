@@ -51,8 +51,8 @@ TGVKelly::TGVKelly( Double_t EBeam, Bool_t Valid = kFALSE, Bool_t NoPr = kTRUE )
 	InitExactVCSAndInterfCrossSections = kFALSE;
 	InitLeadingBHCrossSections = kFALSE;
 	InitLeadingVCSAndInterfCrossSections = kFALSE;
-	M = 0.93827231;
-		
+	//	M = 0.93827231;
+	M = 0.938271998;
 		
 	if ( NoPrint == kFALSE )
 	{
