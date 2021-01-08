@@ -35,7 +35,7 @@ TGVKelly::TGVKelly() // Default
 	{
 		cout << "TGVKelly : Call of TGVKelly default constructor" << endl;
 	} // end if NoPrint
-	SetBeamEnergy(2132.03);
+	SetBeamEnergy(5.77);
 } // end default TGVKelly
 
 

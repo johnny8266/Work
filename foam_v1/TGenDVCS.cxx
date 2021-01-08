@@ -173,8 +173,8 @@ Double_t* TGenDVCS::Interpol_CFF(Double_t Q2, Double_t xb, Double_t t)
       return 0;
     }
 
-  Int_t Q2_0=int( (Q2-Q2min)*(nQ2-1)/(Q2max-Q2min) );
-  Int_t Q2_1=int( (Q2-Q2min)*(nQ2-1)/(Q2max-Q2min) )+1;
+  Int_t Q2_0=int(Q2-Q2min)*(nQ2-1)/(Q2max-Q2min);
+  Int_t Q2_1=int(Q2-Q2min)*(nQ2-1)/(Q2max-Q2min)+1;
   Int_t xb_0=int( (xb-xBmin)*(nxB-1)/(xBmax-xBmin) );
   Int_t xb_1=int( (xb-xBmin)*(nxB-1)/(xBmax-xBmin) )+1;
   Int_t t_0=int( -(t-Tmin)*(nt-1)/(Tmin-Tmax) );
