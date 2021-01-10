@@ -58,7 +58,7 @@ Int_t main()
 
 
   //-----------------------------------------
-  long NevTot   =   1000000;   // Total MC statistics
+  long NevTot   =    100000;   // Total MC statistics
   Int_t  kDim   =         4;   // total dimension
   Int_t  nCells   =    2000;   // Number of Cells
   Int_t  nSampl   =     100;   // Number of MC events per cell in build-up
@@ -68,7 +68,6 @@ Int_t main()
   Int_t  EvPerBin =      25;   // Maximum events (equiv.) per bin in buid-up
   Int_t  Chat     =       1;   // Chat level
   TRandom3 *PseRan   = new TRandom3();  // Create random number generator
-  //  TFoam   *FoamX    = new TFoam("FoamX");   // Create Simulator
   TFoam   *FoamX    = new TFoam("FoamX");   // Create Simulator
   TFoamIntegrand *rho = new TFDISTR();
   PseRan->SetSeed(0);
@@ -107,14 +106,12 @@ Int_t main()
       FoamX->GetMCvect(MCvect);
       //      FoamX->GetIntegMC(xsec_Integral, xsec_Integral_err);
       FoamX->GetIntNorm(xsec_Integral, xsec_Integral_err);
-      MCwt=FoamX->GetMCwt();
+      //      MCwt=FoamX->GetMCwt();
 
       
-      xb = MCvect[0] * (0.03-0.005) + 0.005;
+      xb = MCvect[0] * (0.1-0.0001) + 0.0001;
       //      xb = 0.015;
-      Q2_max = 2. * M * 2132.03 * xb;
-      if(Q2_max > 18) Q2_max = 14.;
-      Q2 = MCvect[1] * Q2_max + 4.;
+      Q2 = MCvect[1] * 98 + 2.;
       t_var = -MCvect[2];
       phi = MCvect[3] * 2. * TMath::Pi();
 
