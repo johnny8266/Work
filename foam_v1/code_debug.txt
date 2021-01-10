@@ -1,6 +1,0 @@
-TGenDVCS.cxx :
-L176, 177 => miss a parentheses
-
-
-TGVKelly.cxx
-L38 => SetBeamEnergy(5.77)? change to 2132.03??

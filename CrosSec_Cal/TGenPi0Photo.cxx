@@ -228,7 +228,7 @@ Double_t TGenPi0Photo::KellyE(Double_t q2)
    Int_t ia=1, ib=3;
    Double_t a[1]={-0.24};
    Double_t b[3]={10.98, 12.82, 21.97};
-   Double_t Mp = 0.938272;
+   Double_t Mp = 0.938271998;
    Double_t tau = -q2/(4.*pow(Mp,2));
    Double_t GEKn = 1.0;
    Double_t GEKd = 1.0;
@@ -251,7 +251,7 @@ Double_t TGenPi0Photo::KellyM(Double_t q2)
    Int_t ia=1, ib=3;
    Double_t a[1]={0.12};
    Double_t b[3]={10.97, 18.86, 6.55};
-   Double_t Mp = 0.938272;
+   Double_t Mp = 0.938271998;
    Double_t tau = -q2/(4.*pow(Mp,2));
    Double_t GMKn = 1.0;
    Double_t GMKd = 1.0;

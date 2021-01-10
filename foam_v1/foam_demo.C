@@ -108,10 +108,8 @@ Int_t main()
       FoamX->GetIntNorm(xsec_Integral, xsec_Integral_err);
       //      MCwt=FoamX->GetMCwt();
 
-      
-      xb = MCvect[0] * (0.1-0.0001) + 0.0001;
-      //      xb = 0.015;
-      Q2 = MCvect[1] * 98 + 2.;
+      Q2 = MCvect[0] * 98. + 2.;      
+      xb = MCvect[1] * (0.1-0.0001) + 0.0001;
       t_var = -MCvect[2];
       phi = MCvect[3] * 2. * TMath::Pi();
 
