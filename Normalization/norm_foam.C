@@ -49,8 +49,8 @@ void norm_foam()
 
   TH1F* Q2_norm = new TH1F("Q2_norm", "Q2_norm", 90, 0., 45.);
   ofstream myfile;
-  myfile.open ("/home/pu-kai/mnt/g4e/DVCS/dvcs_input.txt");
-  //  myfile.open ("/vol0/pwang-l/g4e/DVCS/dvcs_input.txt");
+  //  myfile.open ("/home/pu-kai/mnt/g4e/DVCS/dvcs_input.txt");
+  myfile.open ("/vol0/pwang-l/g4e/DVCS/dvcs_input.txt");
     
   for(int i = 0 ; i < N_events ; i++)
     {
