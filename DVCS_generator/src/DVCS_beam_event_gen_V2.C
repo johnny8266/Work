@@ -95,8 +95,8 @@ void DVCS_beam_event_gen_V2()
   
   // Run the Event Generator
   //
-  for(int i = 0 ; i < Iteration ; i++)
-  //  for(int i = 0 ; i < 10 ; i++)
+  //  for(int i = 0 ; i < Iteration ; i++)
+  for(int i = 0 ; i < 1 ; i++)
     {
       if(i % 10000 == 0) cout << i << " events are generated ......" << endl;
       
@@ -104,15 +104,22 @@ void DVCS_beam_event_gen_V2()
       // =================================
       // Boost the beam-beam collider to fix target, then calculation
       // =================================
-      TLorentzVector e0(0, 0., -10., 10.), p0(0., 0., 100., 100.0044);
+      TLorentzVector e0(0, 0., -10., 10.), p0( (100.*TMath::Sin(0.025)), 0., (100.*TMath::Cos(0.025)), 100.004402);
+      //      TLorentzVector e0(0, 0., -10., 10.), p0(0., 0., 100., 100.004402);
+      //      p0.Print();
       //      TLorentzVector e0(0, 0., 2132.03, 2132.03), p0(0., 0., 0., 0.938);
       CM_frame_fix_beam_3 = p0.BoostVector();
       p0.Boost(-CM_frame_fix_beam_3);
       e0.Boost(-CM_frame_fix_beam_3);
-      //      p0.Print();  e0.Print();  cout << endl;
-      Eb = e0.E();
+      //p0.Print();    e0.Print();   cout << endl;
+      //      Eb = e0.E();
+      cout << Eb << endl << endl;
+
+      rotate_axis = (e0.Vect()).Cross(z_axis);
+      Double_t rotate_angle=(e0.Vect()).Angle(z_axis);
+      e0.Rotate(rotate_angle, rotate_axis);  // Align the particle with the beamline
+      e0.Print();      Eb = e0.E();
       //      cout << Eb << endl;
-      
       
 
       // =================================
@@ -152,11 +159,11 @@ void DVCS_beam_event_gen_V2()
 
       //      cout << e1_S_angle_cos << "  " << e1_S_angle_sin << "  " << e1_S_angle << endl;
 
-      /*
+      
       cout << "Leptonic reaction: " << endl << "====================================" << endl;
       cout << "Scattering Electron: ";  e1.Print();  cout << "Virtual photon in fix target frame: ";  Virtual_photon.Print();
       cout << "====================================" << endl;
-      */
+      
 
       // =================================
       // Calculate the hadronic reaction
@@ -170,7 +177,7 @@ void DVCS_beam_event_gen_V2()
       //      cout << "Before rotate in CMS frame :" << endl << "Vp:";  Virtual_photon.Print();  cout << "p0:";  p0.Print();
       
       rotate_axis = (Virtual_photon.Vect()).Cross(z_axis);
-      Double_t rotate_angle=(Virtual_photon.Vect()).Angle(z_axis);
+      rotate_angle = (Virtual_photon.Vect()).Angle(z_axis);
       Virtual_photon.Rotate(rotate_angle, rotate_axis);  // Align the particle with the beamline
       p0.Rotate(rotate_angle, rotate_axis);
       //      cout << "After rotate in CMS frame :" << endl << "Vp:";  Virtual_photon.Print();  cout << "p0:";  p0.Print();

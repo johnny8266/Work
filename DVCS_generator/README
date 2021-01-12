@@ -1,0 +1,54 @@
+
+=============================================================================================
+--- DVCS Model { e- p+ -> e- p+ g } with crossing angle 25 mrad between e- beam and p+ beam.
+=============================================================================================
+==>
+
+	- e0(0, 0., -10., 10.), p0(100.*Sin(0.025), 0., 100.*Cos(0.025), 100.004402)
+
+	- calculate the boostvector(B1), boost the collider frame to the fix target frame, e0 and p0 after boost=>
+	  e0(-53.024884,0.,-2130.553474,2131.213209), p0(0.000000,0.000000,0.000000,0.938307)
+
+	- rotate the e0 to px->0 make the calculation become easier, after rotate=>
+	  e0(0., 0., -2131.213209, 2131.213209)
+
+	- calculate the leptonic reaction to get the scattered e1, then rotate back the e1 & e0. Using the energy
+	  and momentum conservative law to calculate the 4 momentum of virtual photon.
+
+	- boost back the e1 to the collider frame with (-B1) boostvector, e1(1.073041, 0., -9.732940, 9.791912)
+	  then using the virtual photon to calculate the hadronic reaction
+
+	- calculate the S variable and the boostvector(B2), to boost the virtual photon and proton(p0)
+	  from lab frame to the CMS frame
+
+	- rotate the virtual photon and p0 to align the z-axis to simplify the calculation
+
+	- calculate the t variable to get the scattered proton(p1) and photon
+
+	- rotate the p1, photon, virtual photon back to the original direction
+
+	- boost the CMS frame back to the lab frame (-B2)
+
+	- rotate the proton plane along the virtual photon direction with phi angle
+
+	- boost p1, photon, virtual photon back to the collider frame (-B1)
+
+	- the 4 momentum of these particles after the calculation:
+	  e1(1.073041, 0., -9.732940, 9.791912)
+	  p1(3.628600, -0.331019, 94.230049, 94.305136)
+	  g(-2.201902, 0.331019, 5.471643, 5.907353)
+	  Vg(-1.073041, 0., -0.267060, 0.208088)
+
+	  by the way:
+	  e0(0, 0., -10., 10.)
+	  p0(2.499740, 0., 99.968752, 100.004402)
+
+	- we can use the conservative law to examine the results, and it is correct :)
+
+
+
+
+
+
+
+	

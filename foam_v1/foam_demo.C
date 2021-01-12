@@ -40,13 +40,14 @@ Int_t main()
   TTree *T = new TTree("T", "Fill simulated DVCS parameters");
   long   loop;
   Double_t MCresult, MCerror, MCwt;      
-  Double_t M = 0.938271998, xb=0., Q2_max=0., Q2=0., t_var=0., phi=0., psf=0., xsec_Integral=0., xsec_Integral_err=0.;
+  Double_t M = 0.938271998, xb=0., xb_min=0., Q2_max=0., Q2=0., t_var=0., phi=0., psf=0., xsec_Integral=0., xsec_Integral_err=0.;
 
   T->Branch("Q2", &Q2, "Q2/D");
   T->Branch("xb", &xb, "xb/D");
+  T->Branch("xb_min", &xb_min, "xb_min/D");
   T->Branch("t_var", &t_var, "t_var/D");
   T->Branch("phi", &phi, "phi/D");
-  T->Branch("psf", &psf, "psf/D");
+  //  T->Branch("psf", &psf, "psf/D");
 
   /*
   TH1F *h1 = new TH1F("h1", "h1", 90, 0., 45.);
@@ -58,7 +59,7 @@ Int_t main()
 
 
   //-----------------------------------------
-  long NevTot   =    100000;   // Total MC statistics
+  long NevTot   =     10000;   // Total MC statistics
   Int_t  kDim   =         4;   // total dimension
   Int_t  nCells   =    2000;   // Number of Cells
   Int_t  nSampl   =     100;   // Number of MC events per cell in build-up
@@ -96,7 +97,7 @@ Int_t main()
   cout << "====== Initialization done, entering MC loop" << endl;
   
   vector<Double_t> Q2_vec, xb_vec, t_var_vec, phi_vec, xsec_Integral_vec;
-
+  Double_t Eb = 2132.03;
 
   // Run the simulator
   //
@@ -106,29 +107,39 @@ Int_t main()
       FoamX->GetMCvect(MCvect);
       //      FoamX->GetIntegMC(xsec_Integral, xsec_Integral_err);
       FoamX->GetIntNorm(xsec_Integral, xsec_Integral_err);
-      //      MCwt=FoamX->GetMCwt();
 
-      Q2 = MCvect[0] * 98. + 2.;      
+      
+      Q2 = MCvect[0] * 98. + 2.;
+      //      Q2 = 5.;
+      xb_min = 2. * Eb * Q2 / (M * (4 * TMath::Power(Eb, 2)-Q2));      
       xb = MCvect[1] * (0.1-0.0001) + 0.0001;
       t_var = -MCvect[2];
       phi = MCvect[3] * 2. * TMath::Pi();
 
+      //      xb = 0.01 + 2. * Eb * Q2 / (M * (4 * TMath::Power(Eb, 2)-Q2));
+      //      t_var = -0.05;
+      //      phi = 1.4;
+      
+      T->Fill();      
       /*
       h1->Fill(Q2);
       h2->Fill(xb);
       h3->Fill(t_var);
       h4->Fill(phi);
-      */
+      
       xb_vec.push_back(xb);
       Q2_vec.push_back(Q2);
       t_var_vec.push_back(t_var);
       phi_vec.push_back(phi);
-       
-      if( ((loop)%20000) == 0 )
+      */      
+ 
+      if( ((loop) % 2000) == 0 )
 	cout << "loop = " << loop << ", " << Q2 << ", " << xb << ", " << t_var << ", " << phi << " || Simulation integral: " << xsec_Integral << " || xsec value: " << endl;
     }
 
-  
+  T->Write();
+
+  /*
   Double_t D_Q2, D_xb, D_t, SLdt=10., NTOT=0.;
   
   D_Q2 = (*max_element(Q2_vec.begin(), Q2_vec.end())) - (*min_element(Q2_vec.begin(), Q2_vec.end()));
@@ -151,11 +162,12 @@ Int_t main()
       Q2 = Q2_vec[i];
       t_var = t_var_vec[i];
       phi = phi_vec[i];
-      T->Fill();
+      //      T->Fill();
     }
-  T->Write();
+  //  T->Write();
   
-  /*
+
+  
   TCanvas* c1 = new TCanvas("c1", "c1", 800, 800);
   c1->Divide(2,2);
   c1->cd(1);

@@ -21,20 +21,24 @@ TFDISTR::TFDISTR()
 
 Double_t TFDISTR::Density(int nDim, Double_t *Xarg)
 {
+  Eb = 2132.03;
   tgv=new TGVKelly(Eb,kFALSE,kTRUE);
   
   // Integrand for mFOAM
   Double_t M = 0.938271998;
   Double_t Q2 = Xarg[0] * 98. + 2.;
-  
-  Double_t xBMin = 2. * Eb * Q2 / (M * (4 * TMath::Power(Eb, 2)-Q2));
-  Double_t xB = Xarg[1]*(0.1-0.0001) + 0.0001;
+  //  Double_t Q2 = 5.;
+  Double_t xBMin = 2. * Eb * Q2 / (M * (4 * TMath::Power(Eb, 2)-Q2));  
+  Double_t xB = Xarg[1] * (0.1-0.0001) + 0.0001;
   if( xB < xBMin )
     return 0;
+
   Double_t t = -Xarg[2];  
   Double_t phi = Xarg[3] * 2. * TMath::Pi();
 
-  // Double_t xBMax = Q2/(Q2-TMath::Power(M,2));
+  //  Double_t t = -0.05;
+  //  Double_t phi = 1.4;
+  //  Double_t xBMax = Q2/(Q2-TMath::Power(M,2));
 
   
   Double_t ConvGeV2nbarn = 0.389379304e+6; // Unit conversion
