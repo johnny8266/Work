@@ -97,7 +97,7 @@ Int_t main()
   cout << "====== Initialization done, entering MC loop" << endl;
   
   vector<Double_t> Q2_vec, xb_vec, t_var_vec, phi_vec, xsec_Integral_vec;
-  Double_t Eb = 2132.03;
+  Double_t Eb = 2131.2132;
 
   // Run the simulator
   //

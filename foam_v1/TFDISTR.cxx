@@ -11,7 +11,7 @@ ClassImp(TFDISTR)
 
 TFDISTR::TFDISTR()
 {
-  Eb = 2132.03;
+  Eb = 2131.2132;
   ConvGeV2nbarn = 0.389379304e+6;
   //  tgv=new TGVKelly(Eb,kFALSE,kTRUE);
   gEv=new TGenDVCS(Eb,0,0,0);
@@ -21,7 +21,7 @@ TFDISTR::TFDISTR()
 
 Double_t TFDISTR::Density(int nDim, Double_t *Xarg)
 {
-  Eb = 2132.03;
+  Eb = 2131.2132;
   tgv=new TGVKelly(Eb,kFALSE,kTRUE);
   
   // Integrand for mFOAM

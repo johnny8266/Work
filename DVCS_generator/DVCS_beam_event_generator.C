@@ -75,7 +75,7 @@ void DVCS_beam_event_generator()
       cout << "proton 4-momentum after boost: ";  p0.Print();
       cout << "electron 4-momentum after boost: ";  e0.Print();  cout << endl;
       Eb = e0.E();
-      //      cout << setprecision(8) << Eb << endl;
+      cout << setprecision(8) << Eb << endl;
       
       
 
@@ -91,7 +91,7 @@ void DVCS_beam_event_generator()
 
       cout << Q2 << " " << xb << endl;
       
-      M0_square[0] = -Q2;  M0_square[1] = 0.88035434;  M0_square[2] = 0;  M0_square[3] = 0.88035434;  
+      M0_square[0] = -Q2;  M0_square[1] = M * M;  M0_square[2] = 0;  M0_square[3] = M * M;  
       
       
       // =================================
