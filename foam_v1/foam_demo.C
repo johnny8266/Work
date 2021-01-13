@@ -40,7 +40,7 @@ Int_t main()
   TTree *T = new TTree("T", "Fill simulated DVCS parameters");
   long   loop;
   Double_t MCresult, MCerror, MCwt;      
-  Double_t M = 0.938271998, xb=0., xb_min=0., Q2_max=0., Q2=0., t_var=0., phi=0., psf=0., xsec_Integral=0., xsec_Integral_err=0.;
+  Double_t Mass = 0.938271998, xb=0., xb_min=0., Q2_max=0., Q2=0., t_var=0., phi=0., psf=0., xsec_Integral=0., xsec_Integral_err=0.;
 
   T->Branch("Q2", &Q2, "Q2/D");
   T->Branch("xb", &xb, "xb/D");
@@ -111,13 +111,15 @@ Int_t main()
       
       Q2 = MCvect[0] * 98. + 2.;
       //      Q2 = 5.;
-      xb_min = 2. * Eb * Q2 / (M * (4 * TMath::Power(Eb, 2)-Q2));      
+      
+      xb_min = 2. * Eb * Q2 / (Mass * (4 * TMath::Power(Eb, 2)-Q2));      
       xb = MCvect[1] * (0.1-0.0001) + 0.0001;
+      //      xb = 0.005 + xb_min;
+      
       t_var = -MCvect[2];
+      //      t_var = -0.1;
+      
       phi = MCvect[3] * 2. * TMath::Pi();
-
-      //      xb = 0.01 + 2. * Eb * Q2 / (M * (4 * TMath::Power(Eb, 2)-Q2));
-      //      t_var = -0.05;
       //      phi = 1.4;
       
       T->Fill();      
