@@ -67,6 +67,7 @@ void foam_test()
   Double_t WtMax, AveWt, Sigma;
   Double_t IntNorm, Errel;
   Double_t mcResult, mcError, Effic;
+  FoamX->Finalize(   IntNorm, Errel);     // final printout
   FoamX->GetIntegMC( mcResult, mcError);  // get MC integral, should be one
   FoamX->GetWtParams(eps, AveWt, WtMax, Sigma);  // get MC wt parameters
   Effic=0; if(WtMax>0) Effic=AveWt/WtMax;

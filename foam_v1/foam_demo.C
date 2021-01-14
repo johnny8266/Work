@@ -59,8 +59,8 @@ Int_t main()
 
 
   //-----------------------------------------
-  long NevTot   =    100000;   // Total MC statistics
-  Int_t  kDim   =         4;   // total dimension
+  long NevTot   =     10000;   // Total MC statistics
+  Int_t  kDim   =         3;   // total dimension
   Int_t  nCells   =    2000;   // Number of Cells
   Int_t  nSampl   =     100;   // Number of MC events per cell in build-up
   Int_t  nBin     =       8;   // Number of bins in build-up
@@ -109,17 +109,17 @@ Int_t main()
       FoamX->GetIntNorm(xsec_Integral, xsec_Integral_err);
 
       
-      Q2 = MCvect[0] * 98. + 2.;
-      //      Q2 = 2.1;
+      Q2 = MCvect[0] * 90. + 2.;
+      //      Q2 = 5.;
       
       xb_min = 2. * Eb * Q2 / (Mass * (4 * TMath::Power(Eb, 2)-Q2));      
-      xb = MCvect[1] * (0.1-0.0001) + 0.0001;
-      //      xb = 0.005 + xb_min;
+      //      xb = MCvect[1] * (0.1 - 0.001) + 0.001;
+      xb = 0.005 + xb_min;
       
-      t_var = -MCvect[2];
+      t_var = -MCvect[1];
       //      t_var = -0.1;
       
-      phi = MCvect[3] * 2. * TMath::Pi();
+      phi = MCvect[2] * 2. * TMath::Pi();
       //      phi = 1.4;
       
       T->Fill();      
