@@ -4,7 +4,7 @@ using namespace std;
 
 void norm_foam()
 {
-  TFile *hfile = new TFile("result_foam_crossing_angle.root");
+  TFile *hfile = new TFile("result_foam_100k_14012021.root");
   TTree *DVCS = (TTree*)hfile->Get("DVCS");
   TCanvas *c1 = new TCanvas("c1", "c1", 800, 800);
   Double_t phi, phi_def, e1_S_angle, p1_S_angle, photon_S_angle, Q2, xb, t_var, xsec, psf;

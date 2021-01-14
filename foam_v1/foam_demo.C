@@ -59,7 +59,7 @@ Int_t main()
 
 
   //-----------------------------------------
-  long NevTot   =     10000;   // Total MC statistics
+  long NevTot   =    100000;   // Total MC statistics
   Int_t  kDim   =         4;   // total dimension
   Int_t  nCells   =    2000;   // Number of Cells
   Int_t  nSampl   =     100;   // Number of MC events per cell in build-up
@@ -110,7 +110,7 @@ Int_t main()
 
       
       Q2 = MCvect[0] * 98. + 2.;
-      //      Q2 = 5.;
+      //      Q2 = 2.1;
       
       xb_min = 2. * Eb * Q2 / (Mass * (4 * TMath::Power(Eb, 2)-Q2));      
       xb = MCvect[1] * (0.1-0.0001) + 0.0001;
@@ -135,7 +135,7 @@ Int_t main()
       phi_vec.push_back(phi);
       */      
  
-      if( ((loop) % 2000) == 0 )
+      if( ((loop) % 5000) == 0 )
 	cout << "loop = " << loop << ", " << Q2 << ", " << xb << ", " << t_var << ", " << phi << " || Simulation integral: " << xsec_Integral << " || xsec value: " << endl;
     }
 

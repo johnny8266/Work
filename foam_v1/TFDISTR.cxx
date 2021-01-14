@@ -28,7 +28,7 @@ Double_t TFDISTR::Density(int nDim, Double_t *Xarg)
   Double_t M = 0.938271998;
 
   Double_t Q2 = Xarg[0] * 98. + 2.;
-  //  Double_t Q2 = 5.;
+  //  Double_t Q2 = 2.1;
 
   Double_t xBMin = 2. * Eb * Q2 / (M * (4 * TMath::Power(Eb, 2)-Q2));  
   Double_t xB = Xarg[1] * (0.1-0.0001) + 0.0001;
