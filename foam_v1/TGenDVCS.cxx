@@ -73,23 +73,24 @@ ClassImp(TGenDVCS)
 
   // Initialization of TGV + read datafile
   Int_t nQ2=100, nxB=1000, nt=100;
-  //Int_t nQ2=13, nxB=80, nt=90;
-  V=new Double_t***[8];
-  for(Int_t i=0;i<8;i++)
+  V = new Double_t***[8];
+  
+  for(Int_t i = 0 ; i < 8 ; i++)
     {
       V[i]=new Double_t**[nQ2];
-      for(Int_t j=0;j<nQ2;j++)
+      
+      for(Int_t j = 0 ; j < nQ2 ; j++)
 	{
 	  V[i][j]=new Double_t*[nxB];
 
-	  for(Int_t k=0;k<nxB;k++)
+	  for(Int_t k = 0 ; k < nxB ; k++)
 	    V[i][j][k]=new Double_t[nt];
 	}
     }
 
   CFF = new Double_t[8];
   
-  //ifstream f("./CFFoutput_LO.dat");
+
   ifstream f("./out.txt");
   Double_t dum1,dum2,dum3;
   for ( register unsigned int iQ2 = 0; iQ2 < nQ2; iQ2++ )
@@ -99,13 +100,16 @@ ClassImp(TGenDVCS)
 	  for ( register unsigned int it = 0; it < nt; it++ )
 	    {
 	      f >> dum1 >> dum2 >> dum3;
-	      for(Int_t j=0;j<8;j++)
-		f>>V[j][iQ2][iXb][it];
+	      for(Int_t j = 0 ; j < 8 ; j++)
+		f >> V[j][iQ2][iXb][it];
 	      //	cout<<"carlos "<<V[0][iQ2][iXb][it]<<endl;
 	    }
 	}
     }
+  
   tgv=new TGVKelly(Ebeam,kFALSE,kTRUE);
+
+  
 }
 
 //_____________________________________________________________________________
