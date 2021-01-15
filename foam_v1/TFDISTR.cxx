@@ -27,21 +27,28 @@ Double_t TFDISTR::Density(int nDim, Double_t *Xarg)
   // Integrand for mFOAM
   Double_t M = 0.938271998;
 
-  Double_t Q2 = Xarg[0] * 90. + 2.;
+  Double_t Q2 = Xarg[0] * 98. + 2.;
+  //  Double_t Q2 = TMath::Power(10., (0. + Xarg[0] * 2.));
   //  Double_t Q2 = 5.;
 
   Double_t xBMin = 2. * Eb * Q2 / (M * (4 * TMath::Power(Eb, 2)-Q2));  
   Double_t xBMax = Q2/(Q2-TMath::Power(M,2));
-  //  Double_t xB = Xarg[1] * (0.1 - 0.001) + 0.001;
-  //  if( (xB < xBMin) || (xB > xBMax) )
-  //    return 0;
-  Double_t xB = xBMin + 0.005;
-    
-  Double_t t = -Xarg[1];  
-  //  Double_t t = -0.1;
+  Double_t xB = Xarg[1] * (0.1 - 0.01) + 0.01;
+  //  Double_t xB = TMath::Power(10., (-1. - Xarg[1] * 3.));
+  if( (xB < xBMin) || (xB > xBMax) )
+    return 0;
+
+  Double_t Q2Max = Eb * 2. * M * xB;
+  if( Q2 > Q2Max )
+    return 0;
+  //  Double_t xB = xBMin + 0.005;
+
+  //  Double_t t = -1. * Xarg[2];  
+  //  Double_t t = -1. * TMath::Power(10, (-3.*Xarg[2]));  
+  Double_t t = -0.1;
 
   Double_t phi = Xarg[2] * 2. * TMath::Pi();
-  //  Double_t phi = 1.4;
+  //  Double_t phi = 0.1;
 
 
 

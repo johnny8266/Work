@@ -59,12 +59,12 @@ Int_t main()
 
 
   //-----------------------------------------
-  long NevTot   =     10000;   // Total MC statistics
+  long NevTot   =      2000;   // Total MC statistics
   Int_t  kDim   =         3;   // total dimension
   Int_t  nCells   =    2000;   // Number of Cells
   Int_t  nSampl   =     100;   // Number of MC events per cell in build-up
   Int_t  nBin     =       8;   // Number of bins in build-up
-  Int_t  OptRej   =       1;   // Wted events for OptRej=0; wt=1 for OptRej=1 (default)
+  Int_t  OptRej   =       0;   // Wted events for OptRej=0; wt=1 for OptRej=1 (default)
   Int_t  OptDrive =       2;   // (D=2) Option, type of Drive =0,1,2 for TrueVol,Sigma,WtMax
   Int_t  EvPerBin =      25;   // Maximum events (equiv.) per bin in buid-up
   Int_t  Chat     =       1;   // Chat level
@@ -86,6 +86,8 @@ Int_t main()
   FoamX->SetEvPerBin(    EvPerBin);  // optional
   FoamX->SetChat(        Chat);      // optional
   FoamX->SetMaxWtRej(1.1);           // Maximum weight used to get w=1 MC events d=1.1	      
+  //  FoamX->SetInhiDiv(1, 1);           // optional
+  //  FoamX->SetInhiDiv(2, 1);           // optional
   //  FoamX->SetInhiDiv(3, 1);           // optional
   
   FoamX->SetRho(rho);
@@ -98,6 +100,7 @@ Int_t main()
   
   vector<Double_t> Q2_vec, xb_vec, t_var_vec, phi_vec, xsec_Integral_vec;
   Double_t Eb = 2131.2132;
+  Long_t n_effec=0;
 
   // Run the simulator
   //
@@ -106,21 +109,25 @@ Int_t main()
       FoamX->MakeEvent();           // generate MC event
       FoamX->GetMCvect(MCvect);
       //      FoamX->GetIntegMC(xsec_Integral, xsec_Integral_err);
-      FoamX->GetIntNorm(xsec_Integral, xsec_Integral_err);
+      //      FoamX->GetIntNorm(xsec_Integral, xsec_Integral_err);
 
-      
-      Q2 = MCvect[0] * 90. + 2.;
+      n_effec = FoamX->GetnEffev();
+
+      Q2 = MCvect[0] * 98. + 2.;
+      //      Q2 = TMath::Power(10., (0. + MCvect[0] * 2.));
       //      Q2 = 5.;
       
-      xb_min = 2. * Eb * Q2 / (Mass * (4 * TMath::Power(Eb, 2)-Q2));      
-      //      xb = MCvect[1] * (0.1 - 0.001) + 0.001;
-      xb = 0.005 + xb_min;
-      
-      t_var = -MCvect[1];
-      //      t_var = -0.1;
+      xb_min = 2. * Eb * Q2 / (Mass * (4 * TMath::Power(Eb, 2)-Q2));
+      xb = MCvect[1] * (0.1 - 0.01) + 0.01;	
+      //      xb = TMath::Power(10., (-1. - MCvect[1] * 3.));
+      //      xb = 0.005 + xb_min;
+
+      //      t_var = -1. * MCvect[2];
+      //      t_var = -1. * TMath::Power(10, (-3.*MCvect[2]));
+      t_var = -0.1;
       
       phi = MCvect[2] * 2. * TMath::Pi();
-      //      phi = 1.4;
+      //      phi = 0.1;
       
       T->Fill();      
       /*
@@ -135,8 +142,9 @@ Int_t main()
       phi_vec.push_back(phi);
       */      
  
-      if( ((loop) % 5000) == 0 )
-	cout << "loop = " << loop << ", " << Q2 << ", " << xb << ", " << t_var << ", " << phi << " || Simulation integral: " << xsec_Integral << " || xsec value: " << endl;
+      if( ((loop) % 200) == 0 )
+	cout << n_effec << endl;
+	//	cout << "loop = " << loop << ", " << Q2 << ", " << xb << ", " << t_var << ", " << phi << " || Simulation integral: " << xsec_Integral << " || xsec value: " << endl;
     }
 
   T->Write();
