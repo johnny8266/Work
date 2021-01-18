@@ -73,6 +73,7 @@ ClassImp(TGenDVCS)
 
   // Initialization of TGV + read datafile
   Int_t nQ2=100, nxB=1000, nt=100;
+  //  Int_t nQ2=1, nxB=1, nt=7;
   V = new Double_t***[8];
   
   for(Int_t i = 0 ; i < 8 ; i++)
@@ -102,6 +103,7 @@ ClassImp(TGenDVCS)
 	      f >> dum1 >> dum2 >> dum3;
 	      for(Int_t j = 0 ; j < 8 ; j++)
 		f >> V[j][iQ2][iXb][it];
+	      //		  cout << V[j][iQ2][iXb][it] << "  ";
 	      //	cout<<"carlos "<<V[0][iQ2][iXb][it]<<endl;
 	    }
 	}

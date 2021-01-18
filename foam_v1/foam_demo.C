@@ -61,9 +61,9 @@ Int_t main()
   //-----------------------------------------
   long NevTot   =      2000;   // Total MC statistics
   Int_t  kDim   =         4;   // total dimension
-  Int_t  nCells   =   10000;   // Number of Cells
-  Int_t  nSampl   =     300;   // Number of MC events per cell in build-up
-  Int_t  nBin     =      12;   // Number of bins in build-up
+  Int_t  nCells   =    2000;   // Number of Cells
+  Int_t  nSampl   =     100;   // Number of MC events per cell in build-up
+  Int_t  nBin     =       8;   // Number of bins in build-up
   Int_t  OptRej   =       1;   // Wted events for OptRej=0; wt=1 for OptRej=1 (default)
   Int_t  OptDrive =       2;   // (D=2) Option, type of Drive =0,1,2 for TrueVol,Sigma,WtMax
   Int_t  EvPerBin =      25;   // Maximum events (equiv.) per bin in buid-up
@@ -113,20 +113,20 @@ Int_t main()
 
       n_effec = FoamX->GetnEffev();
 
-      Q2 = MCvect[0] * 98. + 2.;
+      Q2 = MCvect[0] * 48. + 2.;
       //      Q2 = TMath::Power(10., (0. + MCvect[0] * 2.));
       //      Q2 = 5.;
       
       xb_min = 2. * Eb * Q2 / (Mass * (4 * TMath::Power(Eb, 2)-Q2));
-      xb = MCvect[1] * (0.1 - 0.001) + 0.001;	
+      xb = MCvect[1] * (0.001 - 0.0001) + 0.0001;	
       //      xb = TMath::Power(10., (-1. - MCvect[1] * 3.));
       //      xb = 0.005 + xb_min;
 
-      t_var = -3. * MCvect[2];
+      t_var = -1. * MCvect[1];
       //      t_var = -1. * TMath::Power(10, (-4.*MCvect[2]));
       //      t_var = -0.1;
       
-      phi = MCvect[3] * 2. * TMath::Pi();
+      phi = MCvect[2] * 2. * TMath::Pi();
       //      phi = 0.1;
       
       T->Fill();      
