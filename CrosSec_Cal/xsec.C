@@ -23,10 +23,10 @@ double xsec(void)
   gSystem->Load("./libTGenDVCS.so");
 
   //  TFile *hfile = new TFile("result.root", "update");
-  TFile *hfile = new TFile("DVCS_4Pars.root", "update");
+  TFile *hfile = new TFile("./root_file/foam_imposed_19012021.root", "update");
   TTree *T = (TTree*)hfile->Get("T");
   Int_t N_events = (Int_t)T->GetEntries();
-  Double_t Eb=2132.03, Q2, xb, t_var, phi, psf, phi_def, xsec, SLdt=10., NTOT;  //Eb is energy for fixed target.
+  Double_t Eb=2131.2132, Q2, xb, t_var, phi, psf, phi_def, xsec;  //Eb is energy for fixed target.
 
   TBranch *add_br = T->Branch("xsec", &xsec, "xsec/D");
   T->SetBranchAddress("Q2", &Q2);
@@ -36,18 +36,9 @@ double xsec(void)
   T->SetBranchAddress("psf", &psf);
   //  T->SetBranchAddress("phi_def", &phi_def);
 
-  /*
-  TH1F *h_norm1 = new TH1F("h_norm1", "h_norm1", 90, 0., 45.);
-  TH1F *h_norm2 = new TH1F("h_norm2", "h_norm2", 100, 0., 0.1);
-  TH1F *h_norm3 = new TH1F("h_norm3", "h_norm3", 100, -2., 0.);
-  TH1F *h_norm4 = new TH1F("h_norm4", "h_norm4", 63, 0., 6.3);
-  TH2F *Q2_xsec = new TH2F("Q2_xsec", "Q2_xsec", 90, 0., 45., 200, 0., 100000.);
-  TH2F *xb_xsec = new TH2F("xb_xsec", "xb_xsec", 100, 0., 0.1, 200, 0., 100000.);
-  TH2F *t_var_xsec = new TH2F("t_var_xsec", "t_var_xsec", 100, -2., 0., 200, 0., 100000.);
-  */
   
   cout << "Number of events: " << N_events << endl << endl;
-  cout << "Cross section  ||  Q2  ||  xb  ||  t  ||  phi" << endl;
+  cout << "              Cross section  ||  Q2  ||  xb  ||  t  ||  phi" << endl;
 
 
   TGenDVCS *gEv = new TGenDVCS(Eb, 0, 0, 0);
@@ -79,20 +70,13 @@ double xsec(void)
       SigmaTotMoins = BHm + VCSm + Im;
       //  if(opt==1) return TMath::Pi()*(BHp+BHm)* ConvGeV2nbarn;
       xsec = TMath::Pi() * ( SigmaTotPlus + SigmaTotMoins ) * ConvGeV2nbarn;
-      /*
-      NTOT = SLdt * xsec * psf * 1000000. / N_events;
-      h_norm1->Fill(Q2, NTOT);
-      h_norm2->Fill(xb, NTOT);
-      h_norm3->Fill(t_var, NTOT);
-      h_norm4->Fill(phi, NTOT);
-      Q2_xsec->Fill(Q2, xsec);
-      xb_xsec->Fill(xb, xsec);
-      t_var_xsec->Fill(t_var, xsec);
-      */
-      
+
+      //      xsec = xsec * TMath::Sqrt(1. / xb);  // modify the uniform cross section with the sqrt(1./xb)
+      xsec = xsec * TMath::Sqrt(0.1 / xb);  // modify the foam cross section with the sqrt(0.1/xb)
+	    
       add_br->Fill();
       
-      if(i % 5000 == 0)
+      if(i % 2000 == 0)
 	cout << i << "th value: " << xsec << ", " << Q2 << ", " << xb << ", " << t_var << ", " << phi << endl;
 
       delete tgv2;    

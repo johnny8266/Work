@@ -35,7 +35,7 @@ TGVKelly::TGVKelly() // Default
 	{
 		cout << "TGVKelly : Call of TGVKelly default constructor" << endl;
 	} // end if NoPrint
-	SetBeamEnergy(2132.03);
+	SetBeamEnergy(2131.2132);
 } // end default TGVKelly
 
 
@@ -197,6 +197,7 @@ void TGVKelly::MakeKinematics( Double_t Q2Input, Double_t xBInput, Double_t tInp
 		if( !( xBMin < xB && xB < xBMax ) ) 
 		{
 	    	cout << "TGVKelly : Unrealistic kinematic configuration : xB isn't in the physical region !" << endl;
+		cout << "    Beam energy: " << ELab << " GeV" << endl;
     		cout << "    TGVKelly : xB = " << xB << endl;
     		cout << "    TGVKelly : xBMin = " << xBMin << endl;
     		cout << "    TGVKelly : xBMax = " << xBMax << endl;

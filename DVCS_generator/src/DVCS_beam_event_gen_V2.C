@@ -10,7 +10,7 @@ using namespace std;
 
 void DVCS_beam_event_gen_V2()
 {
-  TFile *rfile = new TFile("DVCS_4Pars_100k_14012021.root");
+  TFile *rfile = new TFile("foam_imposed_19012021.root");
   TTree *T = (TTree*)rfile->Get("T");
   Int_t Iteration = (Int_t)T->GetEntries();
   Double_t Q2, xb, Eb, M, s_var, t_var, t0_min, t0_max, phi, phi_def, xsec, psf;
@@ -68,7 +68,7 @@ void DVCS_beam_event_gen_V2()
   DVCS->Branch("phi", &phi, "phi/D");
   DVCS->Branch("phi_def", &phi_def, "phi_def/D");
   DVCS->Branch("psf", &psf, "psf/D");
-  //  DVCS->Branch("xsec", &xsec, "xsec/D");
+  DVCS->Branch("xsec", &xsec, "xsec/D");
   DVCS->Branch("e1_S_angle", &e1_S_angle, "e1_S_angle/D");
   DVCS->Branch("p1_S_angle", &p1_S_angle, "p1_S_angle/D");
   DVCS->Branch("photon_S_angle", &photon_S_angle, "photon_S_angle/D");
