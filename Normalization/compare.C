@@ -7,7 +7,7 @@ void compare()
   // Normalization of the uniform DVCS generator
   //==============================================
   
-  TFile *hfile = new TFile("./root_file/uniform_19012021.root");
+  TFile *hfile = new TFile("./root_file/uniform_20012021.root");
   TTree *T = (TTree*)hfile->Get("T");
   Double_t phi, phi_def, e1_S_angle, p1_S_angle, photon_S_angle, Q2, xb, t_var, xsec, psf;
   Double_t e1_px, e1_py, e1_pz, e1_E, Vg_px, Vg_py, Vg_pz, Vg_E;
@@ -19,9 +19,9 @@ void compare()
   TH1F* xb_uni = new TH1F("xb_uni", "xb_uni", 110, 0., 0.11);
   TH1F* t_uni = new TH1F("t_uni", "t_uni", 64, -3.1, 0.1);
   TH1F* phi_uni = new TH1F("phi_uni", "phi_uni", 63, 0., 6.3);
-  TH1F* xsec_uni = new TH1F("xsec_uni", "xsec_uni", 300, 0., 6.);
+  TH1F* xsec_uni = new TH1F("xsec_uni", "xsec_uni", 1000, 0., 1.);
   TH1F* psf_uni = new TH1F("psf_uni", "psf_uni", 20, 0., 100.);
-  TH1F* Q2_norm_uni = new TH1F("Q2_norm_uni", "Q2_norm_uni", 90, 0., 45.);
+  TH1F* Q2_norm_uni = new TH1F("Q2_norm_uni", "Q2_norm_uni", 90, 2., 20.);
   TH1F* Xb_norm_uni = new TH1F("Xb_norm_uni", "Xb_norm_uni", 99, 0.001, 0.1);
   TH1F* t_norm_uni = new TH1F("t_norm_uni", "t_norm_uni", 100, -2., 0.);
   TH1F* phi_norm_uni = new TH1F("phi_norm_uni", "phi_norm_uni", 63, 0., 6.3);
@@ -30,12 +30,15 @@ void compare()
   TH1F* xb_foam = new TH1F("xb_foam", "xb_foam", 110, 0., 0.11);
   TH1F* t_foam = new TH1F("t_foam", "t_foam", 48, -1.1, 0.1);
   TH1F* phi_foam = new TH1F("phi_foam", "phi_foam", 63, 0., 6.3);
-  TH1F* xsec_foam = new TH1F("xsec_foam", "xsec_foam", 300, 0., 6.);
+  TH1F* xsec_foam = new TH1F("xsec_foam", "xsec_foam", 1000, 0., 1.);
   TH1F* psf_foam = new TH1F("psf_foam", "psf_foam", 20, 0., 100.);
-  TH1F* Q2_norm_foam = new TH1F("Q2_norm_foam", "Q2_norm_foam", 90, 0., 45.);
+  TH1F* Q2_norm_foam = new TH1F("Q2_norm_foam", "Q2_norm_foam", 90, 2., 20.);
   TH1F* Xb_norm_foam = new TH1F("Xb_norm_foam", "Xb_norm_foam", 99, 0.001, 0.1);
   TH1F* t_norm_foam = new TH1F("t_norm_foam", "t_norm_foam", 100, -2., 0.);
   TH1F* phi_norm_foam = new TH1F("phi_norm_foam", "phi_norm_foam", 63, 0., 6.3);
+
+  TH2F* foam_Q2_xsec = new TH2F("foam_Q2_xsec", "foam_Q2_xsec", 10, 0., 5., 500, 0., 5.);
+  TH2F* uni_Q2_xsec = new TH2F("uni_Q2_xsec", "uni_Q2_xsec", 10, 0., 5., 500, 0., 5.);
   
   T->SetBranchAddress("Q2", &Q2);
   T->SetBranchAddress("xb", &xb);
@@ -70,9 +73,11 @@ void compare()
   for(int i = 0 ; i < N_events ; i++)
     {
       T->GetEntry(i);
-      Q2_weight = (SLdt / N_events) * xsec * psf * 1000000.;
+      Q2_weight = (SLdt * xsec * psf * 1000000.) / N_events;
 
       //      if ( (i % 50 == 0) && Q2 < 2. ) cout << xsec << endl;
+      if(xsec > 0.1)
+	count++;
       
       Q2_uni->Fill(Q2);
       xb_uni->Fill(xb);
@@ -80,6 +85,8 @@ void compare()
       phi_uni->Fill(phi);
       xsec_uni->Fill(xsec);
       psf_uni->Fill(psf);
+      uni_Q2_xsec->Fill(Q2, xsec);
+      
       Q2_norm_uni->Fill(Q2, Q2_weight);
       Xb_norm_uni->Fill(xb, Q2_weight);
       t_norm_uni->Fill(t_var, Q2_weight);
@@ -87,8 +94,8 @@ void compare()
       //      cout << Q2 << "  " << Q2_weight << endl;
     }
 
-  cout << "Uniform part finish !!!" << endl;
-
+  cout << "Uniform part finish and xsec > 0.1: " << count << endl << endl;
+  count = 0;
   
   
   //======================================
@@ -134,17 +141,25 @@ void compare()
       NTOT = (SLdt * xsec * psf * 1000000.) / N_events;
       //      if( i % 1000 == 0 ) cout << NTOT << endl;
 
+      if(xsec > 0.1)
+	count++;
+
       Q2_foam->Fill(Q2);
       xb_foam->Fill(xb);
       t_foam->Fill(t_var);
       phi_foam->Fill(phi);
       xsec_foam->Fill(xsec);
       psf_foam->Fill(psf);
+      foam_Q2_xsec->Fill(Q2, xsec);
+      
       Q2_norm_foam->Fill(Q2, NTOT);
       Xb_norm_foam->Fill(xb, NTOT);
       t_norm_foam->Fill(t_var, NTOT);
       phi_norm_foam->Fill(phi, NTOT);
     }
+
+  cout << "Foam part finish and xsec > 0.1: " << count << endl << endl;
+  count = 0;
   
  
   TCanvas *c = new TCanvas ("c","c", 1000, 1000);
@@ -201,7 +216,7 @@ void compare()
   t_uni->Draw();
   c3->cd(4);
   phi_uni->Draw();
-  */
+  */    
 
   TCanvas *c4 = new TCanvas ("c4","c4", 1000, 1000);
   c4->Divide(2,2);
@@ -213,5 +228,14 @@ void compare()
   xsec_foam->Draw();
   c4->cd(4);
   psf_foam->Draw();
+  
+  
+  TCanvas *c5 = new TCanvas ("c5","c5", 1000, 500);
+  c5->Divide(2,1);
+  c5->cd(1);
+  uni_Q2_xsec->Draw("colorz");
+  c5->cd(2);
+  foam_Q2_xsec->Draw("colorz");
+  
   
 }

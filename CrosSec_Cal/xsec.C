@@ -23,7 +23,7 @@ double xsec(void)
   gSystem->Load("./libTGenDVCS.so");
 
   //  TFile *hfile = new TFile("result.root", "update");
-  TFile *hfile = new TFile("./root_file/foam_imposed_19012021.root", "update");
+  TFile *hfile = new TFile("./root_file/uniform_20012021.root", "update");
   TTree *T = (TTree*)hfile->Get("T");
   Int_t N_events = (Int_t)T->GetEntries();
   Double_t Eb=2131.2132, Q2, xb, t_var, phi, psf, phi_def, xsec;  //Eb is energy for fixed target.
@@ -71,8 +71,8 @@ double xsec(void)
       //  if(opt==1) return TMath::Pi()*(BHp+BHm)* ConvGeV2nbarn;
       xsec = TMath::Pi() * ( SigmaTotPlus + SigmaTotMoins ) * ConvGeV2nbarn;
 
-      //      xsec = xsec * TMath::Sqrt(1. / xb);  // modify the uniform cross section with the sqrt(1./xb)
-      xsec = xsec * TMath::Sqrt(0.1 / xb);  // modify the foam cross section with the sqrt(0.1/xb)
+      xsec = xsec * TMath::Sqrt(1. / xb);  // modify the uniform cross section with the sqrt(1./xb)
+      //      xsec = xsec * TMath::Sqrt(0.1 / xb);  // modify the foam cross section with the sqrt(0.1/xb)
 	    
       add_br->Fill();
       

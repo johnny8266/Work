@@ -17,14 +17,14 @@ void DVCS_beam_event_generator()
   TLorentzVector CM_frame_HR_4, Virtual_photon, VP, e1, p1, photon;
   TLorentzVector* saveTL;
   TVector3 CM_frame_HR_3, CM_frame_fix_beam_3, z_axis(0, 0, 1.), rotate_axis, v1, v2;
-  Double_t Q2, Q2_max, Q2_min, xb, xb_min, Eb, M, s_var, t_var, t0_min, t0_max, psf;
+  Double_t Q2, Q2_max, Q2_min, xb, xb_max, xb_min, Eb, M, s_var, t_var, t0_min, t0_max, psf;
   Double_t Virtual_photon_E=0., e1E=0., e1_S_angle_cos=0., e1_S_angle_sin=0.;
   Double_t S_angle_cos_CMS=0., S_angle_sin_CMS=0., E_CMS[4]={0.}, P_CMS[4]={0.}, M0_square[4]={0.};
   Double_t phi, phi_def, e1_S_angle, p1_S_angle, photon_S_angle;
   Double_t e1_px, e1_py, e1_pz, e1_E, Vg_px, Vg_py, Vg_pz, Vg_E;
   Double_t p1_px, p1_py, p1_pz, p1_E, g_px, g_py, g_pz, g_E;
-  Int_t Iteration = 1000000;
-  long int t = (long int)time(NULL);  R->SetSeed(1234);  //Get current time & set the random seed
+  Int_t Iteration = 100000, count=0;
+  long int t = (long int)time(NULL);  R->SetSeed(0);  //Get current time & set the random seed
 
   
   T->Branch("Q2", &Q2, "Q2/D");
@@ -57,9 +57,11 @@ void DVCS_beam_event_generator()
   
   // Run the Event Generator
   //
-  for(int i = 0 ; i < Iteration ; i++)
+  //  for(int i = 0 ; i < Iteration ; i++)
+  while(1)
     {
-      if(i % 10000 == 0) cout << i << " events are generated ......" << endl;
+      if( count > 1000000 ) break;
+      if( count % 10000 == 0) cout << count << " events are generated ......" << endl;
       
       
       // =================================
@@ -82,14 +84,23 @@ void DVCS_beam_event_generator()
       // =================================
       // Initialze all parameters
       // =================================
-      Q2=0.; Q2_min=1.; xb=0.; xb_min=0.005; M=0.938271998; s_var=0.; t_var=0.; t0_min=0.; t0_max=0.;
+      Q2=0.; Q2_min=2.; xb=0.; M=0.938271998; s_var=0.; t_var=0.; t0_min=0.; t0_max=0.;
 
-      xb = R->Uniform(xb_min, 0.1);
-      Q2_max = xb_min * Eb * 2. * M;
-      Q2 = R->Uniform(Q2_min, Q2_max);      
+      Q2 = R->Uniform(Q2_min, 20.);
+
+      xb_min = 2. * Eb * Q2 / (M * (4 * TMath::Power(Eb, 2)-Q2));  
+      xb_max = Q2 / ( Q2 - TMath::Power(M,2) );
+      if(xb_max > 0.1) xb_max = 0.1;
+      xb = R->Uniform(xb_min, xb_max);
+      
+      Q2_max = xb * Eb * 2. * M;
+      if(Q2 > Q2_max)
+	{
+	  cout << "large Q2" << endl;
+	  continue;
+	}
+      
       phi = R->Uniform(0., 2.*TMath::Pi());
-
-      //      cout << Q2 << " " << xb << endl;
       
       M0_square[0] = -Q2;  M0_square[1] = M * M;  M0_square[2] = 0;  M0_square[3] = M * M;  
       
@@ -98,15 +109,15 @@ void DVCS_beam_event_generator()
       // Calculate the leptonic reaction
       // =================================
       Virtual_photon_E = Q2 / (2. * M * xb);  // Energy of Virtual photon
-      if ( Virtual_photon_E > Eb )
-	cout << i << "th event exceed the range: " << Q2 << " " << xb << " " << t_var << " " << phi << " " << endl; 
 
-      rotate_axis = (e0.Vect()).Cross(-z_axis);
-      Double_t rotate_angle = (e0.Vect()).Angle(-z_axis);
-      //      rotate_axis.Print();
-      //      cout << rotate_angle << endl;
+      if ( Virtual_photon_E > Eb )
+	cout << count << "th event exceed the range: " << Q2 << " " << xb << " " << t_var << " " << phi << " " << endl; 
+
+	
+      rotate_axis = (e0.Vect()).Cross(-1.*z_axis);
+      Double_t rotate_angle = (e0.Vect()).Angle(-1.*z_axis);
       e0.Rotate(rotate_angle, rotate_axis);  // Align the particle with the beamline
-      //      p0.Rotate(rotate_angle, rotate_axis);
+      //      p0.Rotate(rotate_angle, rotate_axis);  // This should not be done
       //      e0.Print();
       
       //      cout << Eb << " " << Virtual_photon_E << endl;
@@ -164,12 +175,17 @@ void DVCS_beam_event_generator()
       t0_max = (E_CMS[0] - E_CMS[2]) * (E_CMS[0] - E_CMS[2]) - (P_CMS[0] + P_CMS[2]) * (P_CMS[0] + P_CMS[2]);
       //      t_var = R->Uniform(t0_max, t0_min);
 
-      if( t0_min < -3. )  cout << "t0_min smaller than -3." << endl;
-      t_var = R->Uniform(-3., t0_min);
+      if( t0_min < -1. )
+	{
+	  //	  cout << "t0_min smaller than -1." << endl;
+	  continue;
+	}
+      t_var = R->Uniform(-1., t0_min);
       if( isnan(t_var) )  cout << "Error" << endl;
 
-      //      psf = (0.1 - xb_min) * (Q2_max - 5.) * (t0_min - t0_max) * 2. * TMath::Pi();
-      psf = (0.1 - xb_min) * (Q2_max - Q2_min) * (t0_min + 3.) * 2. * TMath::Pi();
+      psf = (0.1 - xb_min) * (20. - Q2_min) * (t0_min + 1.) * 2. * TMath::Pi();
+      if(psf > 100.)
+	cout << psf << ": " << (0.1 - xb_min) << " " << (Q2_max - Q2_min) << " " << (t0_min + 1.) << endl;
       //      cout << "Q2: " << Q2 << " || xb: " << xb << " || t: " << t_var << endl;      
       //      cout << "t0 min: " << t0_min << " || t0 max: " << t0_max << " || t: " << t_var << endl << endl;
 
@@ -229,6 +245,7 @@ void DVCS_beam_event_generator()
       photon_S_angle = TMath::ATan( (photon.Px() / photon.Pz()) );
 
       T->Fill();
+      count++;
       
       //      cout << "Proton Scattering angle: " << p1_S_angle << endl << endl;
 
