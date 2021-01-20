@@ -33,7 +33,7 @@ double xsec(void)
   T->SetBranchAddress("xb", &xb);
   T->SetBranchAddress("t_var", &t_var);
   T->SetBranchAddress("phi", &phi);
-  T->SetBranchAddress("psf", &psf);
+  //  T->SetBranchAddress("psf", &psf);
   //  T->SetBranchAddress("phi_def", &phi_def);
 
   
@@ -71,8 +71,8 @@ double xsec(void)
       //  if(opt==1) return TMath::Pi()*(BHp+BHm)* ConvGeV2nbarn;
       xsec = TMath::Pi() * ( SigmaTotPlus + SigmaTotMoins ) * ConvGeV2nbarn;
 
-      xsec = xsec * TMath::Sqrt(1. / xb);  // modify the uniform cross section with the sqrt(1./xb)
-      //      xsec = xsec * TMath::Sqrt(0.1 / xb);  // modify the foam cross section with the sqrt(0.1/xb)
+      xsec = xsec * TMath::Sqrt(1. / xb);  // modify the Uniform cross section with the sqrt(1./xb)
+      //      xsec = xsec * TMath::Sqrt(0.1 / xb);  // modify the Foam cross section with the sqrt(0.1/xb)
 	    
       add_br->Fill();
       

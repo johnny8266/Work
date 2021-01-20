@@ -10,7 +10,7 @@ using namespace std;
 
 void DVCS_beam_event_gen_V2()
 {
-  TFile *rfile = new TFile("foam_imposed_19012021.root");
+  TFile *rfile = new TFile("foam_imposed_20012021.root");
   TTree *T = (TTree*)rfile->Get("T");
   Int_t Iteration = (Int_t)T->GetEntries();
   Double_t Q2, xb, Eb, M, s_var, t_var, t0_min, t0_max, phi, phi_def, xsec, psf;
@@ -94,7 +94,7 @@ void DVCS_beam_event_gen_V2()
   // Run the Event Generator
   //
   for(int i = 0 ; i < Iteration ; i++)
-  //  for(int i = 0 ; i < 1 ; i++)
+    //  for(int i = 0 ; i < 1 ; i++)
     {
       if(i % 10000 == 0) cout << i << " events are generated ......" << endl;
       
@@ -104,7 +104,7 @@ void DVCS_beam_event_gen_V2()
       // =================================
       TLorentzVector e0(0, 0., -10., 10.), p0( (100.*TMath::Sin(0.025)), 0., (100.*TMath::Cos(0.025)), 100.004402);
       //      TLorentzVector e0(0, 0., -10., 10.), p0(0., 0., 100., 100.004402);
-      //      e0.Print();  p0.Print();  cout << endl;
+      e0.Print();  p0.Print();  cout << endl << endl;
       CM_frame_fix_beam_3 = p0.BoostVector();
       p0.Boost(-CM_frame_fix_beam_3);
       e0.Boost(-CM_frame_fix_beam_3);
@@ -275,7 +275,7 @@ void DVCS_beam_event_gen_V2()
       
       //      cout << "Proton Scattering angle: " << p1_S_angle << endl << endl;
 
-      /*
+      /*      
       cout << "Hadronic reaction: " << endl << "====================================" << endl;
       cout << "Virtual Photon: "; Virtual_photon.Print(); cout << "Scattering Photon: ";  photon.Print();  cout << "Scattering proton: ";  p1.Print();
       cout << "====================================" << endl << endl << endl;

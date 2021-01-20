@@ -22,8 +22,8 @@ void compare()
   TH1F* xsec_uni = new TH1F("xsec_uni", "xsec_uni", 1000, 0., 1.);
   TH1F* psf_uni = new TH1F("psf_uni", "psf_uni", 20, 0., 100.);
   TH1F* Q2_norm_uni = new TH1F("Q2_norm_uni", "Q2_norm_uni", 90, 2., 20.);
-  TH1F* Xb_norm_uni = new TH1F("Xb_norm_uni", "Xb_norm_uni", 99, 0.001, 0.1);
-  TH1F* t_norm_uni = new TH1F("t_norm_uni", "t_norm_uni", 100, -2., 0.);
+  TH1F* Xb_norm_uni = new TH1F("Xb_norm_uni", "Xb_norm_uni", 100, 0., 0.1);
+  TH1F* t_norm_uni = new TH1F("t_norm_uni", "t_norm_uni", 110, -1.1, 0.);
   TH1F* phi_norm_uni = new TH1F("phi_norm_uni", "phi_norm_uni", 63, 0., 6.3);
   
   TH1F* Q2_foam = new TH1F("Q2_foam", "Q2_foam", 90, 0., 45.);  
@@ -34,7 +34,7 @@ void compare()
   TH1F* psf_foam = new TH1F("psf_foam", "psf_foam", 20, 0., 100.);
   TH1F* Q2_norm_foam = new TH1F("Q2_norm_foam", "Q2_norm_foam", 90, 2., 20.);
   TH1F* Xb_norm_foam = new TH1F("Xb_norm_foam", "Xb_norm_foam", 99, 0.001, 0.1);
-  TH1F* t_norm_foam = new TH1F("t_norm_foam", "t_norm_foam", 100, -2., 0.);
+  TH1F* t_norm_foam = new TH1F("t_norm_foam", "t_norm_foam", 100, -1., 0.);
   TH1F* phi_norm_foam = new TH1F("phi_norm_foam", "phi_norm_foam", 63, 0., 6.3);
 
   TH2F* foam_Q2_xsec = new TH2F("foam_Q2_xsec", "foam_Q2_xsec", 10, 0., 5., 500, 0., 5.);
@@ -78,6 +78,8 @@ void compare()
       //      if ( (i % 50 == 0) && Q2 < 2. ) cout << xsec << endl;
       if(xsec > 0.1)
 	count++;
+
+      //      cout << Q2 << " " << xb << " " << t_var << " " << phi << " " << Q2_weight << endl;
       
       Q2_uni->Fill(Q2);
       xb_uni->Fill(xb);
@@ -91,7 +93,6 @@ void compare()
       Xb_norm_uni->Fill(xb, Q2_weight);
       t_norm_uni->Fill(t_var, Q2_weight);
       phi_norm_uni->Fill(phi, Q2_weight);
-      //      cout << Q2 << "  " << Q2_weight << endl;
     }
 
   cout << "Uniform part finish and xsec > 0.1: " << count << endl << endl;
@@ -109,7 +110,6 @@ void compare()
   DVCS->SetBranchAddress("xb", &xb);
   DVCS->SetBranchAddress("t_var", &t_var);
   DVCS->SetBranchAddress("phi", &phi);
-  DVCS->SetBranchAddress("phi_def", &phi_def);
   DVCS->SetBranchAddress("psf", &psf);
   DVCS->SetBranchAddress("e1_S_angle", &e1_S_angle);
   DVCS->SetBranchAddress("p1_S_angle", &p1_S_angle);
@@ -161,7 +161,7 @@ void compare()
   cout << "Foam part finish and xsec > 0.1: " << count << endl << endl;
   count = 0;
   
- 
+  
   TCanvas *c = new TCanvas ("c","c", 1000, 1000);
   c->Divide(2,2);
   c->cd(1);
@@ -176,6 +176,7 @@ void compare()
   c->cd(4);
   phi_norm_uni->GetYaxis()->SetMaxDigits(2);
   phi_norm_uni->Draw();
+ 
 
   
   TCanvas *c1 = new TCanvas ("c1","c1", 1000, 1000);
@@ -216,7 +217,7 @@ void compare()
   t_uni->Draw();
   c3->cd(4);
   phi_uni->Draw();
-  */    
+      
 
   TCanvas *c4 = new TCanvas ("c4","c4", 1000, 1000);
   c4->Divide(2,2);
@@ -237,5 +238,7 @@ void compare()
   c5->cd(2);
   foam_Q2_xsec->Draw("colorz");
   
+  */
+
   
 }

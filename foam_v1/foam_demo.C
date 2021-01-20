@@ -100,7 +100,6 @@ Int_t main()
   long nCalls = FoamX->GetnCalls();
   cout << "====== Initialization done, entering MC loop" << endl;
   
-  vector<Double_t> Q2_vec, xb_vec, t_var_vec, phi_vec, xsec_Integral_vec;
   Double_t Eb = 2131.2132;
   Long_t n_effec=0;
 
@@ -137,11 +136,6 @@ Int_t main()
       h2->Fill(xb);
       h3->Fill(t_var);
       h4->Fill(phi);
-      
-      xb_vec.push_back(xb);
-      Q2_vec.push_back(Q2);
-      t_var_vec.push_back(t_var);
-      phi_vec.push_back(phi);
       */      
  
       if( ((loop) % 5000) == 0 )
@@ -151,35 +145,7 @@ Int_t main()
 
   T->Write();
 
-  /*
-  Double_t D_Q2, D_xb, D_t, SLdt=10., NTOT=0.;
-  
-  D_Q2 = (*max_element(Q2_vec.begin(), Q2_vec.end())) - (*min_element(Q2_vec.begin(), Q2_vec.end()));
-  D_xb = (*max_element(xb_vec.begin(), xb_vec.end())) - (*min_element(xb_vec.begin(), xb_vec.end()));
-  D_t = (*max_element(t_var_vec.begin(), t_var_vec.end())) - (*min_element(t_var_vec.begin(), t_var_vec.end()));
-  psf =  D_Q2 * D_xb * D_t * 2. * TMath::Pi();
-
-  cout << endl << "D_Q2: " << D_Q2 << " || D_xb: " << D_xb << " || D_t: " << D_t  << " || PSF value: " << psf << endl << endl;
-
-  
-  for(Int_t i = 0 ; i < NevTot ; i++ )
-    {
-      NTOT = SLdt * xsec_Integral_vec[i] * psf * 1000000. / NevTot;
-      //      h1->Fill( (Q2_vec[i]), NTOT);
-      //      h2->Fill( (xb_vec[i]), NTOT);
-      //      h3->Fill( (t_var_vec[i]), NTOT);
-      //      h4->Fill( (phi_vec[i]), NTOT);
-
-      xb = xb_vec[i];
-      Q2 = Q2_vec[i];
-      t_var = t_var_vec[i];
-      phi = phi_vec[i];
-      //      T->Fill();
-    }
-  //  T->Write();
-  
-
-  
+  /*  
   TCanvas* c1 = new TCanvas("c1", "c1", 800, 800);
   c1->Divide(2,2);
   c1->cd(1);
