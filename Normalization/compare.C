@@ -15,26 +15,26 @@ void compare()
   Double_t e_sc_theta;
   Int_t N_events = (Int_t)T->GetEntries(), count=0;
   
-  TH1F* Q2_uni = new TH1F("Q2_uni", "Q2_uni", 90, 0., 45.);
-  TH1F* xb_uni = new TH1F("xb_uni", "xb_uni", 110, 0., 0.11);
-  TH1F* t_uni = new TH1F("t_uni", "t_uni", 64, -3.1, 0.1);
+  TH1F* Q2_uni = new TH1F("Q2_uni", "Q2_uni", 21, 0., 21.);
+  TH1F* xb_uni = new TH1F("xb_uni", "xb_uni", 22, 0., 0.11);
+  TH1F* t_uni = new TH1F("t_uni", "t_uni", 12, -1.1, 0.1);
   TH1F* phi_uni = new TH1F("phi_uni", "phi_uni", 63, 0., 6.3);
-  TH1F* xsec_uni = new TH1F("xsec_uni", "xsec_uni", 1000, 0., 1.);
+  TH1F* xsec_uni = new TH1F("xsec_uni", "xsec_uni", 100, 0., 1000000.);
   TH1F* psf_uni = new TH1F("psf_uni", "psf_uni", 20, 0., 100.);
-  TH1F* Q2_norm_uni = new TH1F("Q2_norm_uni", "Q2_norm_uni", 90, 2., 20.);
-  TH1F* Xb_norm_uni = new TH1F("Xb_norm_uni", "Xb_norm_uni", 100, 0., 0.1);
-  TH1F* t_norm_uni = new TH1F("t_norm_uni", "t_norm_uni", 110, -1.1, 0.);
+  TH1F* Q2_norm_uni = new TH1F("Q2_norm_uni", "Q2_norm_uni", 21, 0., 21.);
+  TH1F* Xb_norm_uni = new TH1F("Xb_norm_uni", "Xb_norm_uni", 20, 0., 0.1);
+  TH1F* t_norm_uni = new TH1F("t_norm_uni", "t_norm_uni", 12, -1.1, 0.);
   TH1F* phi_norm_uni = new TH1F("phi_norm_uni", "phi_norm_uni", 63, 0., 6.3);
   
-  TH1F* Q2_foam = new TH1F("Q2_foam", "Q2_foam", 90, 0., 45.);  
-  TH1F* xb_foam = new TH1F("xb_foam", "xb_foam", 110, 0., 0.11);
-  TH1F* t_foam = new TH1F("t_foam", "t_foam", 48, -1.1, 0.1);
+  TH1F* Q2_foam = new TH1F("Q2_foam", "Q2_foam", 21, 0., 21.);  
+  TH1F* xb_foam = new TH1F("xb_foam", "xb_foam", 22, 0., 0.11);
+  TH1F* t_foam = new TH1F("t_foam", "t_foam", 12, -1.1, 0.1);
   TH1F* phi_foam = new TH1F("phi_foam", "phi_foam", 63, 0., 6.3);
-  TH1F* xsec_foam = new TH1F("xsec_foam", "xsec_foam", 1000, 0., 1.);
+  TH1F* xsec_foam = new TH1F("xsec_foam", "xsec_foam", 100, 0., 1000000.);
   TH1F* psf_foam = new TH1F("psf_foam", "psf_foam", 20, 0., 100.);
-  TH1F* Q2_norm_foam = new TH1F("Q2_norm_foam", "Q2_norm_foam", 90, 2., 20.);
-  TH1F* Xb_norm_foam = new TH1F("Xb_norm_foam", "Xb_norm_foam", 99, 0.001, 0.1);
-  TH1F* t_norm_foam = new TH1F("t_norm_foam", "t_norm_foam", 100, -1., 0.);
+  TH1F* Q2_norm_foam = new TH1F("Q2_norm_foam", "Q2_norm_foam", 21, 0., 21.);
+  TH1F* Xb_norm_foam = new TH1F("Xb_norm_foam", "Xb_norm_foam", 20, 0., 0.1);
+  TH1F* t_norm_foam = new TH1F("t_norm_foam", "t_norm_foam", 12, -1.1, 0.);
   TH1F* phi_norm_foam = new TH1F("phi_norm_foam", "phi_norm_foam", 63, 0., 6.3);
 
   TH2F* foam_Q2_xsec = new TH2F("foam_Q2_xsec", "foam_Q2_xsec", 10, 0., 5., 500, 0., 5.);
@@ -67,7 +67,7 @@ void compare()
   T->SetBranchAddress("g_E", &g_E);
   T->SetBranchAddress("xsec", &xsec);
 
-  Double_t SLdt=10., Q2_weight=0.;
+  Double_t SLdt=10., Q2_weight=0., sum_xsec=0., sum_psf=0., Q2_count=0.;
 
   cout << "Event numbers of uniform generator: " << N_events << endl;
   for(int i = 0 ; i < N_events ; i++)
@@ -80,7 +80,14 @@ void compare()
 	count++;
 
       //      cout << Q2 << " " << xb << " " << t_var << " " << phi << " " << Q2_weight << endl;
-      
+
+      if( (Q2>2) && (Q2<3) )
+	{
+	  Q2_count++;
+	  sum_xsec = sum_xsec + xsec;
+	  sum_psf = sum_psf + psf;
+	}
+	
       Q2_uni->Fill(Q2);
       xb_uni->Fill(xb);
       t_uni->Fill(t_var);
@@ -95,7 +102,9 @@ void compare()
       phi_norm_uni->Fill(phi, Q2_weight);
     }
 
-  cout << "Uniform part finish and xsec > 0.1: " << count << endl << endl;
+  cout << "Uniform part finish and xsec > 0.1: " << count << endl;
+  cout << "2 < Q2 < 3, average xsec: " << sum_xsec / Q2_count << " || average psf: " << sum_psf / Q2_count << " || count: " << Q2_count << endl << endl;
+  sum_xsec = 0.; sum_psf = 0.; Q2_count = 0.;
   count = 0;
   
   
@@ -135,6 +144,15 @@ void compare()
   Double_t NTOT=0.;
 
   cout << "Event numbers of foam generator: " << N_events << endl;
+
+  /*
+  for(int i = 0 ; i < N_events ; i++)
+    {
+      DVCS->GetEntry(i);
+      NTOT = NTOT + (SLdt * xsec * psf * 1000000.);
+    }
+  */
+  
   for(int i = 0 ; i < N_events ; i++)
     {
       DVCS->GetEntry(i);
@@ -144,6 +162,13 @@ void compare()
       if(xsec > 0.1)
 	count++;
 
+      if( (Q2>2) && (Q2<3) )
+	{
+	  Q2_count++;
+	  sum_xsec = sum_xsec + xsec;
+	  sum_psf = sum_psf + psf; 
+	}
+
       Q2_foam->Fill(Q2);
       xb_foam->Fill(xb);
       t_foam->Fill(t_var);
@@ -151,30 +176,38 @@ void compare()
       xsec_foam->Fill(xsec);
       psf_foam->Fill(psf);
       foam_Q2_xsec->Fill(Q2, xsec);
+
+      /*
+      Q2_norm_foam->Fill(Q2, NTOT / N_events);
+      Xb_norm_foam->Fill(xb, NTOT / N_events);
+      t_norm_foam->Fill(t_var, NTOT / N_events);
+      phi_norm_foam->Fill(phi, NTOT / N_events);
+      */
       
       Q2_norm_foam->Fill(Q2, NTOT);
       Xb_norm_foam->Fill(xb, NTOT);
       t_norm_foam->Fill(t_var, NTOT);
       phi_norm_foam->Fill(phi, NTOT);
+      
     }
 
   cout << "Foam part finish and xsec > 0.1: " << count << endl << endl;
-  count = 0;
+  cout << "2 < Q2 < 3, average xsec: " << sum_xsec / Q2_count << " || average psf: " << sum_psf / Q2_count << " || count: " << Q2_count << endl << endl;
   
   
   TCanvas *c = new TCanvas ("c","c", 1000, 1000);
   c->Divide(2,2);
   c->cd(1);
-  Q2_norm_uni->GetYaxis()->SetMaxDigits(2);
+  Q2_norm_uni->GetYaxis()->SetMaxDigits(3);
   Q2_norm_uni->Draw();
   c->cd(2);
-  Xb_norm_uni->GetYaxis()->SetMaxDigits(2);
+  Xb_norm_uni->GetYaxis()->SetMaxDigits(3);
   Xb_norm_uni->Draw();
   c->cd(3);
-  t_norm_uni->GetYaxis()->SetMaxDigits(2);
+  t_norm_uni->GetYaxis()->SetMaxDigits(3);
   t_norm_uni->Draw();
   c->cd(4);
-  phi_norm_uni->GetYaxis()->SetMaxDigits(2);
+  phi_norm_uni->GetYaxis()->SetMaxDigits(3);
   phi_norm_uni->Draw();
  
 
@@ -194,7 +227,7 @@ void compare()
   phi_norm_foam->GetYaxis()->SetMaxDigits(3);
   phi_norm_foam->Draw();
 
-  /*
+  
   TCanvas *c2 = new TCanvas ("c2","c2", 1000, 1000);
   c2->Divide(2,2);
   c2->cd(1);
@@ -229,16 +262,16 @@ void compare()
   xsec_foam->Draw();
   c4->cd(4);
   psf_foam->Draw();
-  
-  
+    
+  /*
   TCanvas *c5 = new TCanvas ("c5","c5", 1000, 500);
   c5->Divide(2,1);
   c5->cd(1);
   uni_Q2_xsec->Draw("colorz");
   c5->cd(2);
   foam_Q2_xsec->Draw("colorz");
-  
   */
+  
 
   
 }

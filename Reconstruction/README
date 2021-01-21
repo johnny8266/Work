@@ -1,0 +1,5 @@
+How to do the photon reconstruction and compare it with the primary DVCS photon:
+
+- Build the hit cluster calcultion (Done)
+- Save the calculation results and the primary photon information into the same root file (modified Dmitry save code)
+- Read the root file and compare the primary photon and the reconstruct one (modified the Dmitry read code)
