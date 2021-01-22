@@ -10,7 +10,8 @@ using namespace std;
 
 void DVCS_beam_event_gen_V2()
 {
-  TFile *rfile = new TFile("foam_imposed_with_integral_21012021.root");
+  //  TFile *rfile = new TFile("foam_imposed_with_integral_21012021.root");
+  TFile *rfile = new TFile("DVCS_4Pars_2D.root");
   TTree *T = (TTree*)rfile->Get("T");
   Int_t Iteration = (Int_t)T->GetEntries();
   Double_t Q2, xb, Eb, M, s_var, t_var, t0_min, t0_max, phi, phi_def, xsec, xsec_Integral, psf;
@@ -201,8 +202,10 @@ void DVCS_beam_event_gen_V2()
       t0_max = (E_CMS[0] - E_CMS[2]) * (E_CMS[0] - E_CMS[2]) - (P_CMS[0] + P_CMS[2]) * (P_CMS[0] + P_CMS[2]);
       //      t_var = R->Uniform(t0_max, t0_min);
 
-      psf = D_Q2 * D_xb * D_t * 2. * TMath::Pi();
+      //      psf = D_Q2 * D_xb * D_t * 2. * TMath::Pi();
+      psf = D_Q2 * D_xb * 0.5 * 0.1;
 
+      
       S_angle_cos_CMS = 1. - ( (t0_min - t_var) / (2. * P_CMS[0] * P_CMS[2]) );
       S_angle_sin_CMS = sqrt(1. - S_angle_cos_CMS * S_angle_cos_CMS);
       

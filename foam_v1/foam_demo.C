@@ -63,7 +63,7 @@ Int_t main()
 
   //-----------------------------------------
   long NevTot   =    100000;   // Total MC statistics
-  Int_t  kDim   =         4;   // total dimension
+  Int_t  kDim   =         2;   // total dimension
   Int_t  nCells   =    5000;   // Number of Cells
   Int_t  nSampl   =     200;   // Number of MC events per cell in build-up
   Int_t  nBin     =       8;   // Number of bins in build-up
@@ -122,14 +122,14 @@ Int_t main()
       xb_min = 2. * Eb * Q2 / (Mass * (4 * TMath::Power(Eb, 2)-Q2));
       xb = MCvect[1] * (0.1 - 0.0001) + 0.0001;	
       //      xb = TMath::Power(10., (-1. - MCvect[1] * 3.));
-      //      xb = 0.1;
+      //      xb = 0.05;
 
-      t_var = -1. * MCvect[2];
+      //      t_var = -1. * MCvect[2];
       //      t_var = -1. * TMath::Power(10, (-4.*MCvect[2]));
-      //      t_var = -0.1;
+      t_var = -0.5;
       
-      phi = MCvect[3] * 2. * TMath::Pi();
-      //      phi = 0.1;
+      //      phi = MCvect[3] * 2. * TMath::Pi();
+      phi = 0.1;
       
       T->Fill();      
       /*

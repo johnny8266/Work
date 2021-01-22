@@ -7,7 +7,7 @@ void compare()
   // Normalization of the uniform DVCS generator
   //==============================================
   
-  TFile *hfile = new TFile("./root_file/uniform_21012021.root");
+  TFile *hfile = new TFile("./root_file/uniform_2D_Q2_xb.root");
   TTree *T = (TTree*)hfile->Get("T");
   Double_t phi, phi_def, e1_S_angle, p1_S_angle, photon_S_angle, Q2, xb, t_var, xsec, xsec_Integral, psf;
   Double_t e1_px, e1_py, e1_pz, e1_E, Vg_px, Vg_py, Vg_pz, Vg_E;
@@ -82,11 +82,11 @@ void compare()
 
       //      cout << Q2 << " " << xb << " " << t_var << " " << phi << " " << Q2_weight << endl;
 
-      if( (Q2>4) && (Q2<5) )
+      if( (Q2>2) && (Q2<3) )
 	{
 	  Q2_count++;
-	  //	  sum_xsec = sum_xsec + xsec;
-	  sum_xsec = sum_xsec + t_var;
+	  sum_xsec = sum_xsec + xsec;
+	  //	  sum_xsec = sum_xsec + t_var;
 	  sum_psf = sum_psf + psf;
 	}
 	
@@ -113,7 +113,7 @@ void compare()
   //======================================
   // Normalization of the foam generator
   //======================================
-  TFile *gfile = new TFile("./root_file/foam_imposed_with_integral_21012021.root");
+  TFile *gfile = new TFile("./root_file/foam_2D_Q2_xb.root");
   TTree *DVCS = (TTree*)gfile->Get("DVCS");  
   N_events = (Int_t)DVCS->GetEntries();
 
@@ -162,6 +162,7 @@ void compare()
       DVCS->GetEntry(i);
       //      NTOT = (SLdt * xsec * psf * 1000000.) / N_events;
       NTOT = (SLdt * xsec_Integral * psf * 1000000.) / N_events;
+      //      cout << psf << endl;
       //      if( i % 1000 == 0 ) cout << NTOT << endl;
 
       if(xsec > 0.1)
@@ -190,7 +191,7 @@ void compare()
       
     }
 
-  cout << "Foam part finish and xsec > 0.1: " << count << endl << endl;
+  cout << "Foam part finish and xsec > 0.1: " << count << endl;
   cout << "2 < Q2 < 3, average xsec: " << sum_xsec / Q2_count << " || average psf: " << sum_psf / Q2_count << " || count: " << Q2_count << endl << endl;
   
   
@@ -226,7 +227,7 @@ void compare()
   phi_norm_foam->GetYaxis()->SetMaxDigits(3);
   phi_norm_foam->Draw();
 
-  /*  
+    
   TCanvas *c2 = new TCanvas ("c2","c2", 1000, 1000);
   c2->Divide(2,2);
   c2->cd(1);
@@ -250,7 +251,7 @@ void compare()
   c3->cd(4);
   phi_uni->Draw();
       
-
+  /*
   TCanvas *c4 = new TCanvas ("c4","c4", 1000, 1000);
   c4->Divide(2,2);
   c4->cd(1);
@@ -261,7 +262,7 @@ void compare()
   xsec_foam->Draw();
   c4->cd(4);
   psf_foam->Draw();
-    
+  
   
   TCanvas *c5 = new TCanvas ("c5","c5", 1000, 500);
   c5->Divide(2,1);

@@ -60,7 +60,7 @@ void DVCS_beam_event_generator()
   //  for(int i = 0 ; i < Iteration ; i++)
   while(1)
     {
-      if( count > 1000000 ) break;
+      if( count > 100000 ) break;
       if( count % 10000 == 0) cout << count << " events are generated ......" << endl;
       
       
@@ -84,8 +84,8 @@ void DVCS_beam_event_generator()
       // =================================
       // Initialze all parameters
       // =================================
-      Q2=0.; Q2_min=1.; xb=0.; M=0.938271998; s_var=0.; t_var=0.; t0_min=0.; t0_max=0.;
-
+      Q2=0.; Q2_min=2.; xb=0.; M=0.938271998; s_var=0.; t_var=0.; t0_min=0.; t0_max=0.;
+      /*
       Q2 = R->Uniform(Q2_min, 20.);
 
       xb_min = 2. * Eb * Q2 / (M * (4 * TMath::Power(Eb, 2)-Q2));  
@@ -99,8 +99,21 @@ void DVCS_beam_event_generator()
 	  cout << "large Q2" << endl;
 	  continue;
 	}
+      */
+
+      xb_min = 0.0001;  xb_max = 0.1;
+      xb = R->Uniform(xb_min, xb_max);
+      //      xb = 0.05;
       
-      phi = R->Uniform(0., 2.*TMath::Pi());
+      Q2_max = xb * Eb * 2. * M;
+      if( Q2_max > 100. )
+	Q2_max = 100.;
+      Q2 = R->Uniform(Q2_min, Q2_max);
+      if(Q2 > Q2_max)
+	continue;
+      
+      //      phi = R->Uniform(0., 2.*TMath::Pi());
+      phi = 0.1;
       
       M0_square[0] = -Q2;  M0_square[1] = M * M;  M0_square[2] = 0;  M0_square[3] = M * M;  
       
@@ -144,6 +157,7 @@ void DVCS_beam_event_generator()
       cout << "Scattering Electron in collider frame: ";  e1.Print();  cout << endl << "Virtual photon in fix target frame: ";  Virtual_photon.Print();
       cout << "====================================" << endl;
       */
+      
 
       // =================================
       // Calculate the hadronic reaction
@@ -176,16 +190,22 @@ void DVCS_beam_event_generator()
       //      t_var = R->Uniform(t0_max, t0_min);
 
       if( t0_min < -1. )
+	  continue;
+
+      //      t_var = R->Uniform(-1., t0_min);
+      t_var = -0.5;
+      
+      if( isnan(t_var) )
 	{
-	  //	  cout << "t0_min smaller than -1." << endl;
+	  cout << "Error" << endl;
 	  continue;
 	}
-      t_var = R->Uniform(-1., t0_min);
-      if( isnan(t_var) )  cout << "Error" << endl;
 
-      psf = (0.1 - xb_min) * (20. - Q2_min) * (t0_min + 1.) * 2. * TMath::Pi();
+      //      psf = (0.1 - xb_min) * (Q2_max - Q2_min) * (t0_min + 1.) * 2. * TMath::Pi();
+      psf = 0.5 * phi * (xb_max - xb_min) * (Q2_max - Q2_min);
+
       if(psf > 100.)
-	cout << psf << ": " << (0.1 - xb_min) << " " << (Q2_max - Q2_min) << " " << (t0_min + 1.) << endl;
+	cout << psf << ": " << (xb_max - xb_min) << " " << (Q2_max - Q2_min) << " " << (t0_min + 1.) << endl;
       //      cout << "Q2: " << Q2 << " || xb: " << xb << " || t: " << t_var << endl;      
       //      cout << "t0 min: " << t0_min << " || t0 max: " << t0_max << " || t: " << t_var << endl << endl;
 
