@@ -10,18 +10,20 @@ using namespace std;
 
 void DVCS_beam_event_gen_V2()
 {
-  TFile *rfile = new TFile("foam_imposed_20012021.root");
+  TFile *rfile = new TFile("foam_imposed_with_integral_21012021.root");
   TTree *T = (TTree*)rfile->Get("T");
   Int_t Iteration = (Int_t)T->GetEntries();
-  Double_t Q2, xb, Eb, M, s_var, t_var, t0_min, t0_max, phi, phi_def, xsec, psf;
-  vector<Double_t> Q_2, X_B, T_Var, P_hi, X_sec;
+  Double_t Q2, xb, Eb, M, s_var, t_var, t0_min, t0_max, phi, phi_def, xsec, xsec_Integral, psf;
+  vector<Double_t> Q_2, X_B, T_Var, P_hi, X_sec, X_sec_Integral;
   cout << Iteration << " set of pars..." << endl;
 
   T->SetBranchAddress("Q2", &Q2);
   T->SetBranchAddress("xb", &xb);
   T->SetBranchAddress("t_var", &t_var);
   T->SetBranchAddress("phi", &phi);
+  T->SetBranchAddress("xsec_Integral", &xsec_Integral);
   T->SetBranchAddress("xsec", &xsec);
+
   
   for(int j = 0 ; j < Iteration ; j++)
     {
@@ -32,8 +34,9 @@ void DVCS_beam_event_gen_V2()
       T_Var.push_back(t_var);
       P_hi.push_back(phi);
       X_sec.push_back(xsec);
+      X_sec_Integral.push_back(xsec_Integral);
     }
-  Q2 = 0.;  xb = 0.;  t_var = 0.;  phi = 0.;  xsec=0.;
+  Q2 = 0.;  xb = 0.;  t_var = 0.;  phi = 0.;  xsec=0.;  xsec_Integral = 0.;
 
   Double_t D_Q2, D_xb, D_t;
 
@@ -69,6 +72,7 @@ void DVCS_beam_event_gen_V2()
   DVCS->Branch("phi_def", &phi_def, "phi_def/D");
   DVCS->Branch("psf", &psf, "psf/D");
   DVCS->Branch("xsec", &xsec, "xsec/D");
+  DVCS->Branch("xsec_Integral", &xsec_Integral, "xsec_Integral/D"); 
   DVCS->Branch("e1_S_angle", &e1_S_angle, "e1_S_angle/D");
   DVCS->Branch("p1_S_angle", &p1_S_angle, "p1_S_angle/D");
   DVCS->Branch("photon_S_angle", &photon_S_angle, "photon_S_angle/D");
@@ -104,7 +108,7 @@ void DVCS_beam_event_gen_V2()
       // =================================
       TLorentzVector e0(0, 0., -10., 10.), p0( (100.*TMath::Sin(0.025)), 0., (100.*TMath::Cos(0.025)), 100.004402);
       //      TLorentzVector e0(0, 0., -10., 10.), p0(0., 0., 100., 100.004402);
-      e0.Print();  p0.Print();  cout << endl << endl;
+      //      e0.Print();  p0.Print();  cout << endl << endl;
       CM_frame_fix_beam_3 = p0.BoostVector();
       p0.Boost(-CM_frame_fix_beam_3);
       e0.Boost(-CM_frame_fix_beam_3);
@@ -118,7 +122,7 @@ void DVCS_beam_event_gen_V2()
       // =================================
       Q2=0.; xb=0.; M=0.938271998; s_var=0.; t_var=0.; t0_min=0.; t0_max=0.;
 
-      Q2 = Q_2[i];  xb = X_B[i];  t_var = T_Var[i];  phi = P_hi[i];  xsec = X_sec[i];
+      Q2 = Q_2[i];  xb = X_B[i];  t_var = T_Var[i];  phi = P_hi[i];  xsec = X_sec[i], xsec_Integral = X_sec_Integral[i];
       
       M0_square[0] = -Q2;  M0_square[1] = M * M;  M0_square[2] = 0;  M0_square[3] = M * M;  
       

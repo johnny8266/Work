@@ -49,6 +49,7 @@ Int_t main()
   T->Branch("xb_min", &xb_min, "xb_min/D");
   T->Branch("t_var", &t_var, "t_var/D");
   T->Branch("phi", &phi, "phi/D");
+  T->Branch("xsec_Integral", &xsec_Integral, "xsec_Integral/D");
   //  T->Branch("psf", &psf, "psf/D");
 
   /*
@@ -109,7 +110,7 @@ Int_t main()
     {
       FoamX->MakeEvent();           // generate MC event
       FoamX->GetMCvect(MCvect);
-      //      FoamX->GetIntegMC(xsec_Integral, xsec_Integral_err);
+      FoamX->GetIntegMC(xsec_Integral, xsec_Integral_err);
       //      FoamX->GetIntNorm(xsec_Integral, xsec_Integral_err);
 
       n_effec = FoamX->GetnEffev();

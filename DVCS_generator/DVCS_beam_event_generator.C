@@ -84,7 +84,7 @@ void DVCS_beam_event_generator()
       // =================================
       // Initialze all parameters
       // =================================
-      Q2=0.; Q2_min=2.; xb=0.; M=0.938271998; s_var=0.; t_var=0.; t0_min=0.; t0_max=0.;
+      Q2=0.; Q2_min=1.; xb=0.; M=0.938271998; s_var=0.; t_var=0.; t0_min=0.; t0_max=0.;
 
       Q2 = R->Uniform(Q2_min, 20.);
 

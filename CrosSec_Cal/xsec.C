@@ -23,12 +23,14 @@ double xsec(void)
   gSystem->Load("./libTGenDVCS.so");
 
   //  TFile *hfile = new TFile("result.root", "update");
-  TFile *hfile = new TFile("./root_file/uniform_20012021.root", "update");
+  TFile *hfile = new TFile("./root_file/result.root", "update");
   TTree *T = (TTree*)hfile->Get("T");
   Int_t N_events = (Int_t)T->GetEntries();
-  Double_t Eb=2131.2132, Q2, xb, t_var, phi, psf, phi_def, xsec;  //Eb is energy for fixed target.
+  Double_t Eb=2131.2132, Q2, xb, t_var, phi, psf, phi_def, xsec, xsec_inte;  //Eb is energy for fixed target.
 
   TBranch *add_br = T->Branch("xsec", &xsec, "xsec/D");
+  //  T->Branch("xsec_inte", &xsec_inte, "xsec_inte/D");
+  
   T->SetBranchAddress("Q2", &Q2);
   T->SetBranchAddress("xb", &xb);
   T->SetBranchAddress("t_var", &t_var);

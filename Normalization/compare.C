@@ -7,9 +7,9 @@ void compare()
   // Normalization of the uniform DVCS generator
   //==============================================
   
-  TFile *hfile = new TFile("./root_file/uniform_20012021.root");
+  TFile *hfile = new TFile("./root_file/uniform_21012021.root");
   TTree *T = (TTree*)hfile->Get("T");
-  Double_t phi, phi_def, e1_S_angle, p1_S_angle, photon_S_angle, Q2, xb, t_var, xsec, psf;
+  Double_t phi, phi_def, e1_S_angle, p1_S_angle, photon_S_angle, Q2, xb, t_var, xsec, xsec_Integral, psf;
   Double_t e1_px, e1_py, e1_pz, e1_E, Vg_px, Vg_py, Vg_pz, Vg_E;
   Double_t p1_px, p1_py, p1_pz, p1_E, g_px, g_py, g_pz, g_E;
   Double_t e_sc_theta;
@@ -67,6 +67,7 @@ void compare()
   T->SetBranchAddress("g_E", &g_E);
   T->SetBranchAddress("xsec", &xsec);
 
+
   Double_t SLdt=10., Q2_weight=0., sum_xsec=0., sum_psf=0., Q2_count=0.;
 
   cout << "Event numbers of uniform generator: " << N_events << endl;
@@ -81,10 +82,11 @@ void compare()
 
       //      cout << Q2 << " " << xb << " " << t_var << " " << phi << " " << Q2_weight << endl;
 
-      if( (Q2>2) && (Q2<3) )
+      if( (Q2>4) && (Q2<5) )
 	{
 	  Q2_count++;
-	  sum_xsec = sum_xsec + xsec;
+	  //	  sum_xsec = sum_xsec + xsec;
+	  sum_xsec = sum_xsec + t_var;
 	  sum_psf = sum_psf + psf;
 	}
 	
@@ -111,7 +113,7 @@ void compare()
   //======================================
   // Normalization of the foam generator
   //======================================
-  TFile *gfile = new TFile("./root_file/foam_imposed_19012021.root");
+  TFile *gfile = new TFile("./root_file/foam_imposed_with_integral_21012021.root");
   TTree *DVCS = (TTree*)gfile->Get("DVCS");  
   N_events = (Int_t)DVCS->GetEntries();
 
@@ -140,7 +142,8 @@ void compare()
   DVCS->SetBranchAddress("g_pz", &g_pz);
   DVCS->SetBranchAddress("g_E", &g_E);
   DVCS->SetBranchAddress("xsec", &xsec);
-
+  DVCS->SetBranchAddress("xsec_Integral", &xsec_Integral);
+  
   Double_t NTOT=0.;
 
   cout << "Event numbers of foam generator: " << N_events << endl;
@@ -149,6 +152,7 @@ void compare()
   for(int i = 0 ; i < N_events ; i++)
     {
       DVCS->GetEntry(i);
+      //      NTOT = NTOT + (SLdt * xsec_Integral * psf * 1000000.);
       NTOT = NTOT + (SLdt * xsec * psf * 1000000.);
     }
   */
@@ -156,7 +160,8 @@ void compare()
   for(int i = 0 ; i < N_events ; i++)
     {
       DVCS->GetEntry(i);
-      NTOT = (SLdt * xsec * psf * 1000000.) / N_events;
+      //      NTOT = (SLdt * xsec * psf * 1000000.) / N_events;
+      NTOT = (SLdt * xsec_Integral * psf * 1000000.) / N_events;
       //      if( i % 1000 == 0 ) cout << NTOT << endl;
 
       if(xsec > 0.1)
@@ -165,7 +170,8 @@ void compare()
       if( (Q2>2) && (Q2<3) )
 	{
 	  Q2_count++;
-	  sum_xsec = sum_xsec + xsec;
+	  //	  sum_xsec = sum_xsec + xsec;
+	  sum_xsec = sum_xsec + xsec_Integral;
 	  sum_psf = sum_psf + psf; 
 	}
 
@@ -176,13 +182,6 @@ void compare()
       xsec_foam->Fill(xsec);
       psf_foam->Fill(psf);
       foam_Q2_xsec->Fill(Q2, xsec);
-
-      /*
-      Q2_norm_foam->Fill(Q2, NTOT / N_events);
-      Xb_norm_foam->Fill(xb, NTOT / N_events);
-      t_norm_foam->Fill(t_var, NTOT / N_events);
-      phi_norm_foam->Fill(phi, NTOT / N_events);
-      */
       
       Q2_norm_foam->Fill(Q2, NTOT);
       Xb_norm_foam->Fill(xb, NTOT);
@@ -227,7 +226,7 @@ void compare()
   phi_norm_foam->GetYaxis()->SetMaxDigits(3);
   phi_norm_foam->Draw();
 
-  
+  /*  
   TCanvas *c2 = new TCanvas ("c2","c2", 1000, 1000);
   c2->Divide(2,2);
   c2->cd(1);
@@ -263,7 +262,7 @@ void compare()
   c4->cd(4);
   psf_foam->Draw();
     
-  /*
+  
   TCanvas *c5 = new TCanvas ("c5","c5", 1000, 500);
   c5->Divide(2,1);
   c5->cd(1);
