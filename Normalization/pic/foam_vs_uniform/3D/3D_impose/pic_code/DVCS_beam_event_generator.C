@@ -57,27 +57,21 @@ void DVCS_beam_event_generator()
   
   // Run the Event Generator
   //
-  //  for(int i = 0 ; i < Iteration ; i++)
   while(1)
     {
-      if( count > 100000 ) break;
+      if( count > 1000000 ) break; // number of events generated 
       if( count % 10000 == 0) cout << count << " events are generated ......" << endl;
       
       
       // =================================
       // Boost the beam-beam collider to fix target, then calculation
       // =================================
-      //      TLorentzVector e0(0, 0., -10., 10.), p0(0., 0., 100., 100.004402);      
       TLorentzVector e0(0, 0., -10., 10.), p0( (100.*TMath::Sin(0.025)), 0., (100.*TMath::Cos(0.025)), 100.004402); // The crossing angle between the e- beam and p+ beam: 25 mrad
-      //      e0.Print();   p0.Print();  
       
       CM_frame_fix_beam_3 = p0.BoostVector();
       p0.Boost(-CM_frame_fix_beam_3);
       e0.Boost(-CM_frame_fix_beam_3);
-      //      cout << "proton 4-momentum after boost: ";  p0.Print();
-      //      cout << "electron 4-momentum after boost: ";  e0.Print();  cout << endl;
       Eb = e0.E();
-      //      cout << setprecision(8) << Eb << endl;
       
       
 
@@ -85,25 +79,9 @@ void DVCS_beam_event_generator()
       // Initialze all parameters
       // =================================
       Q2=0.; Q2_min=2.; xb=0.; M=0.938271998; s_var=0.; t_var=0.; t0_min=0.; t0_max=0.;
-      /*
-      Q2 = R->Uniform(Q2_min, 20.);
-
-      xb_min = 2. * Eb * Q2 / (M * (4 * TMath::Power(Eb, 2)-Q2));  
-      xb_max = Q2 / ( Q2 - TMath::Power(M,2) );
-      if(xb_max > 0.1) xb_max = 0.1;
-      xb = R->Uniform(xb_min, xb_max);
-      
-      Q2_max = xb * Eb * 2. * M;
-      if(Q2 > Q2_max)
-	{
-	  cout << "large Q2" << endl;
-	  continue;
-	}
-      */
 
       xb_min = 0.0001;  xb_max = 0.1;
       xb = R->Uniform(xb_min, xb_max);
-      //      xb = 0.05;
       
       Q2_max = xb * Eb * 2. * M;
       if( Q2_max > 100. )
@@ -112,9 +90,7 @@ void DVCS_beam_event_generator()
 	continue;
       Q2 = R->Uniform(Q2_min, Q2_max);
 
-      
-      phi = R->Uniform(0., 2.*TMath::Pi());
-      //      phi = 0.1;
+      phi = 0.1;
       
       M0_square[0] = -Q2;  M0_square[1] = M * M;  M0_square[2] = 0;  M0_square[3] = M * M;  
       
@@ -131,15 +107,11 @@ void DVCS_beam_event_generator()
       rotate_axis = (e0.Vect()).Cross(-1.*z_axis);
       Double_t rotate_angle = (e0.Vect()).Angle(-1.*z_axis);
       e0.Rotate(rotate_angle, rotate_axis);  // Align the particle with the beamline
-      //      p0.Rotate(rotate_angle, rotate_axis);  // This should not be done
-      //      e0.Print();
       
-      //      cout << Eb << " " << Virtual_photon_E << endl;
       e1E = Eb - Virtual_photon_E;  // Energy of scattering electron
       e1_S_angle_cos = 1. - Q2 / (2. * Eb * e1E);  // Cos theta value of electron scattering
       e1_S_angle_sin = sqrt(1. - e1_S_angle_cos * e1_S_angle_cos);  
       e1_S_angle = TMath::ACos(e1_S_angle_cos);  
-      //      cout << "Electron Scattering angle: " << e1_S_angle << endl; 
       e1.SetE(e1E);
       e1.SetPz(-e1E * e1_S_angle_cos);  // the original direction of electron is toward -z
       e1.SetPy(0.);
@@ -164,37 +136,29 @@ void DVCS_beam_event_generator()
       // Calculate the hadronic reaction
       // =================================
       s_var = (Virtual_photon + p0) * (Virtual_photon + p0);
-      //      cout << "S Var: " << s_var << endl;
       CM_frame_HR_4 = Virtual_photon + p0;
       CM_frame_HR_3 = CM_frame_HR_4.BoostVector();
       Virtual_photon.Boost(-CM_frame_HR_3);  // Boost the Tlorentzvector to the CMS frame
       p0.Boost(-CM_frame_HR_3);
-      //      cout << "Before rotate in CMS frame :" << endl << "Vp:";  Virtual_photon.Print();  cout << "p0:";  p0.Print();
       
       rotate_axis = (Virtual_photon.Vect()).Cross(z_axis);
       rotate_angle = (Virtual_photon.Vect()).Angle(z_axis);
       Virtual_photon.Rotate(rotate_angle, rotate_axis);  // Align the particle with the beamline
       p0.Rotate(rotate_angle, rotate_axis);
-      //      cout << "After rotate in CMS frame :" << endl << "Vp:";  Virtual_photon.Print();  cout << "p0:";  p0.Print();
 
       // Calculate the Energy and momentum
       E_CMS[0] = (s_var + M0_square[0] - M0_square[1]) / (2. * sqrt(s_var));   E_CMS[1] = (s_var + M0_square[1] - M0_square[0]) / (2. * sqrt(s_var));
       E_CMS[2] = (s_var + M0_square[2] - M0_square[3]) / (2. * sqrt(s_var));   E_CMS[3] = (s_var + M0_square[3] - M0_square[2]) / (2. * sqrt(s_var));
       P_CMS[0] = sqrt(E_CMS[0] * E_CMS[0] - M0_square[0]);   P_CMS[1] = sqrt(E_CMS[1] * E_CMS[1] - M0_square[1]);
       P_CMS[2] = sqrt(E_CMS[2] * E_CMS[2] - M0_square[2]);   P_CMS[3] = sqrt(E_CMS[3] * E_CMS[3] - M0_square[3]); 
-
-      //      for(int j = 0 ; j < 4 ; j++)
-      //	cout << E_CMS[j] << " || " << P_CMS[j] << endl;
       
       t0_min = (E_CMS[0] - E_CMS[2]) * (E_CMS[0] - E_CMS[2]) - (P_CMS[0] - P_CMS[2]) * (P_CMS[0] - P_CMS[2]);
       t0_max = (E_CMS[0] - E_CMS[2]) * (E_CMS[0] - E_CMS[2]) - (P_CMS[0] + P_CMS[2]) * (P_CMS[0] + P_CMS[2]);
-      //      t_var = R->Uniform(t0_max, t0_min);
 
       if( t0_min < -1. )
 	  continue;
 
       t_var = R->Uniform(-1., t0_min);
-      //      t_var = -0.5;
       
       if( isnan(t_var) )
 	{
@@ -202,20 +166,11 @@ void DVCS_beam_event_generator()
 	  continue;
 	}
 
-      //      psf = (0.1 - xb_min) * (Q2_max - Q2_min) * (t0_min + 1.) * 2. * TMath::Pi();
-
-      //      psf = (t0_min + 1.) * 2. * TMath::Pi() * 0.05 * (Q2_max - Q2_min);
-      psf = (t0_min + 1.) * 2. * TMath::Pi() * (xb_max - xb_min) * (Q2_max - Q2_min);
-
-      if(psf > 100.)
-	cout << psf << ": " << (xb_max - xb_min) << " " << (Q2_max - Q2_min) << " " << (t0_min + 1.) << endl;
-      //      cout << "Q2: " << Q2 << " || xb: " << xb << " || t: " << t_var << endl;      
-      //      cout << "t0 min: " << t0_min << " || t0 max: " << t0_max << " || t: " << t_var << endl << endl;
+      psf = (t0_min + 1.) * 0.1 * (xb_max - xb_min) * (Q2_max - Q2_min);
 
       S_angle_cos_CMS = 1. - ( (t0_min - t_var) / (2. * P_CMS[0] * P_CMS[2]) );
       S_angle_sin_CMS = sqrt(1. - S_angle_cos_CMS * S_angle_cos_CMS);
 
-      //      cout << "Cos: " << S_angle_cos_CMS << " || Sin: " << S_angle_sin_CMS << endl << endl;
       
       photon.SetE(E_CMS[2]);   photon.SetPz(E_CMS[2] * S_angle_cos_CMS);   photon.SetPy(0.);    photon.SetPx(E_CMS[2] * S_angle_sin_CMS);
       p1 = Virtual_photon + p0 - photon;
@@ -228,14 +183,7 @@ void DVCS_beam_event_generator()
       p1.Boost(CM_frame_HR_3);
       Virtual_photon.Boost(CM_frame_HR_3);
 
-      //      rotate_angle = (Virtual_photon.Vect()).Angle(z_axis);  // Rotate in phi direction
-      //      p1.Print();  photon.Print(); cout << endl;
-      //      p1.RotateY(rotate_angle);  photon.RotateY(rotate_angle);
-      //      p1.Print();  photon.Print(); cout << endl;
       p1.Rotate(phi, Virtual_photon.Vect());  photon.Rotate(phi, Virtual_photon.Vect());
-      //      p1.RotateY(phi);  photon.RotateY(phi);
-      //      p1.Print();  photon.Print();
-      //      p1.RotateY(-rotate_angle);  photon.RotateY(-rotate_angle);
       
       photon.Boost(CM_frame_fix_beam_3); // Boost fix-target frame back to beam-beam frame
       p1.Boost(CM_frame_fix_beam_3);
@@ -251,11 +199,7 @@ void DVCS_beam_event_generator()
       v2 = (Virtual_photon.Vect()).Cross(photon.Vect());
       phi_def = v1.Angle(v2);
       if( (Virtual_photon.Vect()).Dot(v1.Cross(v2)) < 0. )
-	{
-	  phi_def = 2. * TMath::Pi() - phi_def;
-	  //	  cout << "!!!" << "      ";
-	}
-      //      cout << "phi: " << phi << " || phi_def: " << phi_def << " || Difference: " << (phi - phi_def) << endl;
+	phi_def = 2. * TMath::Pi() - phi_def;
 
       
       // Calculate the interested physics quantity
@@ -270,8 +214,6 @@ void DVCS_beam_event_generator()
       T->Fill();
       count++;
       
-      //      cout << "Proton Scattering angle: " << p1_S_angle << endl << endl;
-
       /*
       cout << "Hadronic reaction: " << endl << "====================================" << endl;
       cout << "Virtual Photon: "; Virtual_photon.Print(); cout << "Scattering Photon: ";  photon.Print();  cout << "Scattering proton: ";  p1.Print();
