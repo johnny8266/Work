@@ -28,13 +28,13 @@
 using namespace std;
 
 struct Hit {
-    double x_crs;
-    double y_crs;
-    double z_crs;
-    double Et_dep;
-    double E_digi;
-    double time;
-    int npe;
+  double x_crs;
+  double y_crs;
+  double z_crs;
+  double Et_dep;   // ce_emcal ETot deposit
+  double E_digi;   // ce_emcal ADC
+  double time;
+  int npe;
 
 };
 
@@ -81,30 +81,40 @@ Cluster ComputeCluster(vector<Hit> hit) {
     int Clus_size_simul = 0;
     double Clus_Energy_tot_simul = 0;
 
+    //    cout << "=============================================" << endl;
+    //    cout << "Ce_Emcal hit size of this event: " << Size << endl;
 
     //  Loop all hits per event
     //  Cluster Seed;
     for (int i = 0; i < Size; i++) {
-        if (hit.at(i).E_digi > Ethr && hit.at(i).E_digi > ClusSeed_Ene) {
-            ClusSeed_Ene = hit.at(i).E_digi;
-            ClusSeed_xcrs = hit.at(i).x_crs;
-            ClusSeed_ycrs = hit.at(i).y_crs;
-            ClusSeed_zcrs = hit.at(i).z_crs;
-            ClusSeed_npe = hit.at(i).npe;
-            //      cout << "SEED " << ClusSeed_xcrs << " "<< ClusSeed_ycrs << endl;
-        }
+      if (hit.at(i).E_digi > Ethr && hit.at(i).E_digi > ClusSeed_Ene)  // iterate the energy to the larger one.
+	{
+	  ClusSeed_Ene = hit.at(i).E_digi;
+	  ClusSeed_xcrs = hit.at(i).x_crs;
+	  ClusSeed_ycrs = hit.at(i).y_crs;
+	  ClusSeed_zcrs = hit.at(i).z_crs;
+	  ClusSeed_npe = hit.at(i).npe;
+	  
+	  //	  cout << "SEED " << i << " : " << ClusSeed_xcrs << " "<< ClusSeed_ycrs << " " << ClusSeed_Ene << endl;
+	}
     }
 
+    // this seed has the largest energy and print its information
+    //    cout << "Most powerful hit: " << ClusSeed_xcrs << " "<< ClusSeed_ycrs << " " << ClusSeed_Ene << endl << endl;
+    
 
     //ENERGY TOT simul starting fro Et_dep
     for (int i = 0; i < Size; i++) {
         if (hit.at(i).Et_dep > Ethr) {
             double Dx = hit.at(i).x_crs - ClusSeed_xcrs;
             double Dy = hit.at(i).y_crs - ClusSeed_ycrs;
-            if (sqrt(Dx * Dx + Dy * Dy) <= 3 * Rmoliere) {
+	    //	    cout << "SEED " << i << " : " << Dx << " " << Dy << " " << ClusSeed_xcrs << " " << ClusSeed_ycrs << endl;
+	    
+            if (sqrt(Dx * Dx + Dy * Dy) <= 3 * Rmoliere)  // find the hits close to the powerful hit
+	      {
                 Clus_Energy_tot_simul += hit.at(i).Et_dep;
                 Clus_size_simul++;
-            }
+	      }
         }
     }
 
@@ -121,10 +131,12 @@ Cluster ComputeCluster(vector<Hit> hit) {
                 //   cout <<hit.at(i).E_digi<< " "<<hit.at(i).x_crs<< " "<<hit.at(i).y_crs<<" "<< Dx << " "<< Dy<< " "<<sqrt(Dx*Dx+Dy*Dy)<<endl;
                 Clus_Etot += hit.at(i).E_digi;
                 Clus_size++;
-
             }
         } //end if ethr
     } //for energy tot
+
+    //    cout << "Clus Etot: " << Clus_Etot << " || Clus size: " << Clus_size << endl << endl;
+
 
     // Cluster Center
 
@@ -133,22 +145,23 @@ Cluster ComputeCluster(vector<Hit> hit) {
     x = 0;
     y = 0;
 
-    for (int i = 0; i < Size; i++) {
-        double w1 = std::max(0., (3.45 + std::log(hit.at(i).E_digi / Clus_Etot)));
-        x += w1 * hit.at(i).x_crs;
-        y += w1 * hit.at(i).y_crs;
-        Clus_xx += w1 * hit.at(i).x_crs * hit.at(i).x_crs;
-        Clus_yy += w1 * hit.at(i).y_crs * hit.at(i).y_crs;
-        w_tot += w1;
+    for (int i = 0; i < Size; i++) { // Consider all ce_emcal hits! if hit energy so small, give it weight 0
+      double w1 = std::max(0., (3.45 + std::log(hit.at(i).E_digi / Clus_Etot))); 
+      x += w1 * hit.at(i).x_crs;
+      y += w1 * hit.at(i).y_crs;
+      Clus_xx += w1 * hit.at(i).x_crs * hit.at(i).x_crs;
+      Clus_yy += w1 * hit.at(i).y_crs * hit.at(i).y_crs;
+      w_tot += w1;
     }
     Clus_x = x / w_tot;
     Clus_y = y / w_tot;
     Clus_xx /= w_tot;
     Clus_yy /= w_tot;
 
+    
     // Cluster sigma
 
-    double sigmax2 = Clus_xx - std::pow(Clus_x, 2.);
+    double sigmax2 = Clus_xx - std::pow(Clus_x, 2.);  // <x^2> - <x>^2
     if (sigmax2 < 0) sigmax2 = 0;
     Clus_sigmaX = std::sqrt(sigmax2);
 
@@ -170,8 +183,8 @@ Cluster ComputeCluster(vector<Hit> hit) {
 
     Cluster cluster;
 
-    cluster.C_seed_energy = ClusSeed_Ene;
-    cluster.C_energy = Clus_Etot;
+    cluster.C_seed_energy = ClusSeed_Ene;                 //
+    cluster.C_energy = Clus_Etot;                         //
     cluster.C_seed_x = ClusSeed_xcrs;
     cluster.C_seed_y = ClusSeed_ycrs;
     cluster.C_seed_z = ClusSeed_zcrs;
@@ -181,7 +194,7 @@ Cluster ComputeCluster(vector<Hit> hit) {
     cluster.C_theta = Clus_Theta;
     cluster.C_phi = Clus_phi;
     cluster.C_size = Clus_size;
-    cluster.C_Energy_tot_simul = Clus_Energy_tot_simul;
+    cluster.C_Energy_tot_simul = Clus_Energy_tot_simul;   //
     cluster.C_size_simul = Clus_size_simul;
     cluster.C_seed_npe = ClusSeed_npe;
 
@@ -281,7 +294,7 @@ void g4e_read()
   int Cl_size = 0, Cl_seed_npe = 0, Cl_size_simul = 0, ene = 0;
   double g_px = 0., g_py = 0., g_pz = 0., g_E = 0.;
   
-  string fileName_out = "/home/pu-kai/Work/Reconstruction/data/outCluster.root";
+  string fileName_out = "./data/outCluster.root";
   TFile *fout = new TFile(fileName_out.c_str(), "Recreate");
   TTree *outTree = new TTree("outTree", "outTree");
 
@@ -325,7 +338,7 @@ void g4e_read()
       // Read basic values
       auto hits_count = static_cast<size_t>(*hit_count.Get());         
       auto tracks_count = static_cast<size_t>(*trk_count.Get());       
-      //      cout << "This event has: " << tracks_count << " tracks || " << hits_count << " hits." << endl;
+      //      cout << endl << "This event has: " << tracks_count << " tracks || " << hits_count << " hits." << endl << endl;
       
 	      
       for(size_t i = 0 ; i < hits_count ; i++)
