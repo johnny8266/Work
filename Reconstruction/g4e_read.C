@@ -195,7 +195,7 @@ Cluster ComputeCluster(vector<Hit> hit) {
     cluster.C_phi = Clus_phi;
     cluster.C_size = Clus_size;
     cluster.C_Energy_tot_simul = Clus_Energy_tot_simul;   //
-    cluster.C_size_simul = Clus_size_simul;
+    cluster.C_size_simul = Clus_size_simul;               
     cluster.C_seed_npe = ClusSeed_npe;
 
     return cluster;
@@ -436,32 +436,38 @@ void g4e_read()
 	  hit.E_digi = ce_emcal_ADC[i];
 	  hit.time = ce_emcal_TDC[i];
 	  hit.npe = ce_emcal_Npe[i];
+	  
 	  hit_e_check+=ce_emcal_Etot_dep[i];
-	  cout << ce_emcal_xcrs[i] << " " << ce_emcal_ycrs[i] << " " << ce_emcal_zcrs[i] << " " << ce_emcal_Etot_dep[i] << endl;
+	  cout << ce_emcal_xcrs[i] << " " << ce_emcal_ycrs[i] << " " << ce_emcal_zcrs[i] << "     " << ce_emcal_Etot_dep[i] << endl;
 
 	  hhit.push_back(hit);
 	}
-      //      cout << "double check: " << hit_e_check << endl;
+      cout << "double check: " << hit_e_check << endl;
 
       Cluster cluster;
       cluster = ComputeCluster(hhit);
 
-      Cl_seed_energy = cluster.C_seed_energy;
-      Cl_seed_npe = cluster.C_seed_npe;
-      Cl_energy = cluster.C_energy;
+      Cl_seed_energy = cluster.C_seed_energy;               // Max. energy of hits crystal(digi)
+      Cl_seed_npe = cluster.C_seed_npe;                     // Max. npe of hits crystals
+      Cl_energy = cluster.C_energy;                         // Total energy of the cluster(digi)
+      Cl_Energy_tot_simul = cluster.C_Energy_tot_simul;     // Total energy of the cluster(deposit)
 
-      Cl_seed_x = cluster.C_seed_x;
+      Cl_seed_x = cluster.C_seed_x;                         // Position of hit with max. energy
       Cl_seed_y = cluster.C_seed_y;
       Cl_seed_z = cluster.C_seed_z;
-      Cl_x = cluster.C_x;
+      
+      Cl_x = cluster.C_x;                                   // Cluster position after weighted
       Cl_y = cluster.C_y;
+      
       Cl_radius = cluster.C_radius;
       Cl_theta = cluster.C_theta;
       Cl_phi = cluster.C_phi;
-      Cl_size = cluster.C_size;
-      Cl_Energy_tot_simul = cluster.C_Energy_tot_simul;
-      Cl_size_simul = cluster.C_size_simul;
 
+      Cl_size = cluster.C_size;                             // Cluster size(number of hits in this cluster)
+      Cl_size_simul = cluster.C_size_simul;                 // Same as the above one
+
+
+      
       g_px = gen_prt_dir_x[1] * gen_prt_tot_mom[1];
       g_py = gen_prt_dir_y[1] * gen_prt_tot_mom[1];
       g_pz = gen_prt_dir_z[1] * gen_prt_tot_mom[1];
