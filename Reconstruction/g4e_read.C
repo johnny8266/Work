@@ -271,18 +271,21 @@ void g4e_read()
   TTreeReaderArray<double>        ce_emcal_Etot_dep = {fReader, "ce_emcal_Etot_dep"};
   TTreeReaderArray<double>        ce_emcal_ADC = {fReader, "ce_emcal_ADC"};
   TTreeReaderArray<double>        ce_emcal_TDC = {fReader, "ce_emcal_TDC"};
-  TTreeReaderArray<double>        ce_emcal_xcrs = {fReader, "ce_emcal_xcrs"};
+  TTreeReaderArray<double>        ce_emcal_xcrs = {fReader, "ce_emcal_xcrs"};  // x, y, z are translation value relative to the mother frame
   TTreeReaderArray<double>        ce_emcal_ycrs = {fReader, "ce_emcal_ycrs"};
   TTreeReaderArray<double>        ce_emcal_zcrs = {fReader, "ce_emcal_zcrs"};
 
   double mass_electron = 0.00051099895;
   double mass_proton = 0.0938271998;
-
+  double hit_energy = 0.;
+  int count = 0;
   
   //==================================
   // Histgram
   //==================================
 
+  auto emcal_hit_xy_photon = new TH2F("emcal_hit_xy_photon", "emcal_hit_xy_photon", 300, -1500., 1500., 250, -1500., 1000.);
+  auto emcal_hit_xy_electron = new TH2F("emcal_hit_xy_electron", "emcal_hit_xy_electron", 300, -1500., 1500., 250, -1500., 1000.);
 
   //==================================
   // Save the output
@@ -325,7 +328,7 @@ void g4e_read()
   size_t events_numer = 0;  
   while (fReader.Next())
     {
-      if(++events_numer > 7000)
+      if(++events_numer > 1)
 	break;
       
       if(events_numer%100 == 0)
@@ -338,9 +341,13 @@ void g4e_read()
       // Read basic values
       auto hits_count = static_cast<size_t>(*hit_count.Get());         
       auto tracks_count = static_cast<size_t>(*trk_count.Get());       
-      //      cout << endl << "This event has: " << tracks_count << " tracks || " << hits_count << " hits." << endl << endl;
+      cout << endl << "This event has: " << tracks_count << " tracks || " << hits_count << " hits." << endl << endl;
       
-	      
+
+
+      // =============================
+      // Save the track hit on Emcal
+      // =============================
       for(size_t i = 0 ; i < hits_count ; i++)
 	{
 	  // This is is of a track that made this hit
@@ -352,51 +359,89 @@ void g4e_read()
 		  
 	  double x = hit_x[i], y = hit_y[i], z = hit_z[i];
 	  double e_loss = hit_e_loss[i];
-            
+	  
+	  //	  if( hit_track_id == 1 )
+	  //	    cout << hit_parent_track_id << " " << hit_vol_name[i] << endl;
+
+	  if( hit_vol_name[i] == "ce_EMCAL_pwo_phys_35002" )
+	    {
+	      cout << hit_track_id << " " << hit_vol_name[i] << " " << "[" << x << ", " << y << ", " << z << "] ";
+	      cout << hit_e_loss[i] * 1000. << "[MeV]" << endl;
+	      //	      hit_energy+=hit_e_loss[i];
+	    }
+	  
         
 	  // Check that the name starts with "ce_EMCAL"
 	  if(vol_name.rfind("ce_EMCAL", 0) == 0)
 	    {
+	      //	      if( hit_parent_track_id == 22 && hit_track_id == 2 )
+
+	      cout << hit_track_id << " " << hit_vol_name[i] << " " << "[" << x << ", " << y << ", " << z << "] ";
+	      cout << hit_e_loss[i] * 1000. << "[MeV]" << endl;
+	      hit_energy+=hit_e_loss[i];
+		      
+	      
 	      track_ids_in_ecap_emcal.insert(hit_track_id);
+	      //	      cout << hit_track_id << " " << hit_parent_track_id << endl;
+	      if( hit_track_id == 2 )
+		emcal_hit_xy_photon->Fill(x, y);
+	      if( hit_track_id == 1 )
+		emcal_hit_xy_electron->Fill(x, y);
+
+	      count++;
 	    }
-		  
-	  if(vol_name.rfind("ffi", 0) == 0)
-	    {
-	      track_ids_in_ffi_RPOTS.insert(hit_track_id);
-	    }
-	    
 	}
 
+      cout << "hit counts in emcal: " << count << " || energy loss: " << hit_energy * 1000. << endl << endl;
 
+      // iterate over the hit emcal tracks
+      for(size_t i=0; i < hits_count; i++)
+	{
+	  if (trk_pdg[i] != 11) continue;       // Take only electrons for now
+	  if (trk_parent_id[i] != 0) continue;  // Take only particles from a generator
+                
+	  // Check track has hits in ce_EMCAL
+	  if (!track_ids_in_ecap_emcal.count(trk_id[i])) continue;
+        
+	  // Construct TLorenz vector
+	  double px = trk_vtx_dir_x[i] * trk_mom[i];
+	  double py = trk_vtx_dir_y[i] * trk_mom[i];
+	  double pz = trk_vtx_dir_z[i] * trk_mom[i];
+
+	  TLorentzVector lv;
+	  lv.SetXYZM(px, py, pz, mass_electron);
+	  //	  h1_el_e_tot->Fill(lv.Energy());
+	}
+
+      
       
       // =============================
       // Calculate the hit cluster information
       // =============================
       auto Etot_size = 0;
-      //      cout << Etot_size << endl;
+
       vector<Hit> hhit;
+      double hit_e_check = 0.;
       
-      for(int j = 0 ; j < 3 ; j++)
+      Etot_size = ce_emcal_Etot_dep.GetSize();
+      cout << endl << Etot_size << ": " << endl;
+      
+      for(int i = 0 ; i < Etot_size ; i++)
 	{
-	  if(gen_prt_charge[j] == 0.)
-	    {
-	      Etot_size = ce_emcal_Etot_dep.GetSize();
-	      
-	      for(int i = 0 ; i < Etot_size ; i++)
-		{
-		  Hit hit;
-		  hit.x_crs = ce_emcal_xcrs[i];
-		  hit.y_crs = ce_emcal_ycrs[i];
-		  hit.z_crs = ce_emcal_zcrs[i];
-		  hit.Et_dep = ce_emcal_Etot_dep[i];
-		  hit.E_digi = ce_emcal_ADC[i];
-		  hit.time = ce_emcal_TDC[i];
-		  hit.npe = ce_emcal_Npe[i];
-	  
-		  hhit.push_back(hit);
-		}
-	    }
+	  Hit hit;
+	  hit.x_crs = ce_emcal_xcrs[i];
+	  hit.y_crs = ce_emcal_ycrs[i];
+	  hit.z_crs = ce_emcal_zcrs[i];
+	  hit.Et_dep = ce_emcal_Etot_dep[i];
+	  hit.E_digi = ce_emcal_ADC[i];
+	  hit.time = ce_emcal_TDC[i];
+	  hit.npe = ce_emcal_Npe[i];
+	  hit_e_check+=ce_emcal_Etot_dep[i];
+	  cout << ce_emcal_xcrs[i] << " " << ce_emcal_ycrs[i] << " " << ce_emcal_zcrs[i] << " " << ce_emcal_Etot_dep[i] << endl;
+
+	  hhit.push_back(hit);
 	}
+      //      cout << "double check: " << hit_e_check << endl;
 
       Cluster cluster;
       cluster = ComputeCluster(hhit);
@@ -435,4 +480,11 @@ void g4e_read()
   // ======================================
   // Draw the Results
   // ======================================
+  /*
+  auto *c1 = new TCanvas("c1", "c1", 800, 800);
+  emcal_hit_xy_photon->Draw("colorz");
+
+  auto *c2 = new TCanvas("c2", "c2", 800, 800);
+  emcal_hit_xy_electron->Draw("colorz");
+  */
 }
