@@ -21,6 +21,7 @@ void DVCS_beam_event_generator()
   Double_t Virtual_photon_E=0., e1E=0., e1_S_angle_cos=0., e1_S_angle_sin=0.;
   Double_t S_angle_cos_CMS=0., S_angle_sin_CMS=0., E_CMS[4]={0.}, P_CMS[4]={0.}, M0_square[4]={0.};
   Double_t phi, phi_def, e1_S_angle, p1_S_angle, photon_S_angle;
+  Double_t e0_px, e0_py, e0_pz, e0_E, p0_px, p0_py, p0_pz, p0_E;
   Double_t e1_px, e1_py, e1_pz, e1_E, Vg_px, Vg_py, Vg_pz, Vg_E;
   Double_t p1_px, p1_py, p1_pz, p1_E, g_px, g_py, g_pz, g_E;
   Int_t Iteration = 100000, count=0;
@@ -33,9 +34,17 @@ void DVCS_beam_event_generator()
   T->Branch("phi", &phi, "phi/D");
   T->Branch("phi_def", &phi_def, "phi_def/D");
   T->Branch("psf", &psf, "psf/D");
-  T->Branch("e1_S_angle", &e1_S_angle, "e1_S_angle/D");
-  T->Branch("p1_S_angle", &p1_S_angle, "p1_S_angle/D");
-  T->Branch("photon_S_angle", &photon_S_angle, "photon_S_angle/D");
+  //  T->Branch("e1_S_angle", &e1_S_angle, "e1_S_angle/D");
+  //  T->Branch("p1_S_angle", &p1_S_angle, "p1_S_angle/D");
+  //  T->Branch("photon_S_angle", &photon_S_angle, "photon_S_angle/D");
+  T->Branch("e0_px", &e0_px, "e0_px/D");
+  T->Branch("e0_py", &e0_py, "e0_py/D");
+  T->Branch("e0_pz", &e0_pz, "e0_pz/D");
+  T->Branch("e0_E", &e0_E, "e0_E/D");
+  T->Branch("p0_px", &p0_px, "p0_px/D");
+  T->Branch("p0_py", &p0_py, "p0_py/D");
+  T->Branch("p0_pz", &p0_pz, "p0_pz/D");
+  T->Branch("p0_E", &p0_E, "p0_E/D");
   T->Branch("e1_px", &e1_px, "e1_px/D");
   T->Branch("e1_py", &e1_py, "e1_py/D");
   T->Branch("e1_pz", &e1_pz, "e1_pz/D");
@@ -60,7 +69,7 @@ void DVCS_beam_event_generator()
   //  for(int i = 0 ; i < Iteration ; i++)
   while(1)
     {
-      if( count > 100000 ) break;
+      if( count > 1000000 ) break;
       if( count % 10000 == 0) cout << count << " events are generated ......" << endl;
       
       
@@ -69,6 +78,8 @@ void DVCS_beam_event_generator()
       // =================================
       //      TLorentzVector e0(0, 0., -10., 10.), p0(0., 0., 100., 100.004402);      
       TLorentzVector e0(0, 0., -10., 10.), p0( (100.*TMath::Sin(0.025)), 0., (100.*TMath::Cos(0.025)), 100.004402); // The crossing angle between the e- beam and p+ beam: 25 mrad
+      e0_px = e0.Px();  e0_py = e0.Py();  e0_pz = e0.Pz();  e0_E = e0.E();
+      p0_px = p0.Px();  p0_py = p0.Py();  p0_pz = p0.Pz();  p0_E = p0.E(); 
       //      e0.Print();   p0.Print();  
       
       CM_frame_fix_beam_3 = p0.BoostVector();
@@ -194,7 +205,6 @@ void DVCS_beam_event_generator()
 	  continue;
 
       t_var = R->Uniform(-1., t0_min);
-      //      t_var = -0.5;
       
       if( isnan(t_var) )
 	{

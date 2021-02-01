@@ -55,27 +55,27 @@ double xsec(void)
       
       T->GetEntry(i);
 
-      Double_t xb_0 = 0.1;
+      //      Double_t xb_0 = 0.1;
       
-      Double_t* CFF = gEv->Interpol_CFF(Q2, xb_0, t_var);
+      Double_t* CFF = gEv->Interpol_CFF(Q2, xb, t_var);
       if(!CFF)
 	{
 	  cout << "Error !!" << endl;
 	  return 0;
 	}
   
-      BHp = tgv2->CrossSectionBH( Q2, xb_0, t_var, -phi, 1, 0, kTRUE );
-      VCSp = tgv2->CrossSectionVCS( Q2, xb_0, t_var, -phi, 1, 0, CFF[0], CFF[1], CFF[2], CFF[3], CFF[4], CFF[5], CFF[6], CFF[7], kTRUE );
-      Ip = tgv2->CrossSectionInterf( Q2, xb_0, t_var, -phi, 1, 0, -1, CFF[0], CFF[1], CFF[2], CFF[3], CFF[4], CFF[5], CFF[6], CFF[7], kTRUE );
-      BHm = tgv2->CrossSectionBH( Q2, xb_0, t_var, -phi, -1, 0, kTRUE );
-      VCSm = tgv2->CrossSectionVCS( Q2, xb_0, t_var, -phi, -1, 0, CFF[0], CFF[1], CFF[2], CFF[3], CFF[4], CFF[5], CFF[6], CFF[7], kTRUE );
-      Im = tgv2->CrossSectionInterf( Q2, xb_0, t_var, -phi, -1, 0, -1, CFF[0], CFF[1], CFF[2], CFF[3], CFF[4], CFF[5], CFF[6], CFF[7], kTRUE );
+      BHp = tgv2->CrossSectionBH( Q2, xb, t_var, -phi, 1, 0, kTRUE );
+      VCSp = tgv2->CrossSectionVCS( Q2, xb, t_var, -phi, 1, 0, CFF[0], CFF[1], CFF[2], CFF[3], CFF[4], CFF[5], CFF[6], CFF[7], kTRUE );
+      Ip = tgv2->CrossSectionInterf( Q2, xb, t_var, -phi, 1, 0, -1, CFF[0], CFF[1], CFF[2], CFF[3], CFF[4], CFF[5], CFF[6], CFF[7], kTRUE );
+      BHm = tgv2->CrossSectionBH( Q2, xb, t_var, -phi, -1, 0, kTRUE );
+      VCSm = tgv2->CrossSectionVCS( Q2, xb, t_var, -phi, -1, 0, CFF[0], CFF[1], CFF[2], CFF[3], CFF[4], CFF[5], CFF[6], CFF[7], kTRUE );
+      Im = tgv2->CrossSectionInterf( Q2, xb, t_var, -phi, -1, 0, -1, CFF[0], CFF[1], CFF[2], CFF[3], CFF[4], CFF[5], CFF[6], CFF[7], kTRUE );
       SigmaTotPlus = BHp + VCSp + Ip;
       SigmaTotMoins = BHm + VCSm + Im;
       //  if(opt==1) return TMath::Pi()*(BHp+BHm)* ConvGeV2nbarn;
       xsec = TMath::Pi() * ( SigmaTotPlus + SigmaTotMoins ) * ConvGeV2nbarn;
 
-      xsec = xsec * TMath::Sqrt(0.1 / xb);  // modify the Uniform cross section with the sqrt(1./xb)
+      //      xsec = xsec * TMath::Sqrt(0.1 / xb);  // modify the Uniform cross section with the sqrt(1./xb)
       //      xsec = xsec * TMath::Sqrt(0.1 / xb);  // modify the Foam cross section with the sqrt(0.1/xb)
 	    
       add_br->Fill();

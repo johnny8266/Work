@@ -62,10 +62,10 @@ Int_t main()
 
 
   //-----------------------------------------
-  long NevTot   =     10000;   // Total MC statistics
+  long NevTot   =   1000000;   // Total MC statistics
   Int_t  kDim   =         4;   // total dimension
-  Int_t  nCells   =    2000;   // Number of Cells
-  Int_t  nSampl   =     100;   // Number of MC events per cell in build-up
+  Int_t  nCells   =    5000;   // Number of Cells
+  Int_t  nSampl   =     200;   // Number of MC events per cell in build-up
   Int_t  nBin     =       8;   // Number of bins in build-up
   Int_t  OptRej   =       1;   // Wted events for OptRej=0; wt=1 for OptRej=1 (default)
   Int_t  OptDrive =       2;   // (D=2) Option, type of Drive =0,1,2 for TrueVol,Sigma,WtMax

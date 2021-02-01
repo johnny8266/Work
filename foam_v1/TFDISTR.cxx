@@ -33,15 +33,15 @@ Double_t TFDISTR::Density(int nDim, Double_t *Xarg)
 
   Double_t xBMin = 2. * Eb * Q2 / (M * (4 * TMath::Power(Eb, 2)-Q2));  
   Double_t xBMax = Q2/(Q2-TMath::Power(M,2));
-  //  Double_t xB = Xarg[1] * (0.1 - 0.0001) + 0.0001;
+  Double_t xB = Xarg[1] * (0.1 - 0.0001) + 0.0001;
   //  Double_t xB = TMath::Sqrt( 0.0001 / (Xarg[1] * (0.1 - 0.01) + 0.01));
   //  Double_t xB = TMath::Power(10., (-1. - Xarg[1] * 3.));
-  Double_t xB0 = Xarg[1] * (0.1 - 0.0001) + 0.0001;
+  //  Double_t xB0 = Xarg[1] * (0.1 - 0.0001) + 0.0001;
   
-  if( (xB0 < xBMin) || (xB0 > xBMax) )
+  if( (xB < xBMin) || (xB > xBMax) )
     return 0;
 
-  Double_t xB = 0.1;
+  //  Double_t xB = 0.1;
   
   Double_t Q2Max = Eb * 2. * M * xB;
   if( Q2 > Q2Max )
@@ -75,7 +75,7 @@ Double_t TFDISTR::Density(int nDim, Double_t *Xarg)
   SigmaTotMoins = BHm + VCSm + Im;
   DVCSxsec = TMath::Pi() * ( SigmaTotPlus + SigmaTotMoins ) * ConvGeV2nbarn;// Total DVCS cross section in nb/GeV4
 
-  DVCSxsec = DVCSxsec * TMath::Sqrt( 0.1 / xB0 );
+  //  DVCSxsec = DVCSxsec * TMath::Sqrt( 0.1 / xB0 );
   
   delete tgv;
   

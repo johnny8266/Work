@@ -280,6 +280,7 @@ void g4e_read()
   double hit_energy = 0.;
   int count = 0;
   
+  
   //==================================
   // Histgram
   //==================================
@@ -295,7 +296,9 @@ void g4e_read()
   double Cl_seed_x = 0, Cl_seed_y = 0, Cl_seed_z = 0;
   double Cl_x = 0, Cl_y = 0, Cl_radius = 0, Cl_theta = 0, Cl_phi = 0;
   int Cl_size = 0, Cl_seed_npe = 0, Cl_size_simul = 0, ene = 0;
-  double g_px = 0., g_py = 0., g_pz = 0., g_E = 0.;
+  double g_px = 0., g_py = 0., g_pz = 0., g_E = 0., e_px = 0., e_py = 0., e_pz = 0., e_E = 0.;
+  int e_flag_emcal=0, g_flag_emcal=0;
+
   
   string fileName_out = "./data/outCluster.root";
   TFile *fout = new TFile(fileName_out.c_str(), "Recreate");
@@ -320,6 +323,13 @@ void g4e_read()
   outTree->Branch("g_py", &g_py, "g_py/D");
   outTree->Branch("g_pz", &g_pz, "g_pz/D");
   outTree->Branch("g_E", &g_E, "g_E/D");
+  outTree->Branch("e_px", &e_px, "e_px/D");
+  outTree->Branch("e_py", &e_py, "e_py/D");
+  outTree->Branch("e_pz", &e_pz, "e_pz/D");
+  outTree->Branch("e_E", &e_E, "e_E/D");
+  outTree->Branch("e_flag_emcal", &e_flag_emcal, "e_flag_emcal/I");
+  outTree->Branch("g_flag_emcal", &g_flag_emcal, "g_flag_emcal/I");
+  
   
   //==================================
   // Loop the Event
@@ -328,7 +338,7 @@ void g4e_read()
   size_t events_numer = 0;  
   while (fReader.Next())
     {
-      if(++events_numer > 1)
+      if(++events_numer > 7000)
 	break;
       
       if(events_numer%100 == 0)
@@ -341,9 +351,8 @@ void g4e_read()
       // Read basic values
       auto hits_count = static_cast<size_t>(*hit_count.Get());         
       auto tracks_count = static_cast<size_t>(*trk_count.Get());       
-      cout << endl << "This event has: " << tracks_count << " tracks || " << hits_count << " hits." << endl << endl;
+      //      cout << endl << "This event has: " << tracks_count << " tracks || " << hits_count << " hits." << endl << endl;
       
-
 
       // =============================
       // Save the track hit on Emcal
@@ -363,36 +372,43 @@ void g4e_read()
 	  //	  if( hit_track_id == 1 )
 	  //	    cout << hit_parent_track_id << " " << hit_vol_name[i] << endl;
 
+	  /*
 	  if( hit_vol_name[i] == "ce_EMCAL_pwo_phys_35002" )
 	    {
 	      cout << hit_track_id << " " << hit_vol_name[i] << " " << "[" << x << ", " << y << ", " << z << "] ";
 	      cout << hit_e_loss[i] * 1000. << "[MeV]" << endl;
 	      //	      hit_energy+=hit_e_loss[i];
 	    }
-	  
+	  */
         
 	  // Check that the name starts with "ce_EMCAL"
 	  if(vol_name.rfind("ce_EMCAL", 0) == 0)
 	    {
 	      //	      if( hit_parent_track_id == 22 && hit_track_id == 2 )
 
-	      cout << hit_track_id << " " << hit_vol_name[i] << " " << "[" << x << ", " << y << ", " << z << "] ";
-	      cout << hit_e_loss[i] * 1000. << "[MeV]" << endl;
-	      hit_energy+=hit_e_loss[i];
+	      //	      cout << hit_track_id << " " << hit_vol_name[i] << " " << "[" << x << ", " << y << ", " << z << "] ";
+	      //	      cout << hit_e_loss[i] * 1000. << "[MeV]" << endl;
+	      //	      hit_energy+=hit_e_loss[i];
 		      
 	      
 	      track_ids_in_ecap_emcal.insert(hit_track_id);
 	      //	      cout << hit_track_id << " " << hit_parent_track_id << endl;
 	      if( hit_track_id == 2 )
-		emcal_hit_xy_photon->Fill(x, y);
+		{
+		  emcal_hit_xy_photon->Fill(x, y);
+		  g_flag_emcal = 1;
+		}
 	      if( hit_track_id == 1 )
-		emcal_hit_xy_electron->Fill(x, y);
+		{
+		  emcal_hit_xy_electron->Fill(x, y);
+		  e_flag_emcal = 1;
+		}
 
 	      count++;
 	    }
 	}
 
-      cout << "hit counts in emcal: " << count << " || energy loss: " << hit_energy * 1000. << endl << endl;
+      //      cout << "hit counts in emcal: " << count << " || energy loss: " << hit_energy * 1000. << endl << endl;
 
       // iterate over the hit emcal tracks
       for(size_t i=0; i < hits_count; i++)
@@ -424,7 +440,7 @@ void g4e_read()
       double hit_e_check = 0.;
       
       Etot_size = ce_emcal_Etot_dep.GetSize();
-      cout << endl << Etot_size << ": " << endl;
+      //      cout << endl << Etot_size << ": " << endl;
       
       for(int i = 0 ; i < Etot_size ; i++)
 	{
@@ -436,13 +452,12 @@ void g4e_read()
 	  hit.E_digi = ce_emcal_ADC[i];
 	  hit.time = ce_emcal_TDC[i];
 	  hit.npe = ce_emcal_Npe[i];
-	  
-	  hit_e_check+=ce_emcal_Etot_dep[i];
-	  cout << ce_emcal_xcrs[i] << " " << ce_emcal_ycrs[i] << " " << ce_emcal_zcrs[i] << "     " << ce_emcal_Etot_dep[i] << endl;
-
 	  hhit.push_back(hit);
+	  
+	  //	  hit_e_check+=ce_emcal_Etot_dep[i];
+	  //	  cout << ce_emcal_xcrs[i] << " " << ce_emcal_ycrs[i] << " " << ce_emcal_zcrs[i] << "     " << ce_emcal_Etot_dep[i] << endl;
 	}
-      cout << "double check: " << hit_e_check << endl;
+      //      cout << "double check: " << hit_e_check << endl;
 
       Cluster cluster;
       cluster = ComputeCluster(hhit);
@@ -472,10 +487,16 @@ void g4e_read()
       g_py = gen_prt_dir_y[1] * gen_prt_tot_mom[1];
       g_pz = gen_prt_dir_z[1] * gen_prt_tot_mom[1];
       g_E = gen_prt_tot_e[1];
+
+      e_px = gen_prt_dir_x[0] * gen_prt_tot_mom[0];
+      e_py = gen_prt_dir_y[0] * gen_prt_tot_mom[0];
+      e_pz = gen_prt_dir_z[0] * gen_prt_tot_mom[0];
+      e_E = gen_prt_tot_e[0];
       //      cout << g_px << " " << g_py << " " << g_pz << " " << g_E << endl; 
 
       outTree->Fill();
 
+      g_flag_emcal = 0;  e_flag_emcal = 0;
       
     }// end for the read g4e_output
 
