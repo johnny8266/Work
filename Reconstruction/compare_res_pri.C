@@ -86,6 +86,12 @@ void compare_res_pri()
 
   auto diffE_e_res_pri = new TH1F("diffE_e_res_pri", "diffE_e_res_pri", 100, -5., 5.);
   auto diffE_g_res_pri = new TH1F("diffE_g_res_pri", "diffE_g_res_pri", 100, -5., 5.);
+  auto hit_cl_size = new TH1F("hit_cl_size", "hit_cl_size", 20, 0., 20.);
+
+  auto diffE_e_res_pri_vs_ori = new TH2F("diffE_e_res_pri_vs_ori", "diffE_e_res_pri_vs_ori", 140, -4., 10., 110, 0., 10.);
+  auto diffE_g_res_pri_vs_ori = new TH2F("diffE_g_res_pri_vs_ori", "diffE_g_res_pri_vs_ori", 100, -5., 0., 50, 5., 10.);
+  auto diffE_e_res_pri_vs_size = new TH2F("diffE_e_res_pri_vs_size", "diffE_e_res_pri_vs_size", 140, -4., 10., 30, 0., 30.);
+  
   
   cout << "Number of events: " << outTree->GetEntries() << endl << endl;
 
@@ -106,13 +112,21 @@ void compare_res_pri()
 	{
 	  diffE_e = (Cl_Energy_tot_simul / 1000.) - e_E;
 	  diffE_e_res_pri->Fill(diffE_e);
+	  diffE_e_res_pri_vs_ori->Fill(diffE_e, e_E);
+	  diffE_e_res_pri_vs_size->Fill(diffE_e, Cl_size_simul);
 	  e_count++;
+	  //	  if( (e_E < 5.) && (e_E > 2.5) )
+	  if( e_E < 2. )
+	    hit_cl_size->Fill(Cl_size_simul);
+	  //	  if( diffE_e > 0. )
+	  //	    cout << "Difference: " << diffE_e << " || electron E: " << e_E << " || photon E: " << g_E << endl;
 	}
 
       if( (e_flag_emcal == 0) && (g_flag_emcal == 1) )
 	{
 	  diffE_g = (Cl_Energy_tot_simul / 1000.) - g_E;
 	  diffE_g_res_pri->Fill(diffE_g);
+	  diffE_g_res_pri_vs_ori->Fill(diffE_g, g_E);
 	  g_count++;
 	}
 	
@@ -124,11 +138,29 @@ void compare_res_pri()
   cout << "g hit on Emcal: " << g_count << endl;
 
     
-  TCanvas *c0 = new TCanvas("c0", "c0", 1000, 500);
-  c0->Divide(2,1);
+  TCanvas *c0 = new TCanvas("c0", "c0", 1000, 1000);
+  c0->Divide(2,2);
   c0->cd(1);
+  diffE_e_res_pri->SetTitle("Electron reconstruct - primary [energy]");
+  diffE_e_res_pri->SetStats(0);
   diffE_e_res_pri->Draw();
   c0->cd(2);
+  diffE_g_res_pri->SetTitle("Photon reconstruct - primary [energy]");
+  diffE_g_res_pri->SetStats(0);
   diffE_g_res_pri->Draw();
+  c0->cd(3);
+  diffE_e_res_pri_vs_ori->SetTitle("ELectron delta E v.s. primary E");
+  diffE_e_res_pri_vs_ori->SetStats(0);
+  diffE_e_res_pri_vs_ori->Draw("colorz");
+  c0->cd(4);
+  diffE_g_res_pri_vs_ori->SetTitle("Photon delta E v.s. primary E");
+  diffE_g_res_pri_vs_ori->SetStats(0);
+  diffE_g_res_pri_vs_ori->Draw("colorz");
+
+  TCanvas *c1 = new TCanvas("c1", "c1", 500, 500);
+  diffE_e_res_pri_vs_size->SetTitle("ELectron delta E v.s. cluster size");
+  diffE_e_res_pri_vs_size->SetStats(0);
+  diffE_e_res_pri_vs_size->Draw("colorz");
+  //  hit_cl_size->Draw();
   
 }

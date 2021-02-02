@@ -110,7 +110,7 @@ Cluster ComputeCluster(vector<Hit> hit) {
             double Dy = hit.at(i).y_crs - ClusSeed_ycrs;
 	    //	    cout << "SEED " << i << " : " << Dx << " " << Dy << " " << ClusSeed_xcrs << " " << ClusSeed_ycrs << endl;
 	    
-            if (sqrt(Dx * Dx + Dy * Dy) <= 3 * Rmoliere)  // find the hits close to the powerful hit
+            if (sqrt(Dx * Dx + Dy * Dy) <= 1. * Rmoliere)  // find the hits close to the powerful hit
 	      {
                 Clus_Energy_tot_simul += hit.at(i).Et_dep;
                 Clus_size_simul++;
@@ -126,7 +126,7 @@ Cluster ComputeCluster(vector<Hit> hit) {
             double Dx = hit.at(i).x_crs - ClusSeed_xcrs;
             double Dy = hit.at(i).y_crs - ClusSeed_ycrs;
 
-            if (sqrt(Dx * Dx + Dy * Dy) <= 3 * Rmoliere) {
+            if (sqrt(Dx * Dx + Dy * Dy) <= 1. * Rmoliere) {
 
                 //   cout <<hit.at(i).E_digi<< " "<<hit.at(i).x_crs<< " "<<hit.at(i).y_crs<<" "<< Dx << " "<< Dy<< " "<<sqrt(Dx*Dx+Dy*Dy)<<endl;
                 Clus_Etot += hit.at(i).E_digi;
@@ -392,7 +392,7 @@ void g4e_read()
 		      
 	      
 	      track_ids_in_ecap_emcal.insert(hit_track_id);
-	      //	      cout << hit_track_id << " " << hit_parent_track_id << endl;
+
 	      if( hit_track_id == 2 )
 		{
 		  emcal_hit_xy_photon->Fill(x, y);
@@ -402,6 +402,7 @@ void g4e_read()
 		{
 		  emcal_hit_xy_electron->Fill(x, y);
 		  e_flag_emcal = 1;
+		  //		  cout << hit_track_id << " " << hit_parent_track_id << endl;
 		}
 
 	      count++;
