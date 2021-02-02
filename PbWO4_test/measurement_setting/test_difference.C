@@ -10,15 +10,13 @@ using namespace std;
 
 void test_difference()
 {
-  const int crystal_nums = 10;
+  const int crystal_nums = 2;
   string line, root_file_name, data_file_path, file_0_str, crystal; //for storing words
-  string Crtstal_ID_str[crystal_nums] = {"160669", "040668", "050658", "994724", "050666", "010647", "030651", "080671", "994763", "010667"};
-  //  string Crtstal_ID_str[crystal_nums] = {"040668", "050658", "994724", "050666", "010647", "030651", "080671", "994763", "010667"};
+  string Crtstal_ID_str[crystal_nums] = {"010647", "080671"};
   stringstream line_string;
   double L, T;
   int count=0, pic_count=0, flag=0;
-  int file_0[crystal_nums] = {51, 114, 40, 105, 96, 67, 32, 87, 59, 76};
-  //  int file_0[crystal_nums] = {114, 40, 105, 96, 67, 32, 87, 59, 76};
+  int file_0[crystal_nums] = {67, 87};
   const char *CID;
   vector<double> Tb, Ta, Tlambda;
 
@@ -27,43 +25,14 @@ void test_difference()
        *h4[crystal_nums], *h5[crystal_nums], *h6[crystal_nums];
   TLine *add_line_flat = new TLine(260, 1.1, 800, 1.1);
   TLine *add_line_vert = new TLine(340, -3., 340, 3.);
-  TCanvas *c1 = new TCanvas("c1", "c1", 750, 1000);
-  c1->Divide(3,4);
+  TCanvas *c1 = new TCanvas("c1", "c1", 1000, 500);
+  c1->Divide(2,1);
 
   ifstream bookread; 
     
   for(int i = 0 ; i < crystal_nums ; i++)
     {
-      if( i == 0 )
-	c1->cd(12);
-	    
-      if( i == 1 )
-	c1->cd(9);
-      
-      if( i == 2 )
-	c1->cd(6);
-      
-      if( i == 3 )
-	c1->cd(11);
-      
-      if( i == 4 )
-	c1->cd(8);
-      
-      if( i == 5 )
-	c1->cd(5);
-      
-      if( i == 6 )
-	c1->cd(10);
-      
-      if( i == 7 )
-	c1->cd(7);
-      
-      if( i == 8 )
-	c1->cd(4);
-      
-      if( i == 9 )
-	c1->cd(2);
-      
+      c1->cd(i+1);
       pic_count = 0;
       
       int file_start = file_0[i];
@@ -76,11 +45,8 @@ void test_difference()
       h5[count] = new TH1F(Form("h5_%d", i),"difference of [test2, before]", 270, 260, 800);
       h6[count] = new TH1F(Form("h6_%d", i),"dk", 270, 260, 800);
 
-      if( count == 0 )
-	crystal = "PbWO4 Crystal " + Crtstal_ID_str[i] + " measure after irradiation 1 day";
-      else
-	crystal = "PbWO4 Crystal " + Crtstal_ID_str[i];
-
+      crystal = "PbWO4 Crystal " + Crtstal_ID_str[i];
+	
       CID = (crystal).c_str();
       
       h1[count]->SetStats(0);
@@ -118,11 +84,9 @@ void test_difference()
             
       for(int j = file_start ; j < (file_start + 3) ; j++)
 	{
-	  if( (pic_count == 2) && (count == 0) )
-	    continue;
 	  
-	  data_file_path = "./irradiation_test_27012021/" + ID + "/Sample"+ j +".Sample.Raw.asc";
-	  //	  cout << data_file_path << endl;
+	  data_file_path = "./" + ID + "/Sample"+ j +".Sample.Raw.asc";
+	  cout << data_file_path << endl;
 	  
 	  const char *dfp = data_file_path.c_str();
 	  bookread.open(dfp);
@@ -132,15 +96,13 @@ void test_difference()
 		{ 
 		  line = ""; 
 		  getline(bookread, line); 
-
-		  //		  cout << "???";
 		  
-		  if( (line.size() == 21) || (line.size() == 20) )
+		  if( (line.size() == 21) || (line.size() == 20) || (line.size() == 13) || (line.size() == 14) )
 		    {
 
 		      line_string << line;
 		      line_string >> L >> T;  // L:wavelength, T:transmittance
-		      //		      cout << L << "  " << T << endl;
+		      cout << L << "  " << T << endl;
 
 		      if( (pic_count % 3) == 0 )
 			{
@@ -169,7 +131,7 @@ void test_difference()
 	  pic_count++;
 	} // loop the test results I want to draw
 
-      
+      /*      
       for(int tc = 0 ; tc < Tb.size() ; tc++)
 	{
 	  L = Tlambda[tc];
@@ -184,10 +146,11 @@ void test_difference()
 	      h6[count]->SetBinContent(n_bin, dk);
 	    }
 	}
-      h6[count]->Draw();
-      add_line_flat->SetLineStyle(2);
-      add_line_flat->SetLineColor(2);
-      add_line_flat->Draw("same");
+      */
+      //      h6[count]->Draw();
+      //      add_line_flat->SetLineStyle(2);
+      //      add_line_flat->SetLineColor(2);
+      //      add_line_flat->Draw("same");
       //      add_line_vert->Draw("same");
       
       
@@ -196,11 +159,17 @@ void test_difference()
       //      h4[count]->SetLineColor(1);
       //      h5[count]->SetLineColor(2);
 
-      //      h1[count]->SetMarkerColor(1);
-      //      h2[count]->SetMarkerColor(2);
+      h1[count]->SetMarkerColor(1);
+      h2[count]->SetMarkerColor(2);
+      h3[count]->SetMarkerColor(1);
 
+      h1[count]->SetMarkerSize(5);
+      h2[count]->SetMarkerSize(5);
+      h3[count]->SetMarkerSize(5);
+      
       //      h1[count]->Draw("p");
-      //      h2[count]->Draw("p same");
+      h2[count]->Draw("p");
+      h3[count]->Draw("p same");
       
 
       cout << "count: " << count << " " << flag << " finish ..." << endl << endl;
