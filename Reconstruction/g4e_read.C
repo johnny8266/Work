@@ -110,7 +110,7 @@ Cluster ComputeCluster(vector<Hit> hit) {
             double Dy = hit.at(i).y_crs - ClusSeed_ycrs;
 	    //	    cout << "SEED " << i << " : " << Dx << " " << Dy << " " << ClusSeed_xcrs << " " << ClusSeed_ycrs << endl;
 	    
-            if (sqrt(Dx * Dx + Dy * Dy) <= 1. * Rmoliere)  // find the hits close to the powerful hit
+            if (sqrt(Dx * Dx + Dy * Dy) <= 3. * Rmoliere)  // find the hits close to the powerful hit
 	      {
                 Clus_Energy_tot_simul += hit.at(i).Et_dep;
                 Clus_size_simul++;
@@ -126,7 +126,7 @@ Cluster ComputeCluster(vector<Hit> hit) {
             double Dx = hit.at(i).x_crs - ClusSeed_xcrs;
             double Dy = hit.at(i).y_crs - ClusSeed_ycrs;
 
-            if (sqrt(Dx * Dx + Dy * Dy) <= 1. * Rmoliere) {
+            if (sqrt(Dx * Dx + Dy * Dy) <= 3. * Rmoliere) {
 
                 //   cout <<hit.at(i).E_digi<< " "<<hit.at(i).x_crs<< " "<<hit.at(i).y_crs<<" "<< Dx << " "<< Dy<< " "<<sqrt(Dx*Dx+Dy*Dy)<<endl;
                 Clus_Etot += hit.at(i).E_digi;
@@ -297,6 +297,8 @@ void g4e_read()
   double Cl_x = 0, Cl_y = 0, Cl_radius = 0, Cl_theta = 0, Cl_phi = 0;
   int Cl_size = 0, Cl_seed_npe = 0, Cl_size_simul = 0, ene = 0;
   double g_px = 0., g_py = 0., g_pz = 0., g_E = 0., e_px = 0., e_py = 0., e_pz = 0., e_E = 0.;
+  double e_hit_emcal_x = 0., e_hit_emcal_y = 0., e_hit_emcal_z = 0.;
+  double g_hit_emcal_x = 0., g_hit_emcal_y = 0., g_hit_emcal_z = 0.;
   int e_flag_emcal=0, g_flag_emcal=0;
 
   
@@ -319,6 +321,12 @@ void g4e_read()
   outTree->Branch("Cl_size", &Cl_size, "Cl_size/I");
   outTree->Branch("Cl_size_simul", &Cl_size_simul, "Cl_size_simul/I");
   outTree->Branch("Cl_Energy_tot_simul", &Cl_Energy_tot_simul, "Cl_Energy_tot_simul/D");
+  outTree->Branch("e_hit_emcal_x", &e_hit_emcal_x, "e_hit_emcal_x/D");
+  outTree->Branch("e_hit_emcal_y", &e_hit_emcal_y, "e_hit_emcal_y/D");
+  outTree->Branch("e_hit_emcal_z", &e_hit_emcal_z, "e_hit_emcal_z/D");
+  outTree->Branch("g_hit_emcal_x", &g_hit_emcal_x, "g_hit_emcal_x/D");
+  outTree->Branch("g_hit_emcal_y", &g_hit_emcal_y, "g_hit_emcal_y/D");
+  outTree->Branch("g_hit_emcal_z", &g_hit_emcal_z, "g_hit_emcal_z/D");
   outTree->Branch("g_px", &g_px, "g_px/D");
   outTree->Branch("g_py", &g_py, "g_py/D");
   outTree->Branch("g_pz", &g_pz, "g_pz/D");
@@ -352,7 +360,9 @@ void g4e_read()
       auto hits_count = static_cast<size_t>(*hit_count.Get());         
       auto tracks_count = static_cast<size_t>(*trk_count.Get());       
       //      cout << endl << "This event has: " << tracks_count << " tracks || " << hits_count << " hits." << endl << endl;
-      
+
+      g_hit_emcal_x = 0.;  g_hit_emcal_y = 0.;  g_hit_emcal_z = 0.;
+      e_hit_emcal_x = 0.;  e_hit_emcal_y = 0.;  e_hit_emcal_z = 0.;
 
       // =============================
       // Save the track hit on Emcal
@@ -372,20 +382,11 @@ void g4e_read()
 	  //	  if( hit_track_id == 1 )
 	  //	    cout << hit_parent_track_id << " " << hit_vol_name[i] << endl;
 
-	  /*
-	  if( hit_vol_name[i] == "ce_EMCAL_pwo_phys_35002" )
-	    {
-	      cout << hit_track_id << " " << hit_vol_name[i] << " " << "[" << x << ", " << y << ", " << z << "] ";
-	      cout << hit_e_loss[i] * 1000. << "[MeV]" << endl;
-	      //	      hit_energy+=hit_e_loss[i];
-	    }
-	  */
         
 	  // Check that the name starts with "ce_EMCAL"
 	  if(vol_name.rfind("ce_EMCAL", 0) == 0)
 	    {
 	      //	      if( hit_parent_track_id == 22 && hit_track_id == 2 )
-
 	      //	      cout << hit_track_id << " " << hit_vol_name[i] << " " << "[" << x << ", " << y << ", " << z << "] ";
 	      //	      cout << hit_e_loss[i] * 1000. << "[MeV]" << endl;
 	      //	      hit_energy+=hit_e_loss[i];
@@ -396,15 +397,27 @@ void g4e_read()
 	      if( hit_track_id == 2 )
 		{
 		  emcal_hit_xy_photon->Fill(x, y);
+		  if( g_flag_emcal == 0 )
+		    {
+		      cout << x << " " << y << " " << z << endl;
+		      g_hit_emcal_x = x;
+		      g_hit_emcal_y = y;
+		      g_hit_emcal_z = z;
+		    }
 		  g_flag_emcal = 1;
 		}
 	      if( hit_track_id == 1 )
 		{
 		  emcal_hit_xy_electron->Fill(x, y);
+		  if( e_flag_emcal == 0 )
+		    {
+		      e_hit_emcal_x = x;
+		      e_hit_emcal_y = y;
+		      e_hit_emcal_z = z;
+		    }
 		  e_flag_emcal = 1;
-		  //		  cout << hit_track_id << " " << hit_parent_track_id << endl;
 		}
-
+	      //		  cout << hit_track_id << " " << hit_parent_track_id << endl;
 	      count++;
 	    }
 	}
