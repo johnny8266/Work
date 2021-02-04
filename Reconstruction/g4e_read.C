@@ -285,8 +285,9 @@ void g4e_read()
   // Histgram
   //==================================
 
-  auto emcal_hit_xy_photon = new TH2F("emcal_hit_xy_photon", "emcal_hit_xy_photon", 300, -1500., 1500., 250, -1500., 1000.);
-  auto emcal_hit_xy_electron = new TH2F("emcal_hit_xy_electron", "emcal_hit_xy_electron", 300, -1500., 1500., 250, -1500., 1000.);
+  auto emcal_hit_xy_photon = new TH2F("emcal_hit_xy_photon", "emcal_hit_xy_photon", 300, -1500., 1500., 300, -1500., 1500.);
+  auto emcal_hit_xy_electron = new TH2F("emcal_hit_xy_electron", "emcal_hit_xy_electron", 300, -1500., 1500., 300, -1500., 1500.);
+  auto e_res_pri_xy_pos = new TH2F("e_res_pri_xy_pos", "e_res_pri_xy_pos", 300, -1500., 1500., 300, -1500., 1500.);
 
   //==================================
   // Save the output
@@ -299,7 +300,8 @@ void g4e_read()
   double g_px = 0., g_py = 0., g_pz = 0., g_E = 0., e_px = 0., e_py = 0., e_pz = 0., e_E = 0.;
   double e_hit_emcal_x = 0., e_hit_emcal_y = 0., e_hit_emcal_z = 0.;
   double g_hit_emcal_x = 0., g_hit_emcal_y = 0., g_hit_emcal_z = 0.;
-  int e_flag_emcal=0, g_flag_emcal=0;
+  int e_flag_emcal = 0, g_flag_emcal = 0, Etot_size = 0;
+
 
   
   string fileName_out = "./data/outCluster.root";
@@ -337,7 +339,9 @@ void g4e_read()
   outTree->Branch("e_E", &e_E, "e_E/D");
   outTree->Branch("e_flag_emcal", &e_flag_emcal, "e_flag_emcal/I");
   outTree->Branch("g_flag_emcal", &g_flag_emcal, "g_flag_emcal/I");
-  
+  outTree->Branch("Etot_size", &Etot_size, "Etot_size/I");
+
+
   
   //==================================
   // Loop the Event
@@ -346,7 +350,7 @@ void g4e_read()
   size_t events_numer = 0;  
   while (fReader.Next())
     {
-      if(++events_numer > 7000)
+      if(++events_numer > 2000)
 	break;
       
       if(events_numer%100 == 0)
@@ -387,7 +391,7 @@ void g4e_read()
 	  if(vol_name.rfind("ce_EMCAL", 0) == 0)
 	    {
 	      //	      if( hit_parent_track_id == 22 && hit_track_id == 2 )
-	      //	      cout << hit_track_id << " " << hit_vol_name[i] << " " << "[" << x << ", " << y << ", " << z << "] ";
+	      //	      cout << hit_parent_track_id << " " << hit_track_id << " " << hit_vol_name[i] << " " << "[" << x << ", " << y << ", " << z << "] " << endl;
 	      //	      cout << hit_e_loss[i] * 1000. << "[MeV]" << endl;
 	      //	      hit_energy+=hit_e_loss[i];
 		      
@@ -399,12 +403,12 @@ void g4e_read()
 		  emcal_hit_xy_photon->Fill(x, y);
 		  if( g_flag_emcal == 0 )
 		    {
-		      cout << x << " " << y << " " << z << endl;
+		      //		      cout << x << " " << y << " " << z << endl;
 		      g_hit_emcal_x = x;
 		      g_hit_emcal_y = y;
 		      g_hit_emcal_z = z;
+		      g_flag_emcal = 1;
 		    }
-		  g_flag_emcal = 1;
 		}
 	      if( hit_track_id == 1 )
 		{
@@ -414,14 +418,15 @@ void g4e_read()
 		      e_hit_emcal_x = x;
 		      e_hit_emcal_y = y;
 		      e_hit_emcal_z = z;
+		      e_flag_emcal = 1;
 		    }
-		  e_flag_emcal = 1;
 		}
 	      //		  cout << hit_track_id << " " << hit_parent_track_id << endl;
 	      count++;
 	    }
 	}
 
+      //      cout << "e flag: " << e_flag_emcal << " || g flag: " << g_flag_emcal << endl;
       //      cout << "hit counts in emcal: " << count << " || energy loss: " << hit_energy * 1000. << endl << endl;
 
       // iterate over the hit emcal tracks
@@ -448,7 +453,6 @@ void g4e_read()
       // =============================
       // Calculate the hit cluster information
       // =============================
-      auto Etot_size = 0;
 
       vector<Hit> hhit;
       double hit_e_check = 0.;
@@ -496,7 +500,6 @@ void g4e_read()
       Cl_size_simul = cluster.C_size_simul;                 // Same as the above one
 
 
-      
       g_px = gen_prt_dir_x[1] * gen_prt_tot_mom[1];
       g_py = gen_prt_dir_y[1] * gen_prt_tot_mom[1];
       g_pz = gen_prt_dir_z[1] * gen_prt_tot_mom[1];
@@ -510,22 +513,91 @@ void g4e_read()
 
       outTree->Fill();
 
-      g_flag_emcal = 0;  e_flag_emcal = 0;
+
+      if( (e_flag_emcal == 1) && (g_flag_emcal == 0) )
+	{
+	  //	  cout << events_numer << endl;
+	  double Dis_re_pri = (e_hit_emcal_x - Cl_x) * (e_hit_emcal_x - Cl_x) + (e_hit_emcal_y - Cl_y) * (e_hit_emcal_y - Cl_y);
+	  //	  double Dis_re_pri = (g_hit_emcal_x - Cl_x) * (g_hit_emcal_x - Cl_x) + (g_hit_emcal_y - Cl_y) * (g_hit_emcal_y - Cl_y);
+	  Dis_re_pri = TMath::Sqrt(Dis_re_pri);
+	  if( ((Cl_Energy_tot_simul / 1000.) - e_E) > 0. )
+	    {
+	      if( (Dis_re_pri > 1400.) && (Dis_re_pri < 2000.) )
+		{
+		  cout << "Cluster energy: " << Cl_Energy_tot_simul << " || Primary e- energy: " << e_E << endl; 
+		  cout << "Seed pos: " << Cl_x << " " << Cl_y << endl;
+		  cout << "Electron hit pos: " << e_hit_emcal_x << " " << e_hit_emcal_y << endl;
+		  cout << "Photon primary direction: " << gen_prt_dir_x[1] << " " << gen_prt_dir_y[1] << " " << gen_prt_dir_z[1] << endl; 
+		  //	      cout << "Photon hit pos: " << g_hit_emcal_x << " " << g_hit_emcal_y << endl;
+		  cout << Dis_re_pri << " !!!" << endl;
+		  for(int k = 0 ; k < Etot_size ; k++)
+		    e_res_pri_xy_pos->Fill(ce_emcal_xcrs[k], ce_emcal_ycrs[k]);
+
+		  for(size_t i = 0 ; i < hits_count ; i++)
+		    {
+		      uint64_t hit_track_id = static_cast<uint64_t>(hit_trk_id[i]);
+		      uint64_t hit_parent_track_id = static_cast<uint64_t>(hit_parent_trk_id[i]);
+		      std::string vol_name = static_cast<std::string>(hit_vol_name[i]);
+		      
+		      double x = hit_x[i], y = hit_y[i], z = hit_z[i];
+		      double e_loss = hit_e_loss[i];
+		      if(vol_name.rfind("ce_EMCAL", 0) == 0)
+			{
+			  cout << hit_parent_track_id << " " << hit_track_id << " " << hit_vol_name[i] << " " << "[" << x << ", " << y << ", " << z << "] || " << e_loss << endl;
+			  hit_energy = hit_energy + hit_e_loss[i];
+			}
+		    }
+		  cout << "Emcal total hit energy: " << hit_energy << endl;
+		}
+	    }
+	} // End if loop 
+
+
+      
+      g_flag_emcal = 0;  e_flag_emcal = 0;  hit_energy = 0.;
       
     }// end for the read g4e_output
 
   fout->cd();
   outTree->Write();
   fout->Close();
+
+  
   
   // ======================================
   // Draw the Results
   // ======================================
-  /*
-  auto *c1 = new TCanvas("c1", "c1", 800, 800);
+
+  Int_t colors[] = {0, 1, 2, 3, 4, 5, 6}; // #colors >= #levels - 1
+  gStyle->SetPalette((sizeof(colors)/sizeof(Int_t)), colors);
+  Double_t levels[] = {-1.79e308, 1.17e-38, 0.90, 0.95, 1.00, 1.05, 1.10, 1.79e308};
+
+  const Int_t Number = 3;
+  Double_t Red[Number]    = { 1.00, 1.00, 0.00};
+  Double_t Green[Number]  = { 0.00, 1.00, 0.00};
+  Double_t Blue[Number]   = { 0.80, 0.00, 0.80};
+  Double_t Length[Number] = { 0.00, 0.50, 1.00 };
+  Int_t nb=50;
+  TColor::CreateGradientColorTable(Number,Length,Red,Green,Blue,nb);
+
+  auto *c1 = new TCanvas("c1", "c1", 1600, 800);
+  c1->Divide(2, 1);
+  c1->cd(1);
+  emcal_hit_xy_electron->SetTitle("Primary electron hits on the EMcal");
+  emcal_hit_xy_electron->SetStats(0);
+  emcal_hit_xy_electron->SetContour(nb);
+  emcal_hit_xy_electron->Draw("colorz");
+  c1->cd(2);
+  emcal_hit_xy_photon->SetTitle("Primary photon hits on the EMcal");
+  emcal_hit_xy_photon->SetStats(0);
+  emcal_hit_xy_photon->SetContour(nb);
   emcal_hit_xy_photon->Draw("colorz");
 
   auto *c2 = new TCanvas("c2", "c2", 800, 800);
-  emcal_hit_xy_electron->Draw("colorz");
-  */
+  e_res_pri_xy_pos->SetTitle("Hits distribution on Emcal for bad reconstruction event");
+  e_res_pri_xy_pos->SetStats(0);
+  e_res_pri_xy_pos->SetContour(nb);
+  e_res_pri_xy_pos->Draw("colorz");
+
+  
 }

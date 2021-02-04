@@ -48,7 +48,7 @@ void compare_res_pri()
   double g_px = 0., g_py = 0., g_pz = 0., g_E = 0., e_px = 0., e_py = 0., e_pz = 0., e_E = 0.;
   double e_hit_emcal_x = 0., e_hit_emcal_y = 0., e_hit_emcal_z = 0.;
   double g_hit_emcal_x = 0., g_hit_emcal_y = 0., g_hit_emcal_z = 0.;
-  int e_flag_emcal=0, g_flag_emcal=0; 
+  int e_flag_emcal = 0, g_flag_emcal = 0, Etot_size = 0; 
 
   std::string path = "./data/";
   //  std::string fileName_out = path + "outEnergy_resolution_test.root";
@@ -91,7 +91,9 @@ void compare_res_pri()
   outTree->SetBranchAddress("e_E", &e_E);
   outTree->SetBranchAddress("e_flag_emcal", &e_flag_emcal);
   outTree->SetBranchAddress("g_flag_emcal", &g_flag_emcal);
+  outTree->SetBranchAddress("Etot_size", &Etot_size);
 
+  
   auto diffE_e_res_pri = new TH1F("diffE_e_res_pri", "diffE_e_res_pri", 100, -5., 5.);
   auto diffE_g_res_pri = new TH1F("diffE_g_res_pri", "diffE_g_res_pri", 100, -5., 5.);
   auto hit_cl_size = new TH1F("hit_cl_size", "hit_cl_size", 20, 0., 20.);
@@ -135,6 +137,7 @@ void compare_res_pri()
 	    {
 	      cout << e_E << " " << (Cl_Energy_tot_simul / 1000.) << endl;
 	      cout << "[" << e_hit_emcal_x << " " << e_hit_emcal_y << "] || " << "[" << Cl_x << " " << Cl_y << "]" << endl;
+	      cout << "Cl size: " << Cl_size_simul << " || Total Emcal hit num: " << Etot_size << endl;
 	      cout << "Pos difference of pri e- and recon e-: " << Dis_clu_pri << endl << endl;
 	      bad_res_e_vs_dis->Fill(Dis_clu_pri, diffE_e);
 	      bad_e_recons++;
