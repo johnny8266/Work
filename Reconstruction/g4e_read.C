@@ -211,7 +211,8 @@ void g4e_read()
   // Open the g4e output file
   //===================================
   
-  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_10k_events_crossing_angle.root");
+  //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_10k_events_crossing_angle.root");
+  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_50k.root");
   TTree *events = (TTree *) file->Get("events");
 
   TTreeReader fReader("events", file);
@@ -285,9 +286,13 @@ void g4e_read()
   // Histgram
   //==================================
 
+  auto eloss_of_bad_res = new TH1F("eloss_of_bad_res", "eloss_of_bad_res", 100, 0., 0.1);
+  auto emcal_e_of_bad_res = new TH1F("emcal_e_of_bad_res", "emcal_e_of_bad_res", 100, 0., 10000.);
+  
   auto emcal_hit_xy_photon = new TH2F("emcal_hit_xy_photon", "emcal_hit_xy_photon", 300, -1500., 1500., 300, -1500., 1500.);
   auto emcal_hit_xy_electron = new TH2F("emcal_hit_xy_electron", "emcal_hit_xy_electron", 300, -1500., 1500., 300, -1500., 1500.);
   auto e_res_pri_xy_pos = new TH2F("e_res_pri_xy_pos", "e_res_pri_xy_pos", 300, -1500., 1500., 300, -1500., 1500.);
+  auto e_res_bad_xy_pos = new TH2F("e_res_bad_xy_pos", "e_res_bad_xy_pos", 300, -1500., 1500., 300, -1500., 1500.);
 
   //==================================
   // Save the output
@@ -350,7 +355,7 @@ void g4e_read()
   size_t events_numer = 0;  
   while (fReader.Next())
     {
-      if(++events_numer > 2000)
+      if(++events_numer > 10000)
 	break;
       
       if(events_numer%100 == 0)
@@ -522,16 +527,22 @@ void g4e_read()
 	  Dis_re_pri = TMath::Sqrt(Dis_re_pri);
 	  if( ((Cl_Energy_tot_simul / 1000.) - e_E) > 0. )
 	    {
-	      if( (Dis_re_pri > 1400.) && (Dis_re_pri < 2000.) )
+	      if( (Dis_re_pri > 515.) && (Dis_re_pri < 520.) )
 		{
 		  cout << "Cluster energy: " << Cl_Energy_tot_simul << " || Primary e- energy: " << e_E << endl; 
-		  cout << "Seed pos: " << Cl_x << " " << Cl_y << endl;
+		  cout << "Seed pos: " << Cl_seed_x << " " << Cl_seed_y << endl;
+		  cout << "Cluster center pos: " << Cl_x << " " << Cl_y << endl;
 		  cout << "Electron hit pos: " << e_hit_emcal_x << " " << e_hit_emcal_y << endl;
 		  cout << "Photon primary direction: " << gen_prt_dir_x[1] << " " << gen_prt_dir_y[1] << " " << gen_prt_dir_z[1] << endl; 
 		  //	      cout << "Photon hit pos: " << g_hit_emcal_x << " " << g_hit_emcal_y << endl;
 		  cout << Dis_re_pri << " !!!" << endl;
+
+		  
 		  for(int k = 0 ; k < Etot_size ; k++)
-		    e_res_pri_xy_pos->Fill(ce_emcal_xcrs[k], ce_emcal_ycrs[k]);
+		    {
+		      e_res_pri_xy_pos->Fill(ce_emcal_xcrs[k], ce_emcal_ycrs[k], ce_emcal_Etot_dep[k]);
+		      emcal_e_of_bad_res->Fill(ce_emcal_Etot_dep[k]);
+		    }
 
 		  for(size_t i = 0 ; i < hits_count ; i++)
 		    {
@@ -543,7 +554,9 @@ void g4e_read()
 		      double e_loss = hit_e_loss[i];
 		      if(vol_name.rfind("ce_EMCAL", 0) == 0)
 			{
-			  cout << hit_parent_track_id << " " << hit_track_id << " " << hit_vol_name[i] << " " << "[" << x << ", " << y << ", " << z << "] || " << e_loss << endl;
+			  e_res_bad_xy_pos->Fill(x, y, e_loss);
+			  eloss_of_bad_res->Fill(e_loss * 1000.);
+			  cout << hit_parent_track_id << "   " << hit_track_id << "   " << hit_vol_name[i] << "   " << "[" << x << ", " << y << ", " << z << "]   ||   " << e_loss << endl;
 			  hit_energy = hit_energy + hit_e_loss[i];
 			}
 		    }
@@ -593,11 +606,23 @@ void g4e_read()
   emcal_hit_xy_photon->SetContour(nb);
   emcal_hit_xy_photon->Draw("colorz");
 
-  auto *c2 = new TCanvas("c2", "c2", 800, 800);
+  auto *c2 = new TCanvas("c2", "c2", 1600, 800);
+  c2->Divide(2, 1);
+  c2->cd(1);
   e_res_pri_xy_pos->SetTitle("Hits distribution on Emcal for bad reconstruction event");
   e_res_pri_xy_pos->SetStats(0);
   e_res_pri_xy_pos->SetContour(nb);
   e_res_pri_xy_pos->Draw("colorz");
+  c2->cd(2);
+  e_res_bad_xy_pos->SetStats(0);
+  e_res_bad_xy_pos->SetContour(nb);
+  e_res_bad_xy_pos->Draw("colorz");
 
+  auto *c3 = new TCanvas("c3", "c3", 1600, 800);
+  c3->Divide(2, 1);
+  c3->cd(1);
+  emcal_e_of_bad_res->Draw();
+  c3->cd(2);
+  eloss_of_bad_res->Draw();
   
 }
