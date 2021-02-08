@@ -145,13 +145,24 @@ Cluster ComputeCluster(vector<Hit> hit) {
     x = 0;
     y = 0;
 
-    for (int i = 0; i < Size; i++) { // Consider all ce_emcal hits! if hit energy so small, give it weight 0
-      double w1 = std::max(0., (3.45 + std::log(hit.at(i).E_digi / Clus_Etot))); 
-      x += w1 * hit.at(i).x_crs;
-      y += w1 * hit.at(i).y_crs;
-      Clus_xx += w1 * hit.at(i).x_crs * hit.at(i).x_crs;
-      Clus_yy += w1 * hit.at(i).y_crs * hit.at(i).y_crs;
-      w_tot += w1;
+    for (int i = 0; i < Size; i++)
+      {
+	// Consider hits near the seed! if hit energy is so small, give it weight 0
+	if (hit.at(i).E_digi > Ethr)
+	  {
+	    double Dx = hit.at(i).x_crs - ClusSeed_xcrs;
+	    double Dy = hit.at(i).y_crs - ClusSeed_ycrs;
+
+            if (sqrt(Dx * Dx + Dy * Dy) <= 3. * Rmoliere)
+	      {
+		double w1 = std::max(0., (3.45 + std::log(hit.at(i).E_digi / Clus_Etot))); 
+		x += w1 * hit.at(i).x_crs;
+		y += w1 * hit.at(i).y_crs;
+		Clus_xx += w1 * hit.at(i).x_crs * hit.at(i).x_crs;
+		Clus_yy += w1 * hit.at(i).y_crs * hit.at(i).y_crs;
+		w_tot += w1;
+	      }
+	  }
     }
     Clus_x = x / w_tot;
     Clus_y = y / w_tot;
