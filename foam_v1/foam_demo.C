@@ -62,7 +62,7 @@ Int_t main()
 
 
   //-----------------------------------------
-  long NevTot   =   1000000;   // Total MC statistics
+  long NevTot   =     15000;   // Total MC statistics
   Int_t  kDim   =         4;   // total dimension
   Int_t  nCells   =    5000;   // Number of Cells
   Int_t  nSampl   =     200;   // Number of MC events per cell in build-up

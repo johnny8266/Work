@@ -4,7 +4,7 @@ using namespace std;
 
 void norm_foam()
 {
-  TFile *hfile = new TFile("DVCS_foam_100k.root");
+  TFile *hfile = new TFile("result.root");
   TTree *DVCS = (TTree*)hfile->Get("DVCS");
   TCanvas *c1 = new TCanvas("c1", "c1", 800, 800);
   Double_t phi, phi_def, e1_S_angle, p1_S_angle, photon_S_angle, Q2, xb, t_var, xsec, psf;
@@ -49,7 +49,7 @@ void norm_foam()
   TH1F* Q2_norm = new TH1F("Q2_norm", "Q2_norm", 90, 0., 45.);
   ofstream myfile;
   //  myfile.open ("/home/pu-kai/mnt/g4e/DVCS/test.txt");
-  myfile.open ("/vol0/pwang-l/g4e/DVCS/dvcs_input.txt");
+  myfile.open ("./dvcs_input.txt");
     
   for(int i = 0 ; i < N_events ; i++)
     {

@@ -23,7 +23,7 @@ double xsec(void)
   gSystem->Load("./libTGenDVCS.so");
 
   //  TFile *hfile = new TFile("./root_file/DVCS_4Pars.root", "update");
-  TFile *hfile = new TFile("./root_file/result.root", "update");
+  TFile *hfile = new TFile("./root_file/DVCS_4Pars.root", "update");
   TTree *T = (TTree*)hfile->Get("T");
   Int_t N_events = (Int_t)T->GetEntries();
   Double_t Eb=2131.2132, Q2, xb, t_var, phi, psf, phi_def, xsec, xsec_inte;  //Eb is energy for fixed target.
@@ -55,7 +55,8 @@ double xsec(void)
       
       T->GetEntry(i);
 
-      //      Double_t xb_0 = 0.1;
+      Double_t xb_0 = xb;
+      xb = 0.1;
       
       Double_t* CFF = gEv->Interpol_CFF(Q2, xb, t_var);
       if(!CFF)
@@ -75,7 +76,7 @@ double xsec(void)
       //  if(opt==1) return TMath::Pi()*(BHp+BHm)* ConvGeV2nbarn;
       xsec = TMath::Pi() * ( SigmaTotPlus + SigmaTotMoins ) * ConvGeV2nbarn;
 
-      //      xsec = xsec * TMath::Sqrt(0.1 / xb);  // modify the Uniform cross section with the sqrt(1./xb)
+      xsec = xsec * TMath::Sqrt(0.1 / xb_0);  // modify the Uniform cross section with the sqrt(1./xb)
       //      xsec = xsec * TMath::Sqrt(0.1 / xb);  // modify the Foam cross section with the sqrt(0.1/xb)
 	    
       add_br->Fill();
