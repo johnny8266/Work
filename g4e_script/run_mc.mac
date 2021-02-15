@@ -1,0 +1,27 @@
+#------------------------------------------------------------------------
+# Example macro. Process one of
+#------------------------------------------------------------------------
+
+/detsetup/beamlineName erhic
+/detsetup/eBeam 10
+/detsetup/pBeam 100
+/run/initialize
+
+# Include default setup
+# Use jleic.mac for headless mode or jleicvis.mac for GUI visualization
+#/control/execute jleicvis.mac
+/control/execute jleic.mac
+
+# Select Beagle generator
+# Options are: particleGun hepmcAscii pythiaAscii beagle
+/generator/select pythiaAscii
+
+# Open file and run some MC file
+/generator/pythiaAscii/open /home/pu-kai/Work/Normalization/dvcs_input_foam_imposed.txt
+/generator/pythiaAscii/verbose 2
+
+/run/initialize
+
+
+/run/beamOn 1
+exit
