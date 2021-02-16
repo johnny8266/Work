@@ -55,26 +55,21 @@ Cluster ComputeCluster(vector<Hit> hit)
   double CRYS_ZPOS = 2110; // ECAL zpos from the center of EIC detector
   double Ethr = 10.; // threshold[MeV]
   double Rmoliere = 20.01; // in mm    ->Rmolier for PbWO is 20 mm
-
+  int Clus_size_simul = 0;
+  double Clus_Energy_tot_simul = 0, Clus_Etot = 0.;
+  double Clus_x = 0., Clus_y = 0., Clus_xx = 0., Clus_yy = 0.;
+  
+  vector<double> ClusSeed_xcrs, ClusSeed_ycrs, ClusEtotsimu;
   /*
   double ClusSeed_Ene = 0;
   int ClusSeed_npe = 0;
-  double ClusSeed_xcrs = 0;
-  double ClusSeed_ycrs = 0;
   double ClusSeed_zcrs = 0;
-  double Clus_Etot = 0;
-  double Clus_xx = 0;
-  double Clus_yy = 0;
-  double Clus_x = 0;
-  double Clus_y = 0;
   int Clus_size = 0;
   double Clus_sigmaX = 0;
   double Clus_sigmaY = 0;
   double Clus_Radius = 0;
   double Clus_Theta = 0; //in deg;
   double Clus_phi = 0; //in deg;
-  int Clus_size_simul = 0;
-  double Clus_Energy_tot_simul = 0;
   */
   
   map<int, double> map_crystal;  // ID, row, col, E
@@ -121,9 +116,11 @@ Cluster ComputeCluster(vector<Hit> hit)
 	  if( count == 8 && i_et_dep > 200. )
 	    {
 	      cluster.C_seed_energy.push_back(i_et_dep);
-	      cluster.C_seed_x.push_back(i_xcrs); cluster.C_seed_y.push_back(i_ycrs); cluster.C_seed_z.push_back(i_zcrs); 
+	      cluster.C_seed_x.push_back(i_xcrs);  cluster.C_seed_y.push_back(i_ycrs);  cluster.C_seed_z.push_back(i_zcrs);
+
+	      ClusSeed_xcrs.push_back(i_xcrs);  ClusSeed_ycrs.push_back(i_ycrs); 
 	      //	      cout << hit.at(i).c_col << " " << hit.at(i).c_row << " count: " << count << endl;
-	      cout << "crystal seed: " << i_et_digi << " " << i_et_dep << " [" << i_xcrs << " " << i_ycrs << "] || " << hit.at(i).c_col << " " << hit.at(i).c_row << endl;
+	      cout << "crystal seed: " << i_et_digi << "  " << i_et_dep << " [" << i_xcrs << " " << i_ycrs << "] || row, col: [" << hit.at(i).c_col << " " << hit.at(i).c_row << "]" << endl;
 	      seed_cry++;
 	    }
 	} //crystal section
@@ -151,9 +148,11 @@ Cluster ComputeCluster(vector<Hit> hit)
 	  if( count == 8 && i_et_dep > 200. )
 	    {
 	      cluster.C_seed_energy.push_back(i_et_dep);
-	      cluster.C_seed_x.push_back(i_xcrs); cluster.C_seed_y.push_back(i_ycrs); cluster.C_seed_z.push_back(i_zcrs); 
+	      cluster.C_seed_x.push_back(i_xcrs); cluster.C_seed_y.push_back(i_ycrs); cluster.C_seed_z.push_back(i_zcrs);
+
+	      ClusSeed_xcrs.push_back(i_xcrs);  ClusSeed_ycrs.push_back(i_ycrs); 	      
 	      //	      cout << hit.at(i).c_col << " " << hit.at(i).c_row << " count: " << count << endl;
-	      cout << "glass seed: " << i_et_digi << " " << i_et_dep << " [" << i_xcrs << " " << i_ycrs << "] || " << hit.at(i).c_col << " " << hit.at(i).c_row << endl;
+	      cout << "glass seed: " << i_et_digi << "  " << i_et_dep << " [" << i_xcrs << " " << i_ycrs << "] || row, col: [" << hit.at(i).c_col << " " << hit.at(i).c_row << "]" << endl;
 	      seed_gla++;
 	    }
 	} //glass section
@@ -161,109 +160,70 @@ Cluster ComputeCluster(vector<Hit> hit)
 
   seed_total = seed_gla + seed_cry;
   if(seed_total >= 2 )
-    cout << "Seed counts: " << seed_total << ", glass: " << seed_gla << ", crystal: " << seed_cry << endl << endl;
+    cout << "Seed counts: " << seed_total << ", glass: " << seed_gla << ", crystal: " << seed_cry << endl;
 
 
+  
+  //
+  //build the cluster energy and size
+  //
+  
+  for(int i = 0 ; i < seed_total ; i++)
+    {
+      Clus_Energy_tot_simul = 0.;  Clus_size_simul = 0;
+      
+      for(int k = 0 ; k < Size ; k++)
+	{
+	  double Dx = hit.at(k).x_crs - ClusSeed_xcrs[i];
+	  double Dy = hit.at(k).y_crs - ClusSeed_ycrs[i];
+
+	  if (sqrt(Dx * Dx + Dy * Dy) <= 3. * Rmoliere)
+	    {
+	      Clus_Energy_tot_simul += hit.at(k).Et_dep;
+	      Clus_size_simul++;
+	    }
+	}
+      cout << "Reconstructed energy: " << Clus_Energy_tot_simul << " || cluster size: " << Clus_size_simul << endl;
+      cluster.C_Energy_tot_simul.push_back(Clus_Energy_tot_simul);  ClusEtotsimu.push_back(Clus_Energy_tot_simul);
+      cluster.C_size_simul.push_back(Clus_size_simul);
+    }
 
 
+  double w_tot, x, y;
+ 
+  for(int i = 0 ; i < seed_total ; i++ )
+    {
+      w_tot = 0.;  x = 0.;  y = 0.;
+      Clus_Etot = ClusEtotsimu[i];
+      Clus_x = 0.; Clus_xx = 0.;
+      Clus_y = 0.; Clus_yy = 0.;
+      
+      for(int k = 0 ; k < Size ; k++)
+	{
+	  double Dx = hit.at(k).x_crs - ClusSeed_xcrs[i];
+	  double Dy = hit.at(k).y_crs - ClusSeed_ycrs[i];
 
-
-
-
-
+	  if (sqrt(Dx * Dx + Dy * Dy) <= 3. * Rmoliere)
+	    {
+	      double w1 = std::max(0., (3.45 + std::log(hit.at(k).E_digi / Clus_Etot))); 
+	      x += w1 * hit.at(k).x_crs;
+	      y += w1 * hit.at(k).y_crs;
+	      Clus_xx += w1 * hit.at(k).x_crs * hit.at(k).x_crs;
+	      Clus_yy += w1 * hit.at(k).y_crs * hit.at(k).y_crs;
+	      w_tot += w1;
+	    }
+	}
+      Clus_x = x / w_tot;  Clus_y = y / w_tot;
+      Clus_xx /= w_tot;  Clus_yy /= w_tot;
+      cluster.C_x.push_back(Clus_x);  cluster.C_y.push_back(Clus_y);
+      cout << "Reconstruction pos: [" << Clus_x << " " << Clus_y << "]" << endl; 
+    }
+  cout << endl;
 
 
 
   /*
-  
-  //================================
-  // Loop all hits per event
-  // Find Cluster Seed;
-  //================================
-  for(int i = 0 ; i < Size ; i++)
-    {
-
-	
-      if (hit.at(i).E_digi > Ethr && hit.at(i).E_digi > ClusSeed_Ene)  // iterate the energy to the larger one.
-	{
-	  ClusSeed_Ene = hit.at(i).E_digi;
-	  ClusSeed_xcrs = hit.at(i).x_crs;
-	  ClusSeed_ycrs = hit.at(i).y_crs;
-	  ClusSeed_zcrs = hit.at(i).z_crs;
-	  ClusSeed_npe = hit.at(i).npe;
-	}
-    }
-
-  // this seed has the largest energy and print its information
-  //    cout << "Most powerful hit: " << ClusSeed_xcrs << " "<< ClusSeed_ycrs << " " << ClusSeed_Ene << endl << endl;
     
-
-  //ENERGY TOT simul starting fro Et_dep
-  for (int i = 0; i < Size; i++) {
-    if (hit.at(i).Et_dep > Ethr) {
-      double Dx = hit.at(i).x_crs - ClusSeed_xcrs;
-      double Dy = hit.at(i).y_crs - ClusSeed_ycrs;
-      //	    cout << "SEED " << i << " : " << Dx << " " << Dy << " " << ClusSeed_xcrs << " " << ClusSeed_ycrs << endl;
-	    
-      if (sqrt(Dx * Dx + Dy * Dy) <= 3. * Rmoliere)  // find the hits close to the powerful hit
-	{
-	  Clus_Energy_tot_simul += hit.at(i).Et_dep;
-	  Clus_size_simul++;
-	}
-    }
-  }
-
-
-  //Cluster Energy tot
-  for (int i = 0; i < Size; i++) {
-
-    if (hit.at(i).E_digi > Ethr) {
-      double Dx = hit.at(i).x_crs - ClusSeed_xcrs;
-      double Dy = hit.at(i).y_crs - ClusSeed_ycrs;
-
-      if (sqrt(Dx * Dx + Dy * Dy) <= 3. * Rmoliere) {
-
-	//   cout <<hit.at(i).E_digi<< " "<<hit.at(i).x_crs<< " "<<hit.at(i).y_crs<<" "<< Dx << " "<< Dy<< " "<<sqrt(Dx*Dx+Dy*Dy)<<endl;
-	Clus_Etot += hit.at(i).E_digi;
-	Clus_size++;
-      }
-    } //end if ethr
-  } //for energy tot
-
-    //    cout << "Clus Etot: " << Clus_Etot << " || Clus size: " << Clus_size << endl << endl;
-
-
-    // Cluster Center
-
-  double w_tot = 0;
-  double x, y;
-  x = 0;
-  y = 0;
-
-  for (int i = 0; i < Size; i++)
-    {
-      // Consider hits near the seed! if hit energy is so small, give it weight 0
-      if (hit.at(i).E_digi > Ethr)
-	{
-	  double Dx = hit.at(i).x_crs - ClusSeed_xcrs;
-	  double Dy = hit.at(i).y_crs - ClusSeed_ycrs;
-
-	  if (sqrt(Dx * Dx + Dy * Dy) <= 3. * Rmoliere)
-	    {
-	      double w1 = std::max(0., (3.45 + std::log(hit.at(i).E_digi / Clus_Etot))); 
-	      x += w1 * hit.at(i).x_crs;
-	      y += w1 * hit.at(i).y_crs;
-	      Clus_xx += w1 * hit.at(i).x_crs * hit.at(i).x_crs;
-	      Clus_yy += w1 * hit.at(i).y_crs * hit.at(i).y_crs;
-	      w_tot += w1;
-	    }
-	}
-    }
-  Clus_x = x / w_tot;
-  Clus_y = y / w_tot;
-  Clus_xx /= w_tot;
-  Clus_yy /= w_tot;
-
     
   // Cluster sigma
 
@@ -288,19 +248,13 @@ Cluster ComputeCluster(vector<Hit> hit)
   Clus_phi = std::atan2(Clus_x, Clus_y) * (180. / M_PI); //
 
 
-  cluster.C_seed_energy = ClusSeed_Ene;                 //
   cluster.C_energy = Clus_Etot;                         //
-  cluster.C_seed_x = ClusSeed_xcrs;
-  cluster.C_seed_y = ClusSeed_ycrs;
-  cluster.C_seed_z = ClusSeed_zcrs;
   cluster.C_x = Clus_x;
   cluster.C_y = Clus_y;
   cluster.C_radius = Clus_Radius;
   cluster.C_theta = Clus_Theta;
   cluster.C_phi = Clus_phi;
   cluster.C_size = Clus_size;
-  cluster.C_Energy_tot_simul = Clus_Energy_tot_simul;   //
-  cluster.C_size_simul = Clus_size_simul;               
   cluster.C_seed_npe = ClusSeed_npe;
 */
 
@@ -650,7 +604,7 @@ void multi_cluster_recons()
       cout << events_numer << " th......" << endl;
       cout << "e- hit: {" << e_flag_emcal << ", " << e_E << "} || g hit: {" << g_flag_emcal << ", " << g_E << "}" << endl;
       cout << "e- project pos: [" << 2240 * gen_prt_dir_x[0] / gen_prt_dir_z[0] << ", " << 2240 * gen_prt_dir_y[0] / gen_prt_dir_z[0] << "] || ";
-      cout << "g project pos: [" << 2240 * gen_prt_dir_x[1] / gen_prt_dir_z[1] << ", " << 2240 * gen_prt_dir_y[1] / gen_prt_dir_z[1] << "]" << endl; 
+      cout << "g project pos: [" << 2240 * gen_prt_dir_x[1] / gen_prt_dir_z[1] << ", " << 2240 * gen_prt_dir_y[1] / gen_prt_dir_z[1] << "]" << endl << endl; 
       
       cluster = ComputeCluster(hhit);
       /*
@@ -781,10 +735,12 @@ void multi_cluster_recons()
   c3->Divide(2, 1);
   c3->cd(1);
   //  hit_row_col_cry->Draw("colorz");
+  hit_pos_crystal->SetStats(0);
   hit_pos_crystal->Draw("colorz");
   //  emcal_e_of_bad_res->Draw();
   c3->cd(2);
   //  hit_row_col_gla->Draw("colorz");
+  hit_pos_glass->SetStats(0);
   hit_pos_glass->Draw("colorz");
   //  eloss_of_bad_res->Draw();
   
