@@ -43,10 +43,10 @@ struct Hit {
 
 struct Cluster
 {
-  int no_cluster=0;
-  vector<double> C_seed_energy, C_seed_x, C_seed_y, C_seed_z;
-  vector<double> C_energy, C_x, C_y;
-  vector<double> C_radius, C_theta, C_phi, C_size;
+  int num_cluster;
+  vector<double> C_seed_energy, C_seed_x, C_seed_y, C_seed_z, C_x, C_y;
+  vector<double> C_energy, C_size;
+  vector<double> C_radius, C_theta, C_phi;
   vector<double> C_Energy_tot_simul, C_size_simul;
 };
 
@@ -151,100 +151,92 @@ Cluster ComputeCluster(vector<Hit> hit)
     } //loop ce_emcal hits
 
   seed_total = seed_gla + seed_cry;
+  cluster.num_cluster = seed_total;
   
   if(seed_total >= 1 )
-    {
-      cout << "Seed counts: " << seed_total << ", glass: " << seed_gla << ", crystal: " << seed_cry << endl;
-    }
-      //
-      //build the cluster energy and size
-      //
+    cout << "Seed counts: " << seed_total << ", glass: " << seed_gla << ", crystal: " << seed_cry << endl;
   
-      for(int i = 0 ; i < seed_total ; i++)
-	{
-	  Clus_Energy_tot_simul = 0.;  Clus_size_simul = 0;
-      
-	  for(int k = 0 ; k < Size ; k++)
-	    {
-	      double Dx = hit.at(k).x_crs - ClusSeed_xcrs[i];
-	      double Dy = hit.at(k).y_crs - ClusSeed_ycrs[i];
-
-	      if (sqrt(Dx * Dx + Dy * Dy) <= 3. * Rmoliere)
-		{
-		  Clus_Energy_tot_simul += hit.at(k).Et_dep;
-		  Clus_size_simul++;
-		}
-	    }
-	  cout << "Reconstructed energy: " << Clus_Energy_tot_simul << " || cluster size: " << Clus_size_simul << endl;
-	  cluster.C_Energy_tot_simul.push_back(Clus_Energy_tot_simul);  ClusEtotsimu.push_back(Clus_Energy_tot_simul);
-	  cluster.C_size_simul.push_back(Clus_size_simul);
-	}
-
-
-      double w_tot, x, y;
- 
-      for(int i = 0 ; i < seed_total ; i++ )
-	{
-	  w_tot = 0.;  x = 0.;  y = 0.;
-	  Clus_Etot = ClusEtotsimu[i];
-	  Clus_x = 0.; Clus_xx = 0.;
-	  Clus_y = 0.; Clus_yy = 0.;
-      
-	  for(int k = 0 ; k < Size ; k++)
-	    {
-	      double Dx = hit.at(k).x_crs - ClusSeed_xcrs[i];
-	      double Dy = hit.at(k).y_crs - ClusSeed_ycrs[i];
-
-	      if (sqrt(Dx * Dx + Dy * Dy) <= 3. * Rmoliere)
-		{
-		  double w1 = std::max(0., (3.45 + std::log(hit.at(k).E_digi / Clus_Etot))); 
-		  x += w1 * hit.at(k).x_crs;
-		  y += w1 * hit.at(k).y_crs;
-		  Clus_xx += w1 * hit.at(k).x_crs * hit.at(k).x_crs;
-		  Clus_yy += w1 * hit.at(k).y_crs * hit.at(k).y_crs;
-		  w_tot += w1;
-		}
-	    }
-	  Clus_x = x / w_tot;  Clus_y = y / w_tot;
-	  cluster.C_x.push_back(Clus_x);  cluster.C_y.push_back(Clus_y);
-
-	  Clus_xx /= w_tot;  Clus_yy /= w_tot;
-      
-	  double sigmax2 = Clus_xx - std::pow(Clus_x, 2.);  // <x^2> - <x>^2
-	  if (sigmax2 < 0) sigmax2 = 0;
-	  Clus_sigmaX = std::sqrt(sigmax2);
-
-	  double sigmay2 = Clus_yy - std::pow(Clus_y, 2.);
-	  if (sigmay2 < 0) sigmay2 = 0;
-	  Clus_sigmaY = std::sqrt(sigmay2);
-
-	  //Cluster radius
-	  double radius2 = (sigmax2 + sigmay2);
-	  if (radius2 < 0) radius2 = 0;
-	  Clus_Radius = std::sqrt(radius2);
-
-	  //Cluster theta
-	  Clus_Theta = (std::atan((std::sqrt(std::pow(Clus_x, 2.) + std::pow(Clus_y, 2.))) / (CRYS_ZPOS + ClusSeed_zcrs[i]))) *
-	    (180. / M_PI);
-
-	  //Cluster phi
-	  Clus_phi = std::atan2(Clus_x, Clus_y) * (180. / M_PI);
-
-	  cout << "Reconstruction pos: [" << Clus_x << " " << Clus_y << "]  ";
-	  cout << "Sigmax: " << Clus_sigmaX << " " << "Sigmay: " << Clus_sigmaY << endl;
-	  cout << "Radius: " << Clus_Radius << " " << "theta: " << Clus_Theta << " " << Clus_phi << endl; 
-	}
-      cout << endl << endl;
-
-      return cluster;
-    
-  /*
-  else
+  //
+  //build the cluster energy and size
+  //
+  
+  for(int i = 0 ; i < seed_total ; i++)
     {
-      cout << "No cluster in this event!!!" << endl;
-      return cluster.no_cluster;
+      Clus_Energy_tot_simul = 0.;  Clus_size_simul = 0;
+      
+      for(int k = 0 ; k < Size ; k++)
+	{
+	  double Dx = hit.at(k).x_crs - ClusSeed_xcrs[i];
+	  double Dy = hit.at(k).y_crs - ClusSeed_ycrs[i];
+
+	  if (sqrt(Dx * Dx + Dy * Dy) <= 3. * Rmoliere)
+	    {
+	      Clus_Energy_tot_simul += hit.at(k).Et_dep;
+	      Clus_size_simul++;
+	    }
+	}
+      cout << "Reconstructed energy: " << Clus_Energy_tot_simul << " || cluster size: " << Clus_size_simul << endl;
+      cluster.C_Energy_tot_simul.push_back(Clus_Energy_tot_simul);  ClusEtotsimu.push_back(Clus_Energy_tot_simul);
+      cluster.C_size_simul.push_back(Clus_size_simul);
     }
-  */
+
+
+  double w_tot, x, y;
+ 
+  for(int i = 0 ; i < seed_total ; i++ )
+    {
+      w_tot = 0.;  x = 0.;  y = 0.;
+      Clus_Etot = ClusEtotsimu[i];
+      Clus_x = 0.; Clus_xx = 0.;
+      Clus_y = 0.; Clus_yy = 0.;
+      
+      for(int k = 0 ; k < Size ; k++)
+	{
+	  double Dx = hit.at(k).x_crs - ClusSeed_xcrs[i];
+	  double Dy = hit.at(k).y_crs - ClusSeed_ycrs[i];
+
+	  if (sqrt(Dx * Dx + Dy * Dy) <= 3. * Rmoliere)
+	    {
+	      double w1 = std::max(0., (3.45 + std::log(hit.at(k).E_digi / Clus_Etot))); 
+	      x += w1 * hit.at(k).x_crs;
+	      y += w1 * hit.at(k).y_crs;
+	      Clus_xx += w1 * hit.at(k).x_crs * hit.at(k).x_crs;
+	      Clus_yy += w1 * hit.at(k).y_crs * hit.at(k).y_crs;
+	      w_tot += w1;
+	    }
+	}
+      Clus_x = x / w_tot;  Clus_y = y / w_tot;
+      cluster.C_x.push_back(Clus_x);  cluster.C_y.push_back(Clus_y);
+
+      Clus_xx /= w_tot;  Clus_yy /= w_tot;
+      
+      double sigmax2 = Clus_xx - std::pow(Clus_x, 2.);  // <x^2> - <x>^2
+      if (sigmax2 < 0) sigmax2 = 0;
+      Clus_sigmaX = std::sqrt(sigmax2);
+
+      double sigmay2 = Clus_yy - std::pow(Clus_y, 2.);
+      if (sigmay2 < 0) sigmay2 = 0;
+      Clus_sigmaY = std::sqrt(sigmay2);
+
+      //Cluster radius
+      double radius2 = (sigmax2 + sigmay2);
+      if (radius2 < 0) radius2 = 0;
+      Clus_Radius = std::sqrt(radius2);
+
+      //Cluster theta
+      Clus_Theta = (std::atan((std::sqrt(std::pow(Clus_x, 2.) + std::pow(Clus_y, 2.))) / (CRYS_ZPOS + ClusSeed_zcrs[i]))) *
+	(180. / M_PI);
+
+      //Cluster phi
+      Clus_phi = std::atan2(Clus_x, Clus_y) * (180. / M_PI);
+
+      cout << "Reconstruction pos: [" << Clus_x << " " << Clus_y << "]  ";
+      cout << "Sigmax: " << Clus_sigmaX << " " << "Sigmay: " << Clus_sigmaY << endl;
+      cout << "Radius: " << Clus_Radius << " " << "theta: " << Clus_Theta << " " << "phi: " << Clus_phi << endl; 
+    }
+  cout << endl << endl;
+
+  return cluster;
 }
 
 
@@ -357,11 +349,11 @@ void multi_cluster_recons()
   double Cl_seed_energy = 0, Cl_Energy_tot_simul = 0, Cl_energy = 0;
   double Cl_seed_x = 0, Cl_seed_y = 0, Cl_seed_z = 0;
   double Cl_x = 0, Cl_y = 0, Cl_radius = 0, Cl_theta = 0, Cl_phi = 0;
-  int Cl_size = 0, Cl_seed_npe = 0, Cl_size_simul = 0, ene = 0;
+  int Cl_size = 0, Cl_seed_npe = 0, Cl_size_simul = 0, ene = 0, N_cluster = 0;
   double g_px = 0., g_py = 0., g_pz = 0., g_E = 0., e_px = 0., e_py = 0., e_pz = 0., e_E = 0.;
   double e_hit_emcal_x = 0., e_hit_emcal_y = 0., e_hit_emcal_z = 0.;
   double g_hit_emcal_x = 0., g_hit_emcal_y = 0., g_hit_emcal_z = 0.;
-  int e_flag_emcal = 0, g_flag_emcal = 0, Etot_size = 0;
+  int e_flag_emcal = 0, g_flag_emcal = 0, N_hit_emcal = 0;
 
 
   
@@ -369,6 +361,8 @@ void multi_cluster_recons()
   TFile *fout = new TFile(fileName_out.c_str(), "Recreate");
   TTree *outTree = new TTree("outTree", "outTree");
 
+  outTree->Branch("N_cluster", &N_cluster, "N_cluster/I");
+  
   outTree->Branch("Cl_seed_energy", &Cl_seed_energy, "Cl_seed_energy/D");
   outTree->Branch("Cl_seed_npe", &Cl_seed_npe, "Cl_seed_npe/I");
   outTree->Branch("Cl_seed_x", &Cl_seed_x, "Cl_seed_x/D");
@@ -384,6 +378,7 @@ void multi_cluster_recons()
   outTree->Branch("Cl_size", &Cl_size, "Cl_size/I");
   outTree->Branch("Cl_size_simul", &Cl_size_simul, "Cl_size_simul/I");
   outTree->Branch("Cl_Energy_tot_simul", &Cl_Energy_tot_simul, "Cl_Energy_tot_simul/D");
+  
   outTree->Branch("e_hit_emcal_x", &e_hit_emcal_x, "e_hit_emcal_x/D");
   outTree->Branch("e_hit_emcal_y", &e_hit_emcal_y, "e_hit_emcal_y/D");
   outTree->Branch("e_hit_emcal_z", &e_hit_emcal_z, "e_hit_emcal_z/D");
@@ -400,7 +395,7 @@ void multi_cluster_recons()
   outTree->Branch("e_E", &e_E, "e_E/D");
   outTree->Branch("e_flag_emcal", &e_flag_emcal, "e_flag_emcal/I");
   outTree->Branch("g_flag_emcal", &g_flag_emcal, "g_flag_emcal/I");
-  outTree->Branch("Etot_size", &Etot_size, "Etot_size/I");
+  outTree->Branch("N_hit_emcal", &N_hit_emcal, "N_hit_emcal/I");
 
 
   
@@ -411,10 +406,10 @@ void multi_cluster_recons()
   size_t events_numer = 0;  
   while (fReader.Next())
     {
-      if(++events_numer != 495)
-	continue;
+      //      if(++events_numer != 495)
+      //	continue;
       
-      if(++events_numer > 500)
+      if(++events_numer > 10)
 	break;
 	//	continue;
       
@@ -523,10 +518,10 @@ void multi_cluster_recons()
       vector<Hit> hhit;
       double hit_e_check = 0.;
       
-      Etot_size = ce_emcal_etot_dep.GetSize();
-      //      cout << endl << Etot_size << ": " << endl;
+      N_hit_emcal = ce_emcal_etot_dep.GetSize();
+      //      cout << endl << N_hit_emcal << ": " << endl;
       
-      for(int i = 0 ; i < Etot_size ; i++)
+      for(int i = 0 ; i < N_hit_emcal ; i++)
 	{
 	  Hit hit;
 	  hit.x_crs = ce_emcal_xcrs[i];
@@ -589,8 +584,9 @@ void multi_cluster_recons()
       Cluster cluster;
       cout << events_numer << " th......" << endl;
       cout << "e- hit: {" << e_flag_emcal << ", " << e_E << "} || g hit: {" << g_flag_emcal << ", " << g_E << "}" << endl;
-      cout << "e- project pos: [" << 2240 * gen_prt_dir_x[0] / gen_prt_dir_z[0] << ", " << 2240 * gen_prt_dir_y[0] / gen_prt_dir_z[0] << "] || ";
-      cout << "g project pos: [" << 2240 * gen_prt_dir_x[1] / gen_prt_dir_z[1] << ", " << 2240 * gen_prt_dir_y[1] / gen_prt_dir_z[1] << "]" << endl << endl; 
+      //      cout << "e- direction: " << gen_prt_dir_x[0] << " " << gen_prt_dir_y[0] << " " << gen_prt_dir_z[0] << endl;
+      cout << "e- project pos: [" << 2240 * gen_prt_dir_x[0] / TMath::Abs(gen_prt_dir_z[0]) << ", " << 2240 * gen_prt_dir_y[0] / TMath::Abs(gen_prt_dir_z[0]) << "] || ";
+      cout << "g project pos: [" << 2240 * gen_prt_dir_x[1] / TMath::Abs(gen_prt_dir_z[1]) << ", " << 2240 * gen_prt_dir_y[1] / TMath::Abs(gen_prt_dir_z[1]) << "]" << endl << endl; 
       
       cluster = ComputeCluster(hhit);
       /*
@@ -637,7 +633,7 @@ void multi_cluster_recons()
 		  cout << Dis_re_pri << " !!!" << endl;
 
 		  
-		  for(int k = 0 ; k < Etot_size ; k++)
+		  for(int k = 0 ; k < N_hit_emcal ; k++)
 		    {
 		      e_res_pri_xy_pos->Fill(ce_emcal_xcrs[k], ce_emcal_ycrs[k], ce_emcal_etot_dep[k]);
 		      emcal_e_of_bad_res->Fill(ce_emcal_etot_dep[k]);
