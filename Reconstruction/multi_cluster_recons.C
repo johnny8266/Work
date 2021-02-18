@@ -45,7 +45,7 @@ struct Cluster
 {
   int num_cluster;
   vector<double> C_seed_energy, C_seed_x, C_seed_y, C_seed_z, C_x, C_y;
-  vector<double> C_energy, C_size;
+  vector<double> C_energy, C_size;  // these 2 variables were not used.
   vector<double> C_radius, C_theta, C_phi;
   vector<double> C_Energy_tot_simul, C_size_simul;
 };
@@ -77,7 +77,7 @@ Cluster ComputeCluster(vector<Hit> hit)
     map_crystal.insert(pair<int, double>(hit.at(i).c_ID, hit.at(i).Et_dep));
   
 
-  cout << "This event has " << Size << " hits and...." << endl;
+  //  cout << "This event has " << Size << " hits and...." << endl;
   for(int i = 0 ; i < Size ; i++)
     {
       int count = 0;
@@ -112,7 +112,7 @@ Cluster ComputeCluster(vector<Hit> hit)
 
 	      ClusSeed_xcrs.push_back(i_xcrs);  ClusSeed_ycrs.push_back(i_ycrs);  ClusSeed_zcrs.push_back(i_zcrs); 
 	      //	      cout << hit.at(i).c_col << " " << hit.at(i).c_row << " count: " << count << endl;
-	      cout << "crystal seed: " << i_et_digi << "  " << i_et_dep << " [" << i_xcrs << " " << i_ycrs << "] || row, col: [" << hit.at(i).c_col << " " << hit.at(i).c_row << "]" << endl;
+	      //	      cout << "crystal seed: " << i_et_digi << "  " << i_et_dep << " [" << i_xcrs << " " << i_ycrs << "] || row, col: [" << hit.at(i).c_col << " " << hit.at(i).c_row << "]" << endl;
 	      seed_cry++;
 	    }
 	} //crystal section
@@ -144,7 +144,7 @@ Cluster ComputeCluster(vector<Hit> hit)
 
 	      ClusSeed_xcrs.push_back(i_xcrs);  ClusSeed_ycrs.push_back(i_ycrs);  ClusSeed_zcrs.push_back(i_zcrs);
 	      //	      cout << hit.at(i).c_col << " " << hit.at(i).c_row << " count: " << count << endl;
-	      cout << "glass seed: " << i_et_digi << "  " << i_et_dep << " [" << i_xcrs << " " << i_ycrs << "] || row, col: [" << hit.at(i).c_col << " " << hit.at(i).c_row << "]" << endl;
+	      //	      cout << "glass seed: " << i_et_digi << "  " << i_et_dep << " [" << i_xcrs << " " << i_ycrs << "] || row, col: [" << hit.at(i).c_col << " " << hit.at(i).c_row << "]" << endl;
 	      seed_gla++;
 	    }
 	} //glass section
@@ -153,8 +153,8 @@ Cluster ComputeCluster(vector<Hit> hit)
   seed_total = seed_gla + seed_cry;
   cluster.num_cluster = seed_total;
   
-  if(seed_total >= 1 )
-    cout << "Seed counts: " << seed_total << ", glass: " << seed_gla << ", crystal: " << seed_cry << endl;
+  //  if(seed_total >= 1 )
+  //    cout << "Seed counts: " << seed_total << ", glass: " << seed_gla << ", crystal: " << seed_cry << endl;
   
   //
   //build the cluster energy and size
@@ -175,7 +175,7 @@ Cluster ComputeCluster(vector<Hit> hit)
 	      Clus_size_simul++;
 	    }
 	}
-      cout << "Reconstructed energy: " << Clus_Energy_tot_simul << " || cluster size: " << Clus_size_simul << endl;
+      //      cout << "Reconstructed energy: " << Clus_Energy_tot_simul << " || cluster size: " << Clus_size_simul << endl;
       cluster.C_Energy_tot_simul.push_back(Clus_Energy_tot_simul);  ClusEtotsimu.push_back(Clus_Energy_tot_simul);
       cluster.C_size_simul.push_back(Clus_size_simul);
     }
@@ -222,19 +222,21 @@ Cluster ComputeCluster(vector<Hit> hit)
       double radius2 = (sigmax2 + sigmay2);
       if (radius2 < 0) radius2 = 0;
       Clus_Radius = std::sqrt(radius2);
+      cluster.C_radius.push_back(Clus_Radius);
 
       //Cluster theta
-      Clus_Theta = (std::atan((std::sqrt(std::pow(Clus_x, 2.) + std::pow(Clus_y, 2.))) / (CRYS_ZPOS + ClusSeed_zcrs[i]))) *
-	(180. / M_PI);
+      Clus_Theta = (std::atan((std::sqrt(std::pow(Clus_x, 2.) + std::pow(Clus_y, 2.))) / (CRYS_ZPOS + ClusSeed_zcrs[i]))) * (180. / M_PI);
+      cluster.C_theta.push_back(Clus_Theta);
 
       //Cluster phi
       Clus_phi = std::atan2(Clus_x, Clus_y) * (180. / M_PI);
+      cluster.C_phi.push_back(Clus_phi);
 
-      cout << "Reconstruction pos: [" << Clus_x << " " << Clus_y << "]  ";
-      cout << "Sigmax: " << Clus_sigmaX << " " << "Sigmay: " << Clus_sigmaY << endl;
-      cout << "Radius: " << Clus_Radius << " " << "theta: " << Clus_Theta << " " << "phi: " << Clus_phi << endl; 
+      //      cout << "Reconstruction pos: [" << Clus_x << " " << Clus_y << "]  ";
+      //      cout << "Sigmax: " << Clus_sigmaX << " " << "Sigmay: " << Clus_sigmaY << endl;
+      //      cout << "Radius: " << Clus_Radius << " " << "theta: " << Clus_Theta << " " << "phi: " << Clus_phi << endl; 
     }
-  cout << endl << endl;
+  //  cout << endl << endl;
 
   return cluster;
 }
@@ -346,15 +348,15 @@ void multi_cluster_recons()
   // Save the output
   //==================================
 
-  double Cl_seed_energy = 0, Cl_Energy_tot_simul = 0, Cl_energy = 0;
-  double Cl_seed_x = 0, Cl_seed_y = 0, Cl_seed_z = 0;
-  double Cl_x = 0, Cl_y = 0, Cl_radius = 0, Cl_theta = 0, Cl_phi = 0;
-  int Cl_size = 0, Cl_seed_npe = 0, Cl_size_simul = 0, ene = 0, N_cluster = 0;
+  int ene = 0, N_cluster = 0;
   double g_px = 0., g_py = 0., g_pz = 0., g_E = 0., e_px = 0., e_py = 0., e_pz = 0., e_E = 0.;
   double e_hit_emcal_x = 0., e_hit_emcal_y = 0., e_hit_emcal_z = 0.;
   double g_hit_emcal_x = 0., g_hit_emcal_y = 0., g_hit_emcal_z = 0.;
   int e_flag_emcal = 0, g_flag_emcal = 0, N_hit_emcal = 0;
 
+  vector<double> Cl_seed_energy, Cl_seed_x, Cl_seed_y, Cl_seed_z, Cl_x, Cl_y;
+  vector<double> Cl_radius, Cl_theta, Cl_phi;
+  vector<double> Cl_Energy_tot_simul, Cl_size_simul;
 
   
   string fileName_out = "./data/outCluster.root";
@@ -362,22 +364,18 @@ void multi_cluster_recons()
   TTree *outTree = new TTree("outTree", "outTree");
 
   outTree->Branch("N_cluster", &N_cluster, "N_cluster/I");
-  
-  outTree->Branch("Cl_seed_energy", &Cl_seed_energy, "Cl_seed_energy/D");
-  outTree->Branch("Cl_seed_npe", &Cl_seed_npe, "Cl_seed_npe/I");
-  outTree->Branch("Cl_seed_x", &Cl_seed_x, "Cl_seed_x/D");
-  outTree->Branch("Cl_seed_y", &Cl_seed_y, "Cl_seed_y/D");
-  outTree->Branch("Cl_energy", &Cl_energy, "Cl_energy/D");
-  outTree->Branch("Cl_x", &Cl_x, "Cl_x/D");
-  outTree->Branch("Cl_y", &Cl_y, "Cl_y/D");
-  outTree->Branch("Cl_radius", &Cl_radius, "Cl_radius/D");
-  outTree->Branch("Cl_theta", &Cl_theta, "Cl_theta/D");
-  outTree->Branch("Cl_phi", &Cl_phi, "Cl_phi/D");
-  outTree->Branch("Cl_size", &Cl_size, "Cl_size/I");
-  outTree->Branch("Cl_phi", &Cl_phi, "Cl_phi/D");
-  outTree->Branch("Cl_size", &Cl_size, "Cl_size/I");
-  outTree->Branch("Cl_size_simul", &Cl_size_simul, "Cl_size_simul/I");
-  outTree->Branch("Cl_Energy_tot_simul", &Cl_Energy_tot_simul, "Cl_Energy_tot_simul/D");
+
+  outTree->Branch("Cl_seed_energy", &Cl_seed_energy);
+  outTree->Branch("Cl_seed_x", &Cl_seed_x);
+  outTree->Branch("Cl_seed_y", &Cl_seed_y);
+  outTree->Branch("Cl_seed_z", &Cl_seed_z);
+  outTree->Branch("Cl_x", &Cl_x);
+  outTree->Branch("Cl_y", &Cl_y);
+  outTree->Branch("Cl_radius", &Cl_radius);
+  outTree->Branch("Cl_theta", &Cl_theta);
+  outTree->Branch("Cl_phi", &Cl_phi);
+  outTree->Branch("Cl_Energy_tot_simul", &Cl_Energy_tot_simul);
+  outTree->Branch("Cl_size_simul", &Cl_size_simul);
   
   outTree->Branch("e_hit_emcal_x", &e_hit_emcal_x, "e_hit_emcal_x/D");
   outTree->Branch("e_hit_emcal_y", &e_hit_emcal_y, "e_hit_emcal_y/D");
@@ -409,7 +407,7 @@ void multi_cluster_recons()
       //      if(++events_numer != 495)
       //	continue;
       
-      if(++events_numer > 10)
+      if(++events_numer > 500)
 	break;
 	//	continue;
       
@@ -563,13 +561,7 @@ void multi_cluster_recons()
 	      //	      cout << ce_emcal_id[i] << " " << ce_emcal_row[i] << " " << ce_emcal_col[i] << endl;
 	      //	      cout << ce_emcal_id[i] << " [" << ce_emcal_xcrs[i] << " " << ce_emcal_ycrs[i] << " " << ce_emcal_zcrs[i] << "]" << endl;
 	    }
-		    
-	  //	  else
-	    //	    hit_row_col_cry->Fill(ce_emcal_row[i], ce_emcal_col[i], 10);
-	  //	  hit_e_check+=ce_emcal_etot_dep[i];
-	  //	  cout << ce_emcal_xcrs[i] << " " << ce_emcal_ycrs[i] << " " << ce_emcal_zcrs[i] << "     " << ce_emcal_etot_dep[i] << endl;
 	}
-      //      cout << "double check: " << hit_e_check << endl;
 
       g_px = gen_prt_dir_x[1] * gen_prt_tot_mom[1];
       g_py = gen_prt_dir_y[1] * gen_prt_tot_mom[1];
@@ -582,37 +574,66 @@ void multi_cluster_recons()
       e_E = gen_prt_tot_e[0];
       
       Cluster cluster;
+
+      /*
       cout << events_numer << " th......" << endl;
       cout << "e- hit: {" << e_flag_emcal << ", " << e_E << "} || g hit: {" << g_flag_emcal << ", " << g_E << "}" << endl;
       //      cout << "e- direction: " << gen_prt_dir_x[0] << " " << gen_prt_dir_y[0] << " " << gen_prt_dir_z[0] << endl;
       cout << "e- project pos: [" << 2240 * gen_prt_dir_x[0] / TMath::Abs(gen_prt_dir_z[0]) << ", " << 2240 * gen_prt_dir_y[0] / TMath::Abs(gen_prt_dir_z[0]) << "] || ";
       cout << "g project pos: [" << 2240 * gen_prt_dir_x[1] / TMath::Abs(gen_prt_dir_z[1]) << ", " << 2240 * gen_prt_dir_y[1] / TMath::Abs(gen_prt_dir_z[1]) << "]" << endl << endl; 
-      
+      */      
+
       cluster = ComputeCluster(hhit);
+
+      N_cluster = cluster.num_cluster;
+      cout <<  N_cluster << endl;
+      if(N_cluster > 0)
+	{
+	  for(int i = 0 ; i < N_cluster ; i++)
+	    {
+	      //	  cout << "N cluster: " << N_cluster << endl << endl;
+	  
+	      double cce = cluster.C_seed_energy[i];
+	      double ccx = cluster.C_seed_x[i], ccy = cluster.C_seed_y[i], ccz = cluster.C_seed_z[i];
+	      double cx = cluster.C_x[i], cy = cluster.C_y[i];
+	      double cR = cluster.C_radius[i], cT = cluster.C_theta[i], cP = cluster.C_phi[i]; 
+	      double cets = cluster.C_Energy_tot_simul[i], css = cluster.C_size_simul[i];
+	  
+	      Cl_seed_energy.push_back(cce);
+	      Cl_seed_x.push_back(ccx);
+	      Cl_seed_y.push_back(ccy);
+	      Cl_seed_z.push_back(ccz);
+	      Cl_x.push_back(cx);
+	      Cl_y.push_back(cy);
+	      Cl_radius.push_back(cR);
+	      Cl_theta.push_back(cT);
+	      Cl_phi.push_back(cP);
+	      Cl_Energy_tot_simul.push_back(cets);
+	      Cl_size_simul.push_back(css);
+	  
+
+	      //	  cout << cluster.C_seed_x[i] << endl;
+	    }
+	}
+      else
+	{
+	  Cl_seed_energy.clear();  Cl_seed_x.clear();  Cl_seed_y.clear();  Cl_seed_z.clear();
+	  Cl_x.clear();  Cl_y.clear();
+	  Cl_radius.clear();  Cl_theta.clear();  Cl_phi.clear();
+	  Cl_Energy_tot_simul.clear();  Cl_size_simul.clear();
+	  continue;
+	}
+      
+      outTree->Fill();
+
+      Cl_seed_energy.clear();  Cl_seed_x.clear();  Cl_seed_y.clear();  Cl_seed_z.clear();
+      Cl_x.clear();  Cl_y.clear();
+      Cl_radius.clear();  Cl_theta.clear();  Cl_phi.clear();
+      Cl_Energy_tot_simul.clear();  Cl_size_simul.clear();
+
       /*
-      Cl_seed_energy = cluster.C_seed_energy;               // Max. energy of hits crystal(digi)
-      Cl_seed_npe = cluster.C_seed_npe;                     // Max. npe of hits crystals
-      Cl_energy = cluster.C_energy;                         // Total energy of the cluster(digi)
-      Cl_Energy_tot_simul = cluster.C_Energy_tot_simul;     // Total energy of the cluster(deposit)
-
-      Cl_seed_x = cluster.C_seed_x;                         // Position of hit with max. energy
-      Cl_seed_y = cluster.C_seed_y;
-      Cl_seed_z = cluster.C_seed_z;
-      
-      Cl_x = cluster.C_x;                                   // Cluster position after weighted
-      Cl_y = cluster.C_y;
-      
-      Cl_radius = cluster.C_radius;
-      Cl_theta = cluster.C_theta;
-      Cl_phi = cluster.C_phi;
-
-      Cl_size = cluster.C_size;                             // Cluster size(number of hits in this cluster)
-      Cl_size_simul = cluster.C_size_simul;                 // Same as the above one
 
       //      cout << g_px << " " << g_py << " " << g_pz << " " << g_E << endl; 
-
-      outTree->Fill();
-      
 
       if( (e_flag_emcal == 1) && (g_flag_emcal == 0) )
 	{
@@ -665,9 +686,7 @@ void multi_cluster_recons()
       g_flag_emcal = 0;  e_flag_emcal = 0;  hit_energy = 0.;
       
     }// end for the read g4e_output
-
-  fout->cd();
-  outTree->Write();
+  fout->Write();
   fout->Close();
 
   
