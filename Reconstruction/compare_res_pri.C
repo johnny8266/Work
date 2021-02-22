@@ -31,81 +31,104 @@ Double_t Eresolution_fit(double *x, double *par)
 
 void compare_res_pri()
 {
-  double Cl_seed_energy = 0;
-  int Cl_seed_npe = 0;
-  double Cl_energy = 0;
-  double Cl_seed_x = 0;
-  double Cl_seed_y = 0;
-  double Cl_seed_z = 0;
-  double Cl_x = 0;
-  double Cl_y = 0;
-  double Cl_radius = 0;
-  double Cl_theta = 0;
-  double Cl_phi = 0;
-  int Cl_size = 0;
-  int Cl_size_simul = 0;
-  double Cl_Energy_tot_simul = 0;
-  double g_px = 0., g_py = 0., g_pz = 0., g_E = 0., e_px = 0., e_py = 0., e_pz = 0., e_E = 0.;
-  double e_hit_emcal_x = 0., e_hit_emcal_y = 0., e_hit_emcal_z = 0.;
-  double g_hit_emcal_x = 0., g_hit_emcal_y = 0., g_hit_emcal_z = 0.;
-  int e_flag_emcal = 0, g_flag_emcal = 0, Etot_size = 0; 
-
+  
   std::string path = "./data/";
-  //  std::string fileName_out = path + "outEnergy_resolution_test.root";
-  //  cout << fileName_out << endl;
-
-  //  std::string fileName = path + "outCluster." + std::to_string(ene) + ".root";
   std::string fileName = path + "outCluster.root";
+  //  std::string fileName = path + "outCluster_multiclus_8k.root";
     
   cout << "************ " << fileName << " ************" << endl;
 
   
   TFile *f1 = new TFile(fileName.c_str(), "Read");
   TTree *outTree = (TTree *) f1->Get("outTree");
-  outTree->SetBranchAddress("Cl_seed_energy", &Cl_seed_energy);
-  outTree->SetBranchAddress("Cl_seed_npe", &Cl_seed_npe);
-  outTree->SetBranchAddress("Cl_seed_x", &Cl_seed_x);
-  outTree->SetBranchAddress("Cl_seed_y", &Cl_seed_y);
-  outTree->SetBranchAddress("Cl_energy", &Cl_energy);
-  outTree->SetBranchAddress("Cl_x", &Cl_x);
-  outTree->SetBranchAddress("Cl_y", &Cl_y);
-  outTree->SetBranchAddress("Cl_radius", &Cl_radius);
-  outTree->SetBranchAddress("Cl_theta", &Cl_theta);
-  outTree->SetBranchAddress("Cl_phi", &Cl_phi);
-  outTree->SetBranchAddress("Cl_size", &Cl_size);
-  outTree->SetBranchAddress("Cl_size_simul", &Cl_size_simul);
-  outTree->SetBranchAddress("Cl_Energy_tot_simul", &Cl_Energy_tot_simul);
-  outTree->SetBranchAddress("e_hit_emcal_x", &e_hit_emcal_x);
-  outTree->SetBranchAddress("e_hit_emcal_y", &e_hit_emcal_y);
-  outTree->SetBranchAddress("e_hit_emcal_z", &e_hit_emcal_z);
-  outTree->SetBranchAddress("g_hit_emcal_x", &g_hit_emcal_x);
-  outTree->SetBranchAddress("g_hit_emcal_y", &g_hit_emcal_y);
-  outTree->SetBranchAddress("g_hit_emcal_z", &g_hit_emcal_z);
-  outTree->SetBranchAddress("g_px", &g_px);
-  outTree->SetBranchAddress("g_py", &g_py);
-  outTree->SetBranchAddress("g_pz", &g_pz);
-  outTree->SetBranchAddress("g_E", &g_E);
-  outTree->SetBranchAddress("e_px", &e_px);
-  outTree->SetBranchAddress("e_py", &e_py);
-  outTree->SetBranchAddress("e_pz", &e_pz);
-  outTree->SetBranchAddress("e_E", &e_E);
-  outTree->SetBranchAddress("e_flag_emcal", &e_flag_emcal);
-  outTree->SetBranchAddress("g_flag_emcal", &g_flag_emcal);
-  outTree->SetBranchAddress("Etot_size", &Etot_size);
 
-  
+  TTreeReader fReader("outTree", f1);
+
+  TTreeReaderValue<int>        N_cluster = {fReader, "N_cluster"};
+  TTreeReaderArray<double>     Cl_seed_energy = {fReader, "Cl_seed_energy"};
+  TTreeReaderArray<double>     Cl_seed_x = {fReader, "Cl_seed_x"};
+  TTreeReaderArray<double>     Cl_seed_y = {fReader, "Cl_seed_y"};
+  TTreeReaderArray<double>     Cl_seed_z = {fReader, "Cl_seed_z"};
+  TTreeReaderArray<double>     Cl_x = {fReader, "Cl_x"};
+  TTreeReaderArray<double>     Cl_y = {fReader, "Cl_y"};
+  TTreeReaderArray<double>     Cl_radius = {fReader, "Cl_radius"};
+  TTreeReaderArray<double>     Cl_theta = {fReader, "Cl_theta"};
+  TTreeReaderArray<double>     Cl_phi = {fReader, "Cl_phi"};
+  TTreeReaderArray<double>     Cl_Energy_tot_simul = {fReader, "Cl_Energy_tot_simul"};
+  TTreeReaderArray<double>     Cl_size_simul = {fReader, "Cl_size_simul"};
+  TTreeReaderValue<double>     e_hit_emcal_x = {fReader, "e_hit_emcal_x"};
+  TTreeReaderValue<double>     e_hit_emcal_y = {fReader, "e_hit_emcal_y"};
+  TTreeReaderValue<double>     e_hit_emcal_z = {fReader, "e_hit_emcal_z"};
+  TTreeReaderValue<double>     g_hit_emcal_x = {fReader, "g_hit_emcal_x"};
+  TTreeReaderValue<double>     g_hit_emcal_y = {fReader, "g_hit_emcal_y"};
+  TTreeReaderValue<double>     g_hit_emcal_z = {fReader, "g_hit_emcal_z"};
+  TTreeReaderValue<double>     e_pjt_emcal_x = {fReader, "e_pjt_emcal_x"};
+  TTreeReaderValue<double>     e_pjt_emcal_y = {fReader, "e_pjt_emcal_y"};
+  TTreeReaderValue<double>     g_pjt_emcal_x = {fReader, "g_pjt_emcal_x"};
+  TTreeReaderValue<double>     g_pjt_emcal_y = {fReader, "g_pjt_emcal_y"};
+  TTreeReaderValue<double>     e_px = {fReader, "e_px"};
+  TTreeReaderValue<double>     e_py = {fReader, "e_py"};
+  TTreeReaderValue<double>     e_pz = {fReader, "e_pz"};
+  TTreeReaderValue<double>     e_E = {fReader, "e_E"};
+  TTreeReaderValue<double>     g_px = {fReader, "g_px"};
+  TTreeReaderValue<double>     g_py = {fReader, "g_py"};
+  TTreeReaderValue<double>     g_pz = {fReader, "g_pz"};
+  TTreeReaderValue<double>     g_E = {fReader, "g_E"};
+  TTreeReaderValue<int>        e_flag_emcal = {fReader, "e_flag_emcal"};
+  TTreeReaderValue<int>        g_flag_emcal = {fReader, "g_flag_emcal"};
+  TTreeReaderValue<int>        N_hit_emcal = {fReader, "N_hit_emcal"};
+
   auto diffE_e_res_pri = new TH1F("diffE_e_res_pri", "diffE_e_res_pri", 100, -5., 5.);
   auto diffE_g_res_pri = new TH1F("diffE_g_res_pri", "diffE_g_res_pri", 100, -5., 5.);
+  auto diff_posx_g_res_pri = new TH1F("diff_posx_g_res_pri", "diff_posx_g_res_pri", 40, -200., 200.);
+  auto diff_posy_g_res_pri = new TH1F("diff_posy_g_res_pri", "diff_posy_g_res_pri", 40, -200., 200.);
   auto hit_cl_size = new TH1F("hit_cl_size", "hit_cl_size", 20, 0., 20.);
 
-  auto diffE_e_res_pri_vs_ori = new TH2F("diffE_e_res_pri_vs_ori", "diffE_e_res_pri_vs_ori", 140, -4., 10., 110, 0., 10.);
-  auto diffE_g_res_pri_vs_ori = new TH2F("diffE_g_res_pri_vs_ori", "diffE_g_res_pri_vs_ori", 100, -5., 0., 50, 5., 10.);
-  auto diffE_e_res_pri_vs_size = new TH2F("diffE_e_res_pri_vs_size", "diffE_e_res_pri_vs_size", 140, -4., 10., 30, 0., 30.);
-  auto good_res_e_vs_dis = new TH2F("good_res_e_vs_dis", "good_res_e_vs_dis", 120, 0., 1200, 50, -5., 0.);
-  auto bad_res_e_vs_dis = new TH2F("bad_res_e_vs_dis", "bad_res_e_vs_dis", 80, 400., 1200, 100, 0., 10.);
+  auto diffx_g_E = new TH2F("diffx_g_E", "diffx_g_E", 40, -200., 200., 10, 0., 10.);
   
+  size_t events_numer = 0;  
   
-  cout << "Number of events: " << outTree->GetEntries() << endl << endl;
+  while (fReader.Next())
+    {
+      if(++events_numer > 8500)
+	break;
+      auto count = static_cast<size_t>(*N_cluster.Get());
+
+      for(int i = 0 ; i < count ; i++)
+	{
+	  //	  cout <<  Cl_seed_energy[i] << " " << Cl_x[i] << " " << Cl_y[i] << " ";
+	  if( (Cl_x[i] < 0.) && ((*g_flag_emcal.Get()) == 1) )
+	    {
+	      double g_eD = *g_E.Get() - Cl_Energy_tot_simul[i] / 1000.;
+	      double g_poxD = *g_pjt_emcal_x.Get() - Cl_x[i];
+	      double g_poyD = *g_pjt_emcal_y.Get() - Cl_y[i];
+	      //	      double g_poxD = *g_hit_emcal_x.Get() - Cl_seed_x[i];
+	      //	      double g_poyD = *g_hit_emcal_y.Get() - Cl_seed_y[i];
+	      diffE_g_res_pri->Fill(g_eD);
+	      diff_posx_g_res_pri->Fill(g_poxD);
+	      diff_posy_g_res_pri->Fill(g_poyD);
+	      diffx_g_E->Fill( g_poxD, g_eD );
+	    }
+	}
+    }
+
+  auto c1 = new TCanvas("c1", "c1", 1000, 1000);
+  c1->Divide(2,2);
+  c1->cd(1);
+  diffE_g_res_pri->GetXaxis()->SetTitle("[GeV]");
+  diffE_g_res_pri->Draw();
+  //  c1->cd(2);
+  //  diffx_g_E->Draw("colorz");
+  c1->cd(3);
+  diff_posx_g_res_pri->GetXaxis()->SetTitle("[mm]");
+  diff_posx_g_res_pri->Draw();
+  c1->cd(4);
+  diff_posy_g_res_pri->GetXaxis()->SetTitle("[mm]");
+  diff_posy_g_res_pri->Draw();
+
+  /*
+  
+    cout << "Number of events: " << outTree->GetEntries() << endl << endl;
 
   int e_g_count = 0, e_count = 0, g_count = 0, bad_e_recons = 0;
   double diffE_e = 0., diffE_g = 0.;
@@ -189,5 +212,5 @@ void compare_res_pri()
   //  diffE_e_res_pri_vs_size->SetTitle("ELectron delta E v.s. cluster size");
   //  diffE_e_res_pri_vs_size->SetStats(0);
   //  diffE_e_res_pri_vs_size->Draw("colorz");
-  
+  */
 }

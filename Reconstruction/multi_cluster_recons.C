@@ -253,7 +253,7 @@ void multi_cluster_recons()
   //===================================
   
   //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_10k_events_crossing_angle.root");
-  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_imposed_1k_events.root");
+  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_imposed_10k_events.root");
   TTree *events = (TTree *) file->Get("events");
 
   TTreeReader fReader("events", file);
@@ -340,8 +340,8 @@ void multi_cluster_recons()
   auto e_res_bad_xy_pos = new TH2F("e_res_bad_xy_pos", "e_res_bad_xy_pos", 300, -1500., 1500., 300, -1500., 1500.);
   auto hit_row_col_cry = new TH2I("hit_row_col_cry", "hit_row_col_cry", 100, 0, 100, 100, 0, 100);
   auto hit_row_col_gla = new TH2I("hit_row_col_gla", "hit_row_col_gla", 100, 0, 100, 100, 0, 100);
-  auto hit_pos_crystal = new TH2F("hit_pos_crystal", "hit_pos_crystal", 300, -1500, 1500, 300, -1500, 1500);
-  auto hit_pos_glass = new TH2F("hit_pos_glass", "hit_pos_glass", 300, -1500, 1500, 300, -1500, 1500);
+  auto hit_pos_crystal = new TH2F("hit_pos_crystal", "hit_pos_crystal", 140, -1400, 1400, 140, -1400, 1400);
+  auto hit_pos_glass = new TH2F("hit_pos_glass", "hit_pos_glass", 140, -1400, 1400, 140, -1400, 1400);
 
   
   //==================================
@@ -352,6 +352,8 @@ void multi_cluster_recons()
   double g_px = 0., g_py = 0., g_pz = 0., g_E = 0., e_px = 0., e_py = 0., e_pz = 0., e_E = 0.;
   double e_hit_emcal_x = 0., e_hit_emcal_y = 0., e_hit_emcal_z = 0.;
   double g_hit_emcal_x = 0., g_hit_emcal_y = 0., g_hit_emcal_z = 0.;
+  double e_pjt_emcal_x = 0., e_pjt_emcal_y = 0.;
+  double g_pjt_emcal_x = 0., g_pjt_emcal_y = 0.;
   int e_flag_emcal = 0, g_flag_emcal = 0, N_hit_emcal = 0;
 
   vector<double> Cl_seed_energy, Cl_seed_x, Cl_seed_y, Cl_seed_z, Cl_x, Cl_y;
@@ -383,6 +385,10 @@ void multi_cluster_recons()
   outTree->Branch("g_hit_emcal_x", &g_hit_emcal_x, "g_hit_emcal_x/D");
   outTree->Branch("g_hit_emcal_y", &g_hit_emcal_y, "g_hit_emcal_y/D");
   outTree->Branch("g_hit_emcal_z", &g_hit_emcal_z, "g_hit_emcal_z/D");
+  outTree->Branch("e_pjt_emcal_x", &e_pjt_emcal_x, "e_pjt_emcal_x/D");
+  outTree->Branch("e_pjt_emcal_y", &e_pjt_emcal_y, "e_pjt_emcal_y/D");
+  outTree->Branch("g_pjt_emcal_x", &g_pjt_emcal_x, "g_pjt_emcal_x/D");
+  outTree->Branch("g_pjt_emcal_y", &g_pjt_emcal_y, "g_pjt_emcal_y/D");
   outTree->Branch("g_px", &g_px, "g_px/D");
   outTree->Branch("g_py", &g_py, "g_py/D");
   outTree->Branch("g_pz", &g_pz, "g_pz/D");
@@ -404,10 +410,10 @@ void multi_cluster_recons()
   size_t events_numer = 0;  
   while (fReader.Next())
     {
-      //      if(++events_numer != 495)
-      //	continue;
+      if(++events_numer != 89)
+      	continue;
       
-      if(++events_numer > 500)
+      if(++events_numer > 200)
 	break;
 	//	continue;
       
@@ -440,10 +446,7 @@ void multi_cluster_recons()
 		  
 	  double x = hit_x[i], y = hit_y[i], z = hit_z[i];
 	  double e_loss = hit_e_loss[i];
-	  
-	  //	  if( hit_track_id == 1 )
-	  //	    cout << hit_parent_track_id << " " << hit_vol_name[i] << endl;
-
+	 
         
 	  // Check that the name starts with "ce_EMCAL"
 	  if(vol_name.rfind("ce_EMCAL", 0) == 0)
@@ -480,33 +483,12 @@ void multi_cluster_recons()
 		      e_flag_emcal = 1;
 		    }
 		}
-	      //		  cout << hit_track_id << " " << hit_parent_track_id << endl;
 	      count++;
 	    }
 	}
 
       //      cout << "e flag: " << e_flag_emcal << " || g flag: " << g_flag_emcal << endl;
       //      cout << "hit counts in emcal: " << count << " || energy loss: " << hit_energy * 1000. << endl << endl;
-
-      // iterate over the hit emcal tracks
-      for(size_t i=0; i < hits_count; i++)
-	{
-	  if (trk_pdg[i] != 11) continue;       // Take only electrons for now
-	  if (trk_parent_id[i] != 0) continue;  // Take only particles from a generator
-                
-	  // Check track has hits in ce_EMCAL
-	  if (!track_ids_in_ecap_emcal.count(trk_id[i])) continue;
-        
-	  // Construct TLorenz vector
-	  double px = trk_vtx_dir_x[i] * trk_mom[i];
-	  double py = trk_vtx_dir_y[i] * trk_mom[i];
-	  double pz = trk_vtx_dir_z[i] * trk_mom[i];
-
-	  TLorentzVector lv;
-	  lv.SetXYZM(px, py, pz, mass_electron);
-	  //	  h1_el_e_tot->Fill(lv.Energy());
-	}
-
       
       
       // =============================
@@ -576,17 +558,20 @@ void multi_cluster_recons()
       Cluster cluster;
 
       /*
-      cout << events_numer << " th......" << endl;
       cout << "e- hit: {" << e_flag_emcal << ", " << e_E << "} || g hit: {" << g_flag_emcal << ", " << g_E << "}" << endl;
       //      cout << "e- direction: " << gen_prt_dir_x[0] << " " << gen_prt_dir_y[0] << " " << gen_prt_dir_z[0] << endl;
       cout << "e- project pos: [" << 2240 * gen_prt_dir_x[0] / TMath::Abs(gen_prt_dir_z[0]) << ", " << 2240 * gen_prt_dir_y[0] / TMath::Abs(gen_prt_dir_z[0]) << "] || ";
       cout << "g project pos: [" << 2240 * gen_prt_dir_x[1] / TMath::Abs(gen_prt_dir_z[1]) << ", " << 2240 * gen_prt_dir_y[1] / TMath::Abs(gen_prt_dir_z[1]) << "]" << endl << endl; 
-      */      
-
+      */
+      e_pjt_emcal_x = 2110. * gen_prt_dir_x[0] / TMath::Abs(gen_prt_dir_z[0]);
+      e_pjt_emcal_y = 2110. * gen_prt_dir_y[0] / TMath::Abs(gen_prt_dir_z[0]);
+      g_pjt_emcal_x = 2110. * gen_prt_dir_x[1] / TMath::Abs(gen_prt_dir_z[1]);
+      g_pjt_emcal_y = 2110. * gen_prt_dir_y[1] / TMath::Abs(gen_prt_dir_z[1]);
+      
       cluster = ComputeCluster(hhit);
 
       N_cluster = cluster.num_cluster;
-      cout <<  N_cluster << endl;
+      //      cout <<  N_cluster << endl;
       if(N_cluster > 0)
 	{
 	  for(int i = 0 ; i < N_cluster ; i++)
@@ -621,6 +606,8 @@ void multi_cluster_recons()
 	  Cl_x.clear();  Cl_y.clear();
 	  Cl_radius.clear();  Cl_theta.clear();  Cl_phi.clear();
 	  Cl_Energy_tot_simul.clear();  Cl_size_simul.clear();
+	  cout << events_numer << " th have " << N_hit_emcal << ".........." << endl;
+		
 	  continue;
 	}
       
@@ -631,56 +618,6 @@ void multi_cluster_recons()
       Cl_radius.clear();  Cl_theta.clear();  Cl_phi.clear();
       Cl_Energy_tot_simul.clear();  Cl_size_simul.clear();
 
-      /*
-
-      //      cout << g_px << " " << g_py << " " << g_pz << " " << g_E << endl; 
-
-      if( (e_flag_emcal == 1) && (g_flag_emcal == 0) )
-	{
-	  //	  cout << events_numer << endl;
-	  double Dis_re_pri = (e_hit_emcal_x - Cl_x) * (e_hit_emcal_x - Cl_x) + (e_hit_emcal_y - Cl_y) * (e_hit_emcal_y - Cl_y);
-	  //	  double Dis_re_pri = (g_hit_emcal_x - Cl_x) * (g_hit_emcal_x - Cl_x) + (g_hit_emcal_y - Cl_y) * (g_hit_emcal_y - Cl_y);
-	  Dis_re_pri = TMath::Sqrt(Dis_re_pri);
-	  if( ((Cl_Energy_tot_simul / 1000.) - e_E) > 0. )
-	    {
-	      if( (Dis_re_pri > 515.) && (Dis_re_pri < 520.) )
-		{
-		  cout << "Cluster energy: " << Cl_Energy_tot_simul << " || Primary e- energy: " << e_E << endl; 
-		  cout << "Seed pos: " << Cl_seed_x << " " << Cl_seed_y << endl;
-		  cout << "Cluster center pos: " << Cl_x << " " << Cl_y << endl;
-		  cout << "Electron hit pos: " << e_hit_emcal_x << " " << e_hit_emcal_y << endl;
-		  cout << "Photon primary direction: " << gen_prt_dir_x[1] << " " << gen_prt_dir_y[1] << " " << gen_prt_dir_z[1] << endl; 
-		  //	      cout << "Photon hit pos: " << g_hit_emcal_x << " " << g_hit_emcal_y << endl;
-		  cout << Dis_re_pri << " !!!" << endl;
-
-		  
-		  for(int k = 0 ; k < N_hit_emcal ; k++)
-		    {
-		      e_res_pri_xy_pos->Fill(ce_emcal_xcrs[k], ce_emcal_ycrs[k], ce_emcal_etot_dep[k]);
-		      emcal_e_of_bad_res->Fill(ce_emcal_etot_dep[k]);
-		    }
-
-		  for(size_t i = 0 ; i < hits_count ; i++)
-		    {
-		      uint64_t hit_track_id = static_cast<uint64_t>(hit_trk_id[i]);
-		      uint64_t hit_parent_track_id = static_cast<uint64_t>(hit_parent_trk_id[i]);
-		      std::string vol_name = static_cast<std::string>(hit_vol_name[i]);
-		      
-		      double x = hit_x[i], y = hit_y[i], z = hit_z[i];
-		      double e_loss = hit_e_loss[i];
-		      if(vol_name.rfind("ce_EMCAL", 0) == 0)
-			{
-			  e_res_bad_xy_pos->Fill(x, y, e_loss);
-			  eloss_of_bad_res->Fill(e_loss * 1000.);
-			  cout << hit_parent_track_id << "   " << hit_track_id << "   " << hit_vol_name[i] << "   " << "[" << x << ", " << y << ", " << z << "]   ||   " << e_loss << endl;
-			  hit_energy = hit_energy + hit_e_loss[i];
-			}
-		    }
-		  cout << "Emcal total hit energy: " << hit_energy << endl;
-		}
-	    }
-	} // End if loop 
-      */
 
       
       g_flag_emcal = 0;  e_flag_emcal = 0;  hit_energy = 0.;
@@ -706,6 +643,7 @@ void multi_cluster_recons()
   Double_t Length[Number] = { 0.00, 0.50, 1.00 };
   Int_t nb=50;
   TColor::CreateGradientColorTable(Number,Length,Red,Green,Blue,nb);
+
   /*
   auto *c1 = new TCanvas("c1", "c1", 1600, 800);
   c1->Divide(2, 1);
