@@ -55,7 +55,9 @@ Cluster ComputeCluster(vector<Hit> hit)
   int Size = hit.size(), seed_total=0, seed_cry=0, seed_gla=0;
   double CRYS_ZPOS = 2110; // ECAL zpos from the center of EIC detector
   double Ethr = 10.; // threshold[MeV]
-  double Rmoliere = 20.01; // in mm    ->Rmolier for PbWO is 20 mm
+  double Rmoliere = 0.;
+  double C_Rmoliere = 20.01; // in mm->Rmolier for PbWO is 20 mm + gap (0.01mm)
+  double G_Rmoliere = 40.01; // in mm->Rmolier for Glass is 40 mm + gap (0.01mm)
   int Clus_size_simul = 0;
   double Clus_Energy_tot_simul = 0, Clus_Etot = 0.;
   double Clus_x = 0., Clus_y = 0., Clus_xx = 0., Clus_yy = 0.;
@@ -63,11 +65,12 @@ Cluster ComputeCluster(vector<Hit> hit)
   double Clus_Radius = 0, Clus_Theta = 0, Clus_phi = 0; //in deg;
 
   vector<double> ClusSeed_xcrs, ClusSeed_ycrs, ClusSeed_zcrs, ClusEtotsimu;
+  vector<int> region_flag;
   map<int, double> map_crystal;  // ID, row, col, E
   Cluster cluster;
 
-  //    cout << "=============================================" << endl;
-  //    cout << "Ce_Emcal hit size of this event: " << Size << endl;
+  //  cout << "=============================================" << endl;
+  //  cout << "Ce_Emcal hit size of this event: " << Size << endl;
 
 
   //========================================================
@@ -110,7 +113,8 @@ Cluster ComputeCluster(vector<Hit> hit)
 	      cluster.C_seed_energy.push_back(i_et_dep);
 	      cluster.C_seed_x.push_back(i_xcrs);  cluster.C_seed_y.push_back(i_ycrs);  cluster.C_seed_z.push_back(i_zcrs);
 
-	      ClusSeed_xcrs.push_back(i_xcrs);  ClusSeed_ycrs.push_back(i_ycrs);  ClusSeed_zcrs.push_back(i_zcrs); 
+	      ClusSeed_xcrs.push_back(i_xcrs);  ClusSeed_ycrs.push_back(i_ycrs);  ClusSeed_zcrs.push_back(i_zcrs);
+	      region_flag.push_back(0);
 	      //	      cout << hit.at(i).c_col << " " << hit.at(i).c_row << " count: " << count << endl;
 	      //	      cout << "crystal seed: " << i_et_digi << "  " << i_et_dep << " [" << i_xcrs << " " << i_ycrs << "] || row, col: [" << hit.at(i).c_col << " " << hit.at(i).c_row << "]" << endl;
 	      seed_cry++;
@@ -143,6 +147,7 @@ Cluster ComputeCluster(vector<Hit> hit)
 	      cluster.C_seed_x.push_back(i_xcrs); cluster.C_seed_y.push_back(i_ycrs); cluster.C_seed_z.push_back(i_zcrs);
 
 	      ClusSeed_xcrs.push_back(i_xcrs);  ClusSeed_ycrs.push_back(i_ycrs);  ClusSeed_zcrs.push_back(i_zcrs);
+	      region_flag.push_back(1);
 	      //	      cout << hit.at(i).c_col << " " << hit.at(i).c_row << " count: " << count << endl;
 	      //	      cout << "glass seed: " << i_et_digi << "  " << i_et_dep << " [" << i_xcrs << " " << i_ycrs << "] || row, col: [" << hit.at(i).c_col << " " << hit.at(i).c_row << "]" << endl;
 	      seed_gla++;
@@ -163,6 +168,11 @@ Cluster ComputeCluster(vector<Hit> hit)
   for(int i = 0 ; i < seed_total ; i++)
     {
       Clus_Energy_tot_simul = 0.;  Clus_size_simul = 0;
+      if( region_flag[i] == 0 )
+	Rmoliere = C_Rmoliere;
+      else
+	Rmoliere = G_Rmoliere;
+      
       
       for(int k = 0 ; k < Size ; k++)
 	{
@@ -253,7 +263,8 @@ void multi_cluster_recons()
   //===================================
   
   //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_10k_events_crossing_angle.root");
-  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_imposed_10k_events.root");
+  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_imposed_swap_gpx_gpy_5k_events.root");
+  //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_imposed_gpx_removed_5k_events.root");
   TTree *events = (TTree *) file->Get("events");
 
   TTreeReader fReader("events", file);
@@ -410,10 +421,10 @@ void multi_cluster_recons()
   size_t events_numer = 0;  
   while (fReader.Next())
     {
-      if(++events_numer != 89)
-      	continue;
+      //      if(++events_numer != 1678)
+      //      	continue;
       
-      if(++events_numer > 200)
+      if(++events_numer > 4900)
 	break;
 	//	continue;
       
@@ -596,7 +607,11 @@ void multi_cluster_recons()
 	      Cl_Energy_tot_simul.push_back(cets);
 	      Cl_size_simul.push_back(css);
 	  
-
+	      if( (e_flag_emcal==0) && (g_flag_emcal==1) && (N_cluster==1) )
+		{
+		  cout << events_numer << "th seed pos: [" << ccx << ", " << ccy << ", " << ccz << "] || g project pos: [" << g_pjt_emcal_x << ", " << g_pjt_emcal_y << "]" << endl;
+		  cout << "primary g energy: " << g_E << " GeV || Reconstructed energy: " << cets / 1000. << " GeV || Seed energy: " << cce/1000. << " GeV" << endl; 
+		}
 	      //	  cout << cluster.C_seed_x[i] << endl;
 	    }
 	}
@@ -606,7 +621,7 @@ void multi_cluster_recons()
 	  Cl_x.clear();  Cl_y.clear();
 	  Cl_radius.clear();  Cl_theta.clear();  Cl_phi.clear();
 	  Cl_Energy_tot_simul.clear();  Cl_size_simul.clear();
-	  cout << events_numer << " th have " << N_hit_emcal << ".........." << endl;
+	  //	  cout << events_numer << " th have " << N_hit_emcal << ".........." << endl;
 		
 	  continue;
 	}

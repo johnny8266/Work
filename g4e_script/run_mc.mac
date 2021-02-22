@@ -17,11 +17,11 @@
 /generator/select pythiaAscii
 
 # Open file and run some MC file
-/generator/pythiaAscii/open /home/pu-kai/Work/Normalization/dvcs_input_foam_imposed.txt
+/generator/pythiaAscii/open /home/pu-kai/Work/Normalization/dvcs_input_swap_px_py.txt
 /generator/pythiaAscii/verbose 2
 
 /run/initialize
 
 
-/run/beamOn 1
+/run/beamOn 10
 exit

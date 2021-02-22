@@ -59,9 +59,13 @@ void norm_foam()
       	{
 	  //	  cout <<  Q2 << " " << xb << " " << t_var << " " << phi_def << " " << psf << endl;
 	  //	  cout << xsec << "  " << psf << "  " << Q2_weight << endl;
+
+	  double G_Px = -0.05, G_Py = g_px, G_Pz = g_pz, G_Ene = TMath::Sqrt(G_Px * G_Px + G_Py * G_Py + G_Pz * G_Pz);
+	  
 	  myfile << "3 " << Q2 << " " << xb << " " << t_var << " " << phi_def << " " << psf << " " << e1_S_angle << " " << p1_S_angle << " " << photon_S_angle << " " << xsec << endl;
 	  myfile << "1 " << "-1 " << "1 " << "11 " << "1 " << "1 " << e1_px << " " << e1_py << " " << e1_pz << " " << e1_E << " " << "0.000511 " << "0.0 0.0 0.0" << endl;
-	  myfile << "2 " << "0 " << "1 " << "22 " << "1 " << "1 " << g_px << " " << g_py << " " << g_pz << " " << g_E << " " << "0.0 " << "0.0 0.0 0.0" << endl;
+	  //	  myfile << "2 " << "0 " << "1 " << "22 " << "1 " << "1 " << g_px << " " << g_py << " " << g_pz << " " << g_E << " " << "0.0 " << "0.0 0.0 0.0" << endl;
+	  myfile << "2 " << "0 " << "1 " << "22 " << "1 " << "1 " << G_Px << " " << G_Py << " " << G_Pz << " " << G_Ene << " " << "0.0 " << "0.0 0.0 0.0" << endl;
 	  myfile << "3 " << "1 " << "1 " << "2212 " << "1 " << "1 " << p1_px << " " << p1_py << " " << p1_pz << " " << p1_E << " " << "0.938272 " << "0.0 0.0 0.0" << endl;  
 		  
 	}
