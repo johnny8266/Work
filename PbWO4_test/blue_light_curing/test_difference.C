@@ -10,10 +10,10 @@ using namespace std;
 
 void test_difference()
 {
-  const int crystal_nums = 1;
+  const int crystal_nums = 2;
   string line, root_file_name, data_file_path, file_0_str, crystal; //for storing words
-  string Crtstal_ID_str[crystal_nums] = {"080671"};
-  //  string Crtstal_ID_str[crystal_nums] = {"050658"};
+  //  string Crtstal_ID_str[crystal_nums] = {"080671"};
+  string Crtstal_ID_str[crystal_nums] = {"050658", "994724"};
   stringstream line_string;
   double L, T;
   int count=0, pic_count=0, flag=0;
