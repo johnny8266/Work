@@ -10,15 +10,15 @@ using namespace std;
 
 void test_difference()
 {
-  const int crystal_nums = 2;
+  const int crystal_nums = 1;
   string line, root_file_name, data_file_path, file_0_str, crystal; //for storing words
-  //  string Crtstal_ID_str[crystal_nums] = {"080671"};
-  string Crtstal_ID_str[crystal_nums] = {"050658", "994724"};
+  string Crtstal_ID_str[crystal_nums] = {"994763"};
+  //  string Crtstal_ID_str[crystal_nums] = {"050658", "994724"};
   stringstream line_string;
   double L, T;
   int count=0, pic_count=0, flag=0;
-  int file_0[crystal_nums] = {257};
-  //  int file_0[crystal_nums] = {269};
+  //  int file_0[crystal_nums] = {257};
+  int file_0[crystal_nums] = {294};
   const char *CID;
   vector<double> Tb, Ta, Tlambda;
 
@@ -27,7 +27,7 @@ void test_difference()
        *h4[crystal_nums], *h5[crystal_nums], *h6[crystal_nums];
   TLine *add_line_flat = new TLine(260, 1.1, 800, 1.1);
   TLine *add_line_vert = new TLine(340, -3., 340, 3.);
-  TCanvas *c1 = new TCanvas("c1", "c1", 800, 800);
+  TCanvas *c1 = new TCanvas("c1", "c1", 600, 600);
   //  c1->Divide(2,1);
 
   ifstream bookread; 
@@ -84,7 +84,7 @@ void test_difference()
       h6[count]->SetMinimum(0.);
       
             
-      for(int j = file_start ; j < (file_start + 3) ; j++)
+      for(int j = file_start ; j < (file_start + 2) ; j++)
 	{
 	  
 	  data_file_path = "./" + ID + "/Sample"+ j +".Sample.Raw.asc";
@@ -162,8 +162,8 @@ void test_difference()
       //      h4[count]->SetLineColor(1);
       //      h5[count]->SetLineColor(2);
 
-      h1[count]->SetMarkerColor(1);
-      h2[count]->SetMarkerColor(2);
+      h1[count]->SetMarkerColor(2);
+      h2[count]->SetMarkerColor(1);
       //      h3[count]->SetMarkerColor(3);
 
       h1[count]->SetMarkerStyle(6);
@@ -176,9 +176,9 @@ void test_difference()
       h3[count]->SetMarkerSize(5);
       h4[count]->SetMarkerSize(5);
       
-      //      h1[count]->Draw("p");
-      //      h2[count]->Draw("p same");
-      h4[count]->Draw("p");
+      h1[count]->Draw("p");
+      h2[count]->Draw("p same");
+      //      h4[count]->Draw("p");
       
 
       cout << "count: " << count << " " << flag << " finish ..." << endl << endl;

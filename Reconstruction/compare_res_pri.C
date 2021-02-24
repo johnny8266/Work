@@ -56,6 +56,10 @@ void compare_res_pri()
   TTreeReaderArray<double>     Cl_phi = {fReader, "Cl_phi"};
   TTreeReaderArray<double>     Cl_Energy_tot_simul = {fReader, "Cl_Energy_tot_simul"};
   TTreeReaderArray<double>     Cl_size_simul = {fReader, "Cl_size_simul"};
+  TTreeReaderArray<double>     Cl_par_a = {fReader, "Cl_par_a"};
+  TTreeReaderArray<double>     Cl_x_corr = {fReader, "Cl_x_corr"};
+  TTreeReaderArray<double>     Cl_y_corr = {fReader, "Cl_y_corr"};
+  
   TTreeReaderValue<double>     e_hit_emcal_x = {fReader, "e_hit_emcal_x"};
   TTreeReaderValue<double>     e_hit_emcal_y = {fReader, "e_hit_emcal_y"};
   TTreeReaderValue<double>     e_hit_emcal_z = {fReader, "e_hit_emcal_z"};
@@ -82,6 +86,8 @@ void compare_res_pri()
   auto diffE_g_res_pri = new TH1F("diffE_g_res_pri", "diffE_g_res_pri", 100, -5., 5.);
   auto diff_posx_g_res_pri = new TH1F("diff_posx_g_res_pri", "diff_posx_g_res_pri", 40, -200., 200.);
   auto diff_posy_g_res_pri = new TH1F("diff_posy_g_res_pri", "diff_posy_g_res_pri", 40, -200., 200.);
+  auto diff_posx_cor_g_res_pri = new TH1F("diff_posx_cor_g_res_pri", "diff_posx_cor_g_res_pri", 40, -200., 200.);
+  auto diff_posy_cor_g_res_pri = new TH1F("diff_posy_cor_g_res_pri", "diff_posy_cor_g_res_pri", 40, -200., 200.);
   auto hit_cl_size = new TH1F("hit_cl_size", "hit_cl_size", 20, 0., 20.);
 
   auto diffx_g_E = new TH2F("diffx_g_E", "diffx_g_E", 40, -200., 200., 10, 0., 10.);
@@ -103,6 +109,8 @@ void compare_res_pri()
 	      double g_eD = *g_E.Get() - Cl_Energy_tot_simul[i] / 1000.;
 	      double g_poxD = *g_pjt_emcal_x.Get() - Cl_x[i];
 	      double g_poyD = *g_pjt_emcal_y.Get() - Cl_y[i];
+	      double g_poxD_cor = *g_pjt_emcal_x.Get() - Cl_x_corr[i];
+	      double g_poyD_cor = *g_pjt_emcal_y.Get() - Cl_y_corr[i];
 	      
 	      double ge = *g_E.Get(), g_pjx = *g_pjt_emcal_x.Get(), g_pjy = *g_pjt_emcal_y.Get();
 	      //	      double g_poxD = *g_hit_emcal_x.Get() - Cl_seed_x[i];
@@ -111,6 +119,9 @@ void compare_res_pri()
 	      diffE_g_res_pri->Fill(g_eD);
 	      diff_posx_g_res_pri->Fill(g_poxD);
 	      diff_posy_g_res_pri->Fill(g_poyD);
+	      diff_posx_cor_g_res_pri->Fill(g_poxD_cor);
+	      diff_posy_cor_g_res_pri->Fill(g_poyD_cor);
+		      
 	      diffx_g_E->Fill(g_poxD, g_eD);
 	      diffx_g_x->Fill(g_poyD, g_pjy);
 	    }
@@ -139,4 +150,11 @@ void compare_res_pri()
   diff_posy_g_res_pri->GetXaxis()->SetTitle("[mm]");
   diff_posy_g_res_pri->Draw();
 
+
+  auto c2 = new TCanvas("c2", "c2", 1000, 500);
+  c2->Divide(2,1);
+  c2->cd(1);
+  diff_posx_cor_g_res_pri->Draw();
+  c2->cd(2);
+  diff_posy_cor_g_res_pri->Draw();
 }
