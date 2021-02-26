@@ -196,7 +196,13 @@ Cluster ComputeCluster(vector<Hit> hit)
       cluster.C_size_simul.push_back(Clus_size_simul);
 
       ClusEtotsimu.push_back(Clus_Energy_tot_simul);
-      double a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 4.862) * 10. * 2.;  // *10. -> change cm to mm
+
+      double a = 0.;
+      if( region_flag[i] == 0 )
+	a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 4.862) * 10.;       // *10. -> change cm to mm
+      else
+	a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 4.862) * 10. * 1.9;  // *10. * 3. -> change cm to mm & in the glass region
+
       par_a.push_back(a);
       cluster.C_par_a.push_back(a);
     }
@@ -282,7 +288,8 @@ void multi_cluster_recons()
   
   //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_10k_events_crossing_angle.root");
   //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_imposed_swap_gpx_gpy_5k_events.root");
-  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_imposed_gpx_removed_5k_events.root");
+  //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_imposed_gpx_removed_5k_events.root");
+  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_imposed_10k_events.root");
   TTree *events = (TTree *) file->Get("events");
 
   TTreeReader fReader("events", file);
@@ -362,6 +369,7 @@ void multi_cluster_recons()
 
   auto eloss_of_bad_res = new TH1F("eloss_of_bad_res", "eloss_of_bad_res", 100, 0., 0.1);
   auto emcal_e_of_bad_res = new TH1F("emcal_e_of_bad_res", "emcal_e_of_bad_res", 100, 0., 10000.);
+  auto primary_g_ratio_x_z = new TH1F("primary_g_ratio_x_z", "primary_g_ratio_x_z", 200, -1., 1.);
   
   auto emcal_hit_xy_photon = new TH2F("emcal_hit_xy_photon", "emcal_hit_xy_photon", 300, -1500., 1500., 300, -1500., 1500.);
   auto emcal_hit_xy_electron = new TH2F("emcal_hit_xy_electron", "emcal_hit_xy_electron", 300, -1500., 1500., 300, -1500., 1500.);
@@ -378,6 +386,7 @@ void multi_cluster_recons()
   //==================================
 
   int ene = 0, N_cluster = 0;
+  int g_possible_hit_emcal_count = 0;
   double g_px = 0., g_py = 0., g_pz = 0., g_E = 0., e_px = 0., e_py = 0., e_pz = 0., e_E = 0.;
   double e_hit_emcal_x = 0., e_hit_emcal_y = 0., e_hit_emcal_z = 0.;
   double g_hit_emcal_x = 0., g_hit_emcal_y = 0., g_hit_emcal_z = 0.;
@@ -587,6 +596,17 @@ void multi_cluster_recons()
       e_py = gen_prt_dir_y[0] * gen_prt_tot_mom[0];
       e_pz = gen_prt_dir_z[0] * gen_prt_tot_mom[0];
       e_E = gen_prt_tot_e[0];
+
+
+      primary_g_ratio_x_z->Fill( (gen_prt_dir_x[1] / gen_prt_dir_z[1]) );
+      if( (gen_prt_dir_x[1] / gen_prt_dir_z[1]) < 0. )
+	cout << gen_prt_dir_x[1] << " " << gen_prt_dir_z[1] << endl;
+      
+      if( (gen_prt_dir_x[1] < 0) && (gen_prt_dir_z[1] < 0) )
+	//	if( ((gen_prt_dir_x[1] / gen_prt_dir_z[1]) < 0.62) && ((gen_prt_dir_x[1] / gen_prt_dir_z[1]) > 0.071) && (N_hit_emcal < 100) )
+	if( ((gen_prt_dir_x[1] / gen_prt_dir_z[1]) < 0.62) && ((gen_prt_dir_x[1] / gen_prt_dir_z[1]) > 0.071) )
+	  g_possible_hit_emcal_count++;
+
       
       Cluster cluster;
 
@@ -634,7 +654,7 @@ void multi_cluster_recons()
 	      Cl_y_corr.push_back(ccyr);
 
 	      //	      cout << "[" << cx << ", " << cy << "] || [" << ccxr << ", " << ccyr << "] || " << cpa << endl;
-	  
+	      /*
 	      if( (e_flag_emcal==0) && (g_flag_emcal==1) && (N_cluster==1) )
 		{
 		  //		  cout << events_numer << "th seed pos: [" << ccx << ", " << ccy << ", " << ccz << "] || g project pos: [" << g_pjt_emcal_x << ", " << g_pjt_emcal_y << "]" << endl;
@@ -643,6 +663,7 @@ void multi_cluster_recons()
 		  cout << " || Hit photon: [" << g_hit_emcal_x << ", " << g_hit_emcal_y << ", " << g_hit_emcal_z << "]" << endl;
 		}
 	      //	  cout << cluster.C_seed_x[i] << endl;
+	      */
 	    }
 	}
       else
@@ -672,7 +693,7 @@ void multi_cluster_recons()
   fout->Write();
   fout->Close();
 
-  
+  cout << g_possible_hit_emcal_count << endl;
   
   // ======================================
   // Draw the Results
@@ -729,5 +750,7 @@ void multi_cluster_recons()
   hit_pos_glass->Draw("colorz");
   //  eloss_of_bad_res->Draw();
   
+  auto *c4 = new TCanvas("c4", "c4", 800, 800);
+  primary_g_ratio_x_z->Draw();
 }
            

@@ -19,7 +19,7 @@ using namespace std;
 
 double GausM(double *x, double *par)
 {
-  return par[0] * exp(-0.5 * TMath::Power(((x[0] - par[1]) / par[2]), 2)) + 0.11;
+  return par[0] * exp(-0.5 * TMath::Power(((x[0] - par[1]) / par[2]), 2)) + par[3];
 }
 
 
@@ -82,22 +82,40 @@ void compare_res_pri()
   TTreeReaderValue<int>        g_flag_emcal = {fReader, "g_flag_emcal"};
   TTreeReaderValue<int>        N_hit_emcal = {fReader, "N_hit_emcal"};
 
-  auto diffE_e_res_pri = new TH1F("diffE_e_res_pri", "diffE_e_res_pri", 100, -5., 5.);
-  auto diffE_g_res_pri = new TH1F("diffE_g_res_pri", "diffE_g_res_pri", 100, -5., 5.);
-  auto diff_posx_g_res_pri = new TH1F("diff_posx_g_res_pri", "diff_posx_g_res_pri", 40, -200., 200.);
-  auto diff_posy_g_res_pri = new TH1F("diff_posy_g_res_pri", "diff_posy_g_res_pri", 40, -200., 200.);
-  auto diff_posx_cor_g_res_pri = new TH1F("diff_posx_cor_g_res_pri", "diff_posx_cor_g_res_pri", 40, -200., 200.);
-  auto diff_posy_cor_g_res_pri = new TH1F("diff_posy_cor_g_res_pri", "diff_posy_cor_g_res_pri", 40, -200., 200.);
+  // TH1F
+  //  auto diffE_e_res_pri = new TH1F("diffE_e_res_pri", "diffE_e_res_pri", 100, -5., 5.);
+  auto diffE_g_res_pri = new TH1F("diffE_g_res_pri", "diffE_g_res_pri", 200, -1., 3.);
+  auto diff_posx_g_res_pri = new TH1F("diff_posx_g_res_pri", "diff_posx_g_res_pri", 80, -80., 80.);
+  auto diff_posy_g_res_pri = new TH1F("diff_posy_g_res_pri", "diff_posy_g_res_pri", 80, -80., 80.);
+  auto diff_posx_cor_g_res_pri = new TH1F("diff_posx_cor_g_res_pri", "diff_posx_cor_g_res_pri", 80, -80., 80.);
+  auto diff_posy_cor_g_res_pri = new TH1F("diff_posy_cor_g_res_pri", "diff_posy_cor_g_res_pri", 80, -80., 80.);
   auto hit_cl_size = new TH1F("hit_cl_size", "hit_cl_size", 20, 0., 20.);
+  auto Ratio_E_seed_E_recons = new TH1F("Ratio_E_seed_E_recons", "Ratio_E_seed_E_recons", 50, 0., 1.);
 
+  // TH2F
   auto diffx_g_E = new TH2F("diffx_g_E", "diffx_g_E", 40, -200., 200., 10, 0., 10.);
   auto diffx_g_x = new TH2F("diffx_g_x", "diffx_g_x", 40, 0., 200., 50, -1500., 0.);
+  auto g_a_E = new TH2F("g_a_E", "g_a_E", 20, 60., 100., 20, 0., 10.);
+  auto g_diffx_x = new TH2F("g_diffx_x", "g_diffx_x", 40, -100., 100., 50, -1500., 0.);
+  auto g_diffy_y = new TH2F("g_diffy_y", "g_diffy_y", 40, -100., 100., 50, -500., 500.);
+  auto g_diffx_cor_x = new TH2F("g_diffx_cor_x", "g_diffx_cor_x", 40, -100., 100., 50, -1500., 0.);
+  auto g_diffy_cor_y = new TH2F("g_diffy_cor_y", "g_diffy_cor_y", 40, -100., 100., 50, -500., 500.);
+  auto Ratio_E_seed_E_recons_xpos = new TH2F("Ratio_E_seed_E_recons_xpos", "Ratio_E_seed_E_recons_xpos", 50, 0., 1., 150, -1500., 0.);
+  auto Ratio_E_seed_recons_vs_E_recons = new TH2F("Ratio_E_seed_recons_vs_E_recons", "Ratio_E_seed_recons_vs_E_recons", 50, 0., 1., 100, 0., 10.);
+    
+  TLegend *legend[4];
+
+
+  
+  //========================================
+  // Read the events and fill the plots
+  //========================================
   
   size_t events_numer = 0;  
   
   while (fReader.Next())
     {
-      if(++events_numer > 8500)
+      if(++events_numer > 4900)
 	break;
       auto count = static_cast<size_t>(*N_cluster.Get());
 
@@ -111,50 +129,189 @@ void compare_res_pri()
 	      double g_poyD = *g_pjt_emcal_y.Get() - Cl_y[i];
 	      double g_poxD_cor = *g_pjt_emcal_x.Get() - Cl_x_corr[i];
 	      double g_poyD_cor = *g_pjt_emcal_y.Get() - Cl_y_corr[i];
+	      double Eseed_vs_Et = Cl_seed_energy[i] / Cl_Energy_tot_simul[i];
 	      
 	      double ge = *g_E.Get(), g_pjx = *g_pjt_emcal_x.Get(), g_pjy = *g_pjt_emcal_y.Get();
-	      //	      double g_poxD = *g_hit_emcal_x.Get() - Cl_seed_x[i];
-	      //	      double g_poyD = *g_hit_emcal_y.Get() - Cl_seed_y[i];
+
 	      
+	      Ratio_E_seed_E_recons->Fill(Eseed_vs_Et);
 	      diffE_g_res_pri->Fill(g_eD);
 	      diff_posx_g_res_pri->Fill(g_poxD);
 	      diff_posy_g_res_pri->Fill(g_poyD);
 	      diff_posx_cor_g_res_pri->Fill(g_poxD_cor);
 	      diff_posy_cor_g_res_pri->Fill(g_poyD_cor);
 		      
-	      diffx_g_E->Fill(g_poxD, g_eD);
-	      diffx_g_x->Fill(g_poyD, g_pjy);
+	      //	      diffx_g_E->Fill(g_poxD, g_eD);
+	      //	      diffx_g_x->Fill(g_poyD, g_pjy);
+	      g_a_E->Fill(Cl_par_a[i], (Cl_Energy_tot_simul[i] / 1000.));
+	      g_diffx_x->Fill(g_poxD, g_pjx);
+	      g_diffy_y->Fill(g_poyD, g_pjy);
+	      g_diffx_cor_x->Fill(g_poxD_cor, g_pjx);
+	      g_diffy_cor_y->Fill(g_poyD_cor, g_pjy);
+	      Ratio_E_seed_E_recons_xpos->Fill(Eseed_vs_Et, g_pjx);
+	      Ratio_E_seed_recons_vs_E_recons->Fill(Eseed_vs_Et, (Cl_Energy_tot_simul[i] / 1000.));
 	    }
 	}
     }
 
+  
+
+  //======================
+  // Draw the results
+  //======================
+  
+
+  /*
   auto c1 = new TCanvas("c1", "c1", 1000, 1000);
   c1->Divide(2,2);
   c1->cd(1);
-  diffE_g_res_pri->SetStats(0);
-  diffE_g_res_pri->GetXaxis()->SetTitle("[GeV]");
-  diffE_g_res_pri->Draw();
-  c1->cd(2);
-  diffx_g_x->SetTitle("project Y pos v.s. delta Y");
-  diffx_g_x->SetStats(0);
-  diffx_g_x->GetXaxis()->SetTitle("project-recons [mm]");
-  diffx_g_x->GetYaxis()->SetTitle("ypos [mm]");
-  diffx_g_x->Draw("colorz");
-  //  diffx_g_E->Draw("colorz");
-  c1->cd(3);
   diff_posx_g_res_pri->SetStats(0);
   diff_posx_g_res_pri->GetXaxis()->SetTitle("[mm]");
   diff_posx_g_res_pri->Draw();
-  c1->cd(4);
+  c1->cd(2);
   diff_posy_g_res_pri->SetStats(0);
   diff_posy_g_res_pri->GetXaxis()->SetTitle("[mm]");
   diff_posy_g_res_pri->Draw();
+  c1->cd(3);
+  g_diffx_x->SetStats(0);
+  g_diffx_x->GetXaxis()->SetTitle("[mm]");
+  g_diffx_x->Draw("colorz");
+  c1->cd(4);
+  g_diffy_y->SetStats(0);
+  g_diffy_y->GetXaxis()->SetTitle("[mm]");
+  g_diffy_y->Draw("colorz");
 
 
-  auto c2 = new TCanvas("c2", "c2", 1000, 500);
-  c2->Divide(2,1);
+  auto c2 = new TCanvas("c2", "c2", 1000, 1000);
+  c2->Divide(2,2);
   c2->cd(1);
+  diff_posx_cor_g_res_pri->SetStats(0);
+  diff_posx_cor_g_res_pri->GetXaxis()->SetTitle("[mm]");
   diff_posx_cor_g_res_pri->Draw();
   c2->cd(2);
+  diff_posy_cor_g_res_pri->SetStats(0);
+  diff_posy_cor_g_res_pri->GetXaxis()->SetTitle("[mm]");
   diff_posy_cor_g_res_pri->Draw();
+  c2->cd(3);
+  g_diffx_cor_x->SetStats(0);
+  g_diffx_cor_x->GetXaxis()->SetTitle("[mm]");
+  g_diffx_cor_x->Draw("colorz");
+  c2->cd(4);
+  g_diffy_cor_y->SetStats(0);
+  g_diffy_cor_y->GetXaxis()->SetTitle("[mm]");
+  g_diffy_cor_y->Draw("colorz");
+  */
+  
+  auto c3 = new TCanvas("c3", "c3", 1000, 1000);
+  c3->Divide(2,2);
+  c3->cd(1);
+  auto *fun_e = new TF1("fun_e", GausM, -0.2, 0.6, 4);
+  fun_e->SetParLimits(0, 5., 100.);
+  fun_e->SetParLimits(1, 0., 0.8);
+  fun_e->SetParLimits(2, 0.001, 1.);
+  fun_e->SetParLimits(3, 0.1, 10.);
+  diffE_g_res_pri->Fit("fun_e");
+  diffE_g_res_pri->SetStats(0);
+  diffE_g_res_pri->GetXaxis()->SetTitle("difference [GeV]");
+  diffE_g_res_pri->Draw();
+  legend[0] = new TLegend(0.42, 0.6, 0.75, 0.8);
+  legend[0]->SetBorderSize(0);
+  legend[0]->AddEntry((TObject*)0, Form("Resolution: %.3fGeV", (fun_e->GetParameter(2)) ), "");
+  legend[0]->AddEntry((TObject*)0, Form("Difference: %.3fGeV", (fun_e->GetParameter(1)) ), "");
+  legend[0]->AddEntry((TObject*)0, Form("Chi / NDF: %.3f", (fun_e->GetChisquare() / fun_e->GetNDF()) ), "");
+  legend[0]->Draw("same");
+
+  c3->cd(2);
+  Ratio_E_seed_E_recons->SetStats(0);
+  Ratio_E_seed_E_recons->GetXaxis()->SetTitle("E_seed / E_recons");
+  Ratio_E_seed_E_recons->Draw();
+
+  c3->cd(3);
+  Ratio_E_seed_E_recons_xpos->SetStats(0);
+  Ratio_E_seed_E_recons_xpos->GetXaxis()->SetTitle("E_seed / E_recons");
+  Ratio_E_seed_E_recons_xpos->Draw("colorz");
+
+  c3->cd(4);
+  Ratio_E_seed_recons_vs_E_recons->SetStats(0);
+  Ratio_E_seed_recons_vs_E_recons->GetXaxis()->SetTitle("E_seed / E_recons");
+  Ratio_E_seed_recons_vs_E_recons->Draw("colorz");
+    
+  
+  /*
+  auto c4 = new TCanvas("c4", "c4", 1000, 1000);
+  c4->Divide(2,2);
+
+  c4->cd(1);
+  auto *fun_x = new TF1("fun_x", GausM, -20., 30., 4);
+  fun_x->SetParLimits(0, 5., 100.);
+  fun_x->SetParLimits(1, 5., 20.);
+  fun_x->SetParLimits(2, 1., 5.);
+  fun_x->SetParLimits(3, 0.1, 100.);
+  diff_posx_g_res_pri->Fit("fun_x");
+  //  cout << "Before correction: " << fun_x->GetChisquare() / fun_x->GetNDF() << endl;
+  diff_posx_g_res_pri->SetStats(0);
+  diff_posx_g_res_pri->GetXaxis()->SetTitle("difference [mm]");
+  diff_posx_g_res_pri->Draw();
+  legend[0] = new TLegend(0.12, 0.6, 0.45, 0.8);
+  legend[0]->SetBorderSize(0);
+  legend[0]->AddEntry((TObject*)0, Form("Resolution: %.3fmm", (fun_x->GetParameter(2)) ), "");
+  legend[0]->AddEntry((TObject*)0, Form("Difference: %.3fmm", (fun_x->GetParameter(1)) ), "");
+  legend[0]->AddEntry((TObject*)0, Form("Chi / NDF: %.3f", (fun_x->GetChisquare() / fun_x->GetNDF()) ), "");
+  legend[0]->Draw("same");
+
+  
+  c4->cd(2);
+  auto *fun_y = new TF1("fun_y", GausM, -40., 40., 4);
+  fun_y->SetParLimits(0, 10., 100.);
+  fun_y->SetParLimits(1, -0.5, 0.5);
+  fun_y->SetParLimits(2, 0.1, 20.);
+  fun_y->SetParLimits(3, 0.1, 100.);
+  diff_posy_g_res_pri->Fit("fun_y");
+  cout << "Before correction: " << fun_y->GetChisquare() / fun_y->GetNDF() << endl;
+  diff_posy_g_res_pri->SetStats(0);
+  diff_posy_g_res_pri->GetXaxis()->SetTitle("difference [mm]");
+  diff_posy_g_res_pri->Draw();
+  legend[0] = new TLegend(0.12, 0.6, 0.45, 0.8);
+  legend[0]->SetBorderSize(0);
+  legend[0]->AddEntry((TObject*)0, Form("Resolution: %.3fmm", (fun_y->GetParameter(2)) ), "");
+  legend[0]->AddEntry((TObject*)0, Form("Difference: %.3fmm", (fun_y->GetParameter(1)) ), "");
+  legend[0]->AddEntry((TObject*)0, Form("Chi / NDF: %.3f", (fun_y->GetChisquare() / fun_y->GetNDF()) ), "");
+  legend[0]->Draw("same");
+
+  
+  c4->cd(3);
+  auto *fun_x_cor = new TF1("fun_x_cor", GausM, -20., 30., 4);
+  fun_x_cor->SetParLimits(0, 10., 200.);
+  fun_x_cor->SetParLimits(1, -10., 10.);
+  fun_x_cor->SetParLimits(2, 0.2, 10.);
+  fun_x_cor->SetParLimits(3, 0.1, 100.);
+  diff_posx_cor_g_res_pri->Fit("fun_x_cor");
+  //  cout << "After correction: " << fun_x_cor->GetChisquare() / fun_x_cor->GetNDF() << endl;
+  diff_posx_cor_g_res_pri->SetStats(0);
+  diff_posx_cor_g_res_pri->GetXaxis()->SetTitle("difference [mm]");
+  diff_posx_cor_g_res_pri->Draw();
+  legend[0] = new TLegend(0.12, 0.6, 0.45, 0.8);
+  legend[0]->SetBorderSize(0);
+  legend[0]->AddEntry((TObject*)0, Form("Resolution: %.3fmm", (fun_x_cor->GetParameter(2)) ), "");
+  legend[0]->AddEntry((TObject*)0, Form("Difference: %.3fmm", (fun_x_cor->GetParameter(1)) ), "");
+  legend[0]->AddEntry((TObject*)0, Form("Chi / NDF: %.3f", (fun_x_cor->GetChisquare() / fun_x_cor->GetNDF()) ), "");
+  legend[0]->Draw("same");
+
+  
+  c4->cd(4);
+  diff_posy_cor_g_res_pri->Fit("fun_y");
+  cout << "After correction: " << fun_y->GetChisquare() / fun_y->GetNDF() << endl;
+  diff_posy_cor_g_res_pri->SetStats(0);
+  diff_posy_cor_g_res_pri->GetXaxis()->SetTitle("difference [mm]");
+  diff_posy_cor_g_res_pri->Draw();
+  legend[0] = new TLegend(0.12, 0.6, 0.45, 0.8);
+  legend[0]->SetBorderSize(0);
+  legend[0]->AddEntry((TObject*)0, Form("Resolution: %.3fmm", (fun_y->GetParameter(2)) ), "");
+  legend[0]->AddEntry((TObject*)0, Form("Difference: %.3fmm", (fun_y->GetParameter(1)) ), "");
+  legend[0]->AddEntry((TObject*)0, Form("Chi / NDF: %.3f", (fun_y->GetChisquare() / fun_y->GetNDF()) ), "");
+  legend[0]->Draw("same");
+  */  
+
+
+
 }
