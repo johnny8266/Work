@@ -91,7 +91,9 @@ void compare_res_pri()
   auto diff_posy_cor_g_res_pri = new TH1F("diff_posy_cor_g_res_pri", "diff_posy_cor_g_res_pri", 80, -80., 80.);
   auto hit_cl_size = new TH1F("hit_cl_size", "hit_cl_size", 20, 0., 20.);
   auto Ratio_E_seed_E_recons = new TH1F("Ratio_E_seed_E_recons", "Ratio_E_seed_E_recons", 50, 0., 1.);
-
+  auto E_reso_all_particles = new TH1F("E_reso_all_particles", "E_reso_all_particles", 10, 0., 10.);
+ 
+  
   // TH2F
   auto diffx_g_E = new TH2F("diffx_g_E", "diffx_g_E", 40, -200., 200., 10, 0., 10.);
   auto diffx_g_x = new TH2F("diffx_g_x", "diffx_g_x", 40, 0., 200., 50, -1500., 0.);
@@ -103,8 +105,17 @@ void compare_res_pri()
   auto Ratio_E_seed_E_recons_xpos = new TH2F("Ratio_E_seed_E_recons_xpos", "Ratio_E_seed_E_recons_xpos", 50, 0., 1., 150, -1500., 0.);
   auto Ratio_E_seed_recons_vs_E_recons = new TH2F("Ratio_E_seed_recons_vs_E_recons", "Ratio_E_seed_recons_vs_E_recons", 50, 0., 1., 100, 0., 10.);
     
+
   TLegend *legend[4];
 
+  TH1F* E_diff_per_bin[10];
+  for(int i = 0 ; i < 10 ; i++)
+    E_diff_per_bin[i] = new TH1F(Form("E_diff_per_bin_%d", i), Form("E_diff_per_bin_%d", i), 150, -1., 2.);
+
+
+  double g_eD, g_poxD, g_poyD, g_poxD_cor, g_poyD_cor;
+  double e_eD, e_poxD, e_poyD, e_poxD_cor, e_poyD_cor;
+  double Eseed_vs_Et;
 
   
   //========================================
@@ -118,22 +129,43 @@ void compare_res_pri()
       if(++events_numer > 4900)
 	break;
       auto count = static_cast<size_t>(*N_cluster.Get());
-
+	      
+      double ge = *g_E.Get(), g_pjx = *g_pjt_emcal_x.Get(), g_pjy = *g_pjt_emcal_y.Get();
+      
       for(int i = 0 ; i < count ; i++)
 	{
 	  //	  cout <<  Cl_seed_energy[i] << " " << Cl_x[i] << " " << Cl_y[i] << " ";
-	  if( (Cl_x[i] < 0.) && ((*g_flag_emcal.Get()) == 1) )
+	  Eseed_vs_Et = Cl_seed_energy[i] / Cl_Energy_tot_simul[i];
+	  
+	  if( (*g_flag_emcal.Get()) == 1 )
 	    {
-	      double g_eD = *g_E.Get() - Cl_Energy_tot_simul[i] / 1000.;
-	      double g_poxD = *g_pjt_emcal_x.Get() - Cl_x[i];
-	      double g_poyD = *g_pjt_emcal_y.Get() - Cl_y[i];
-	      double g_poxD_cor = *g_pjt_emcal_x.Get() - Cl_x_corr[i];
-	      double g_poyD_cor = *g_pjt_emcal_y.Get() - Cl_y_corr[i];
-	      double Eseed_vs_Et = Cl_seed_energy[i] / Cl_Energy_tot_simul[i];
-	      
-	      double ge = *g_E.Get(), g_pjx = *g_pjt_emcal_x.Get(), g_pjy = *g_pjt_emcal_y.Get();
-
-	      
+	      g_eD = *g_E.Get() - Cl_Energy_tot_simul[i] / 1000.;
+	      g_poxD = *g_pjt_emcal_x.Get() - Cl_x[i];
+	      g_poyD = *g_pjt_emcal_y.Get() - Cl_y[i];
+	      g_poxD_cor = *g_pjt_emcal_x.Get() - Cl_x_corr[i];
+	      g_poyD_cor = *g_pjt_emcal_y.Get() - Cl_y_corr[i];
+	      if( (Cl_Energy_tot_simul[i] / 1000.) < 10. )
+		{
+		  int bin = (Cl_Energy_tot_simul[i] / 1000.);
+		  E_diff_per_bin[bin]->Fill(g_eD);
+		}
+	    }
+	  else if( (*e_flag_emcal.Get()) == 1 )
+	    {
+	      e_eD = *e_E.Get() - Cl_Energy_tot_simul[i] / 1000.;
+	      e_poxD = *e_pjt_emcal_x.Get() - Cl_x[i];
+	      e_poyD = *e_pjt_emcal_y.Get() - Cl_y[i];
+	      e_poxD_cor = *e_pjt_emcal_x.Get() - Cl_x_corr[i];
+	      e_poyD_cor = *e_pjt_emcal_y.Get() - Cl_y_corr[i];
+	      if( (Cl_Energy_tot_simul[i] / 1000.) < 10. )
+		{
+		  int bin = (Cl_Energy_tot_simul[i] / 1000.);
+		  E_diff_per_bin[bin]->Fill(e_eD);
+		}
+	    }
+	    	  
+	  if( (Cl_x[i] < 0.) && ((*g_flag_emcal.Get()) == 1) )
+	    {	      
 	      Ratio_E_seed_E_recons->Fill(Eseed_vs_Et);
 	      diffE_g_res_pri->Fill(g_eD);
 	      diff_posx_g_res_pri->Fill(g_poxD);
@@ -150,15 +182,16 @@ void compare_res_pri()
 	      g_diffy_cor_y->Fill(g_poyD_cor, g_pjy);
 	      Ratio_E_seed_E_recons_xpos->Fill(Eseed_vs_Et, g_pjx);
 	      Ratio_E_seed_recons_vs_E_recons->Fill(Eseed_vs_Et, (Cl_Energy_tot_simul[i] / 1000.));
-	    }
+	    }// photon hit only 
+	  
 	}
     }
 
   
 
-  //======================
-  // Draw the results
-  //======================
+  //============================
+  // Draw and Fit the results
+  //============================
   
 
   /*
@@ -201,7 +234,33 @@ void compare_res_pri()
   g_diffy_cor_y->GetXaxis()->SetTitle("[mm]");
   g_diffy_cor_y->Draw("colorz");
   */
-  
+
+  auto *fun_e_res = new TF1("fun_e_res", GausM, -0.5, 1., 4);
+  auto c10 = new TCanvas("c10", "c10", 1500, 600);
+  c10->Divide(5,2);
+  for(int i = 0 ; i < 10 ; i++)
+    {
+      c10->cd(i+1);
+      //      cout << E_diff_per_bin[i]->GetEntries() << endl;
+      double up_lim = E_diff_per_bin[i]->GetEntries();
+      fun_e_res->SetParLimits(0, 0.1, up_lim);
+      fun_e_res->SetParLimits(1, 0.001, 1.);
+      fun_e_res->SetParLimits(2, 0.02, 2.);
+      fun_e_res->SetParLimits(3, 0.1, 50.);      
+      E_diff_per_bin[i]->Fit("fun_e_res", "", "R", -0.5, 1.);
+      double e_resolu = (fun_e_res->GetParameter(2)) / (i + 0.5);
+      E_reso_all_particles->SetBinContent( i+1, e_resolu );
+      //      E_reso_all_particles->SetBinError( i+1, (fun_e_res->GetParError(2)) );
+      E_diff_per_bin[i]->Draw();
+    }
+
+  auto c9 = new TCanvas("c9", "c9", 600, 600);
+  E_reso_all_particles->SetMarkerStyle(2);
+  E_reso_all_particles->SetMarkerSize(1);
+  E_reso_all_particles->GetXaxis()->SetTitle("E [GeV]");
+  E_reso_all_particles->Draw("p");
+
+  /*
   auto c3 = new TCanvas("c3", "c3", 1000, 1000);
   c3->Divide(2,2);
   c3->cd(1);
@@ -238,7 +297,7 @@ void compare_res_pri()
   Ratio_E_seed_recons_vs_E_recons->Draw("colorz");
     
   
-  /*
+  
   auto c4 = new TCanvas("c4", "c4", 1000, 1000);
   c4->Divide(2,2);
 
