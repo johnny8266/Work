@@ -44,18 +44,20 @@ struct Hit {
 struct Cluster
 {
   int num_cluster;
-  vector<double> C_seed_energy, C_seed_x, C_seed_y, C_seed_z, C_x, C_y;
+  vector<int> C_seed_row, C_seed_col;
+  vector<double> C_seed_energy, C_seed_x, C_seed_y, C_seed_z, C_x, C_y;  
   vector<double> C_radius, C_theta, C_phi;
   vector<double> C_Energy_tot_simul, C_size_simul;
   vector<double> C_par_a, C_x_corr, C_y_corr;  //correction of the hit position  
   
-  vector<double> C_energy, C_size;  // these 2 variables were not used.
+  vector<double> C_energy, C_size;  // these 2 variables were not used now.
 };
 
 Cluster ComputeCluster(vector<Hit> hit)
 {
   int Size = hit.size(), seed_total=0, seed_cry=0, seed_gla=0;
-  double CRYS_ZPOS = 2110; // ECAL zpos from the center of EIC detector
+  double CRYS_ZPOS = 2110;                // ECAL zpos from the center of EIC detector
+  double ce_emcal_surface_pos = 2240;     // ce_emcal surface position(face to the interaction point)
   double Ethr = 10.; // threshold[MeV]
   double Rmoliere = 0.;
   double C_Rmoliere = 20.01; // in mm->Rmolier for PbWO is 20 mm + gap (0.01mm)
@@ -167,11 +169,12 @@ Cluster ComputeCluster(vector<Hit> hit)
 		  i_glass_row++;
 		}
 	    }
-	  
+	 	  
 	  if( count == 8 && i_et_dep > 200. )
 	    {
 	      cluster.C_seed_energy.push_back(i_et_dep);
 	      cluster.C_seed_x.push_back(i_xcrs);  cluster.C_seed_y.push_back(i_ycrs);  cluster.C_seed_z.push_back(i_zcrs);
+	      cluster.C_seed_row.push_back(i_row);  cluster.C_seed_col.push_back(i_col);
 
 	      ClusSeed_xcrs.push_back(i_xcrs);  ClusSeed_ycrs.push_back(i_ycrs);  ClusSeed_zcrs.push_back(i_zcrs);
 	      region_flag.push_back(0);
@@ -181,8 +184,10 @@ Cluster ComputeCluster(vector<Hit> hit)
 	    }
 	  
 	} //crystal section
+
+
       
-      else    //For glass region
+      else if(hit.at(i).c_sec == 1)    //For glass region
 	{
 	  //	  cout << "initial: [" << i_row << ", " << i_col << "]" << endl;	  
 	  for(int j = -1 ; j < 2 ; j++)
@@ -208,7 +213,7 @@ Cluster ComputeCluster(vector<Hit> hit)
 	  if( (count == 5) && (i_row == 11) && (i_et_dep > 200.) )
 	    {
 	      int i_cry_col = ((i_col - 11) * 2), i_cry_row = 0;
-	      for(int gl = 0 ; gl < 3 ; gl++)
+	      for(int gl = 0 ; gl < 4 ; gl++)
 		{
 		  int i_ID = i_cry_row * 1000 + i_cry_col;
 		  auto iter = map_crystal.find(i_ID);
@@ -217,14 +222,14 @@ Cluster ComputeCluster(vector<Hit> hit)
 		      count++;
 		  i_cry_col++;
 		}
-	      if( count == 8 )
-		cout << "!!!" << endl;
+	      //	      if( count == 8 )
+	      //		cout << "!!!" << endl;
 	    }
 	  else if( (count == 5) && (i_col == 11) && (i_et_dep > 200.) )
 	    {
 	      int i_cry_col = 0, i_cry_row = ((i_row - 11) * 2);
 	      //		  cout << 
-	      for(int gl = 0 ; gl < 3 ; gl++)
+	      for(int gl = 0 ; gl < 4 ; gl++)
 		{
 		  int i_ID = i_cry_row * 1000 + i_cry_col;
 		  auto iter = map_crystal.find(i_ID);
@@ -233,13 +238,13 @@ Cluster ComputeCluster(vector<Hit> hit)
 		      count++;
 		  i_cry_row++;
 		}
-	      	      if( count == 8 )
-	      cout << "!!!" << endl;
+	      //	      if( count == 8 )
+	      //		cout << "!!!" << endl;
 	    }
 	  else if( (count == 5) && (i_row == 54) && (i_et_dep > 200.) )
 	    {
 	      int i_cry_col = ((i_col - 11) * 2), i_cry_row = 81;
-	      for(int gl = 0 ; gl < 3 ; gl++)
+	      for(int gl = 0 ; gl < 4 ; gl++)
 		{
 		  int i_ID = i_cry_row * 1000 + i_cry_col;
 		  auto iter = map_crystal.find(i_ID);
@@ -248,13 +253,13 @@ Cluster ComputeCluster(vector<Hit> hit)
 		      count++;
 		  i_cry_col++;
 		}
-	      	      if( count == 8 )
-	      cout << "!!! !!!" << endl;
+	      //	      if( count == 8 )
+	      //		cout << "!!! !!!" << endl;
 	    }
 	  else if( (count == 5) && (i_col == 54) && (i_et_dep > 200.) )
 	    {
 	      int i_cry_col = 81, i_cry_row = ((i_row - 11) * 2);
-	      for(int gl = 0 ; gl < 3 ; gl++)
+	      for(int gl = 0 ; gl < 4 ; gl++)
 		{
 		  int i_ID = i_cry_row * 1000 + i_cry_col;
 		  auto iter = map_crystal.find(i_ID);
@@ -263,19 +268,20 @@ Cluster ComputeCluster(vector<Hit> hit)
 		      count++;
 		  i_cry_row++;
 		}
-	      if( count == 8 )
-	      cout << "!!! !!!" << endl;
+	      //	      if( count == 8 )
+	      //		cout << "!!! !!!" << endl;
 	    }
 	  
-	  if( count == 8 && i_et_dep > 200. )
+	  if( (count == 8 && i_et_dep > 200.) || (count == 9 && i_et_dep > 200.) )
 	    {
 	      cluster.C_seed_energy.push_back(i_et_dep);
 	      cluster.C_seed_x.push_back(i_xcrs); cluster.C_seed_y.push_back(i_ycrs); cluster.C_seed_z.push_back(i_zcrs);
+	      cluster.C_seed_row.push_back(i_row);  cluster.C_seed_col.push_back(i_col);
 
 	      ClusSeed_xcrs.push_back(i_xcrs);  ClusSeed_ycrs.push_back(i_ycrs);  ClusSeed_zcrs.push_back(i_zcrs);
 	      region_flag.push_back(1);
-	      cout << hit.at(i).c_col << " " << hit.at(i).c_row << " count: " << count << endl;
-	      cout << "glass seed: " << i_et_digi << "  " << i_et_dep << " [" << i_xcrs << " " << i_ycrs << "] || row, col: [" << hit.at(i).c_col << " " << hit.at(i).c_row << "]" << endl;
+	      //	      cout << hit.at(i).c_col << " " << hit.at(i).c_row << " count: " << count << endl;
+	      //	      cout << "glass seed: " << i_et_digi << "  " << i_et_dep << " [" << i_xcrs << " " << i_ycrs << "] || row, col: [" << hit.at(i).c_col << " " << hit.at(i).c_row << "]" << endl;
 	      seed_gla++;
 	    }
 	} //glass section
@@ -322,9 +328,10 @@ Cluster ComputeCluster(vector<Hit> hit)
 
       double a = 0.;
       if( region_flag[i] == 0 )
-	a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 4.862) * 10.;       // *10. -> change cm to mm
+	a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 4.062) * 10.;       // *10. -> change cm to mm
+	//	a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 4.862) * 10.;       // *10. -> change cm to mm (PbF2)
       else
-	a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 4.862) * 10. * 1.9;  // *10. * 3. -> change cm to mm & in the glass region
+	a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 5.062) * 10. * 2.2;  // *10. * 3. -> change cm to mm & in the glass region
 
       par_a.push_back(a);
       cluster.C_par_a.push_back(a);
@@ -363,8 +370,8 @@ Cluster ComputeCluster(vector<Hit> hit)
       cluster.C_x.push_back(Clus_x);  cluster.C_y.push_back(Clus_y);
 
       double X_Cor, Y_Cor;
-      X_Cor = Clus_x * ( 1. - (par_a[i] / TMath::Sqrt(CRYS_ZPOS * CRYS_ZPOS + Clus_x * Clus_x)) );
-      Y_Cor = Clus_y * ( 1. - (par_a[i] / TMath::Sqrt(CRYS_ZPOS * CRYS_ZPOS + Clus_y * Clus_y)) );
+      X_Cor = Clus_x * ( 1. - (par_a[i] / TMath::Sqrt(ce_emcal_surface_pos * ce_emcal_surface_pos + Clus_x * Clus_x)) );
+      Y_Cor = Clus_y * ( 1. - (par_a[i] / TMath::Sqrt(ce_emcal_surface_pos * ce_emcal_surface_pos + Clus_y * Clus_y)) );
 
       cluster.C_x_corr.push_back(X_Cor);
       cluster.C_y_corr.push_back(Y_Cor);
@@ -413,10 +420,10 @@ void multi_cluster_recons()
   // Open the g4e output file
   //===================================
   
-  //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_10k_events_crossing_angle.root");
   //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_imposed_swap_gpx_gpy_5k_events.root");
   //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_imposed_gpx_removed_5k_events.root");
-  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_imposed_10k_events.root");
+  //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_total_100k.root");
+  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_all_photon_10k.root");
   TTree *events = (TTree *) file->Get("events");
 
   TTreeReader fReader("events", file);
@@ -506,7 +513,7 @@ void multi_cluster_recons()
   auto e_res_bad_xy_pos = new TH2F("e_res_bad_xy_pos", "e_res_bad_xy_pos", 300, -1500., 1500., 300, -1500., 1500.);
   auto hit_row_col_cry = new TH2I("hit_row_col_cry", "hit_row_col_cry", 100, 0, 100, 100, 0, 100);
   auto hit_row_col_gla = new TH2I("hit_row_col_gla", "hit_row_col_gla", 100, 0, 100, 100, 0, 100);
-  auto hit_pos_crystal = new TH2F("hit_pos_crystal", "hit_pos_crystal", 140, -1400, 1400, 140, -1400, 1400);
+  auto hit_pos_crystal = new TH2F("hit_pos_crystal", "hit_pos_crystal", 80, -1600, 1600, 80, -1600, 1600);
   auto hit_pos_glass = new TH2F("hit_pos_glass", "hit_pos_glass", 140, -1400, 1400, 140, -1400, 1400);
 
   
@@ -527,6 +534,8 @@ void multi_cluster_recons()
   vector<double> Cl_radius, Cl_theta, Cl_phi;
   vector<double> Cl_Energy_tot_simul, Cl_size_simul;
   vector<double> Cl_par_a, Cl_x_corr, Cl_y_corr;
+
+  vector<double> g_pjt_x, g_pjt_y, g_E_all;
 
   
   string fileName_out = "./data/outCluster.root";
@@ -549,7 +558,15 @@ void multi_cluster_recons()
   outTree->Branch("Cl_par_a", &Cl_par_a);
   outTree->Branch("Cl_x_corr", &Cl_x_corr);
   outTree->Branch("Cl_y_corr", &Cl_y_corr);
+
+  outTree->Branch("g_pjt_x", &g_pjt_x);
+  outTree->Branch("g_pjt_y", &g_pjt_y);
+  outTree->Branch("g_E_all", &g_E_all);
   
+  outTree->Branch("N_hit_emcal", &N_hit_emcal, "N_hit_emcal/I");
+  
+  /*
+  // these variables are for DVCS generator
   outTree->Branch("e_hit_emcal_x", &e_hit_emcal_x, "e_hit_emcal_x/D");
   outTree->Branch("e_hit_emcal_y", &e_hit_emcal_y, "e_hit_emcal_y/D");
   outTree->Branch("e_hit_emcal_z", &e_hit_emcal_z, "e_hit_emcal_z/D");
@@ -570,8 +587,8 @@ void multi_cluster_recons()
   outTree->Branch("e_E", &e_E, "e_E/D");
   outTree->Branch("e_flag_emcal", &e_flag_emcal, "e_flag_emcal/I");
   outTree->Branch("g_flag_emcal", &g_flag_emcal, "g_flag_emcal/I");
-  outTree->Branch("N_hit_emcal", &N_hit_emcal, "N_hit_emcal/I");
 
+  */
 
   
   //==================================
@@ -581,15 +598,15 @@ void multi_cluster_recons()
   size_t events_numer = 0;  
   while (fReader.Next())
     {
-      //      if(++events_numer != 1678)
-      //      	continue;
+      //      if(++events_numer < 5000)
+      //	continue;
       
-      if(++events_numer > 4900)
+      if(++events_numer > 9000)
 	break;
 	//	continue;
       
-      //      if(events_numer%100 == 0)
-      //	cout << "Read " << events_numer << " th events..." << endl;
+      if(events_numer%2000 == 0)
+      	cout << "Read " << events_numer << " th events..." << endl;
       
       std::unordered_set<uint64_t> track_ids_in_ecap_emcal;  // Get tracks information that have hits in ion EMCAL
       std::unordered_set<uint64_t> track_ids_in_ffi_RPOTS;  // Get tracks information that have hits in Roman Pots(FarForward ion direction area)
@@ -699,9 +716,10 @@ void multi_cluster_recons()
 	  else
 	    hit_row_col_gla->Fill(ce_emcal_row[i], ce_emcal_col[i]);
 
+	  /*
 	  if(ce_emcal_section[i] == 0)
 	    {
-	      hit_pos_crystal->Fill(ce_emcal_xcrs[i], ce_emcal_ycrs[i], ce_emcal_etot_dep[i]);
+	      //	      hit_pos_crystal->Fill(ce_emcal_xcrs[i], ce_emcal_ycrs[i], ce_emcal_etot_dep[i]);
 	      //	      hit_pos_crystal->Fill(ce_emcal_xcrs[i], ce_emcal_ycrs[i]);
 	      //	      hit_row_col_cry->Fill(ce_emcal_row[i], ce_emcal_col[i], ce_emcal_etot_dep[i]);
 	      //	      cout << ce_emcal_id[i] << " " << ce_emcal_row[i] << " " << ce_emcal_col[i] << endl;
@@ -709,14 +727,16 @@ void multi_cluster_recons()
 	    }
 	  else
 	    {
-	      hit_pos_glass->Fill(ce_emcal_xcrs[i], ce_emcal_ycrs[i], ce_emcal_etot_dep[i]);
+	      //	      hit_pos_glass->Fill(ce_emcal_xcrs[i], ce_emcal_ycrs[i], ce_emcal_etot_dep[i]);
 	      //	      hit_pos_glass->Fill(ce_emcal_xcrs[i], ce_emcal_ycrs[i]);
 	      //	      hit_row_col_gla->Fill(ce_emcal_row[i], ce_emcal_col[i], ce_emcal_etot_dep[i]);
 	      //	      cout << ce_emcal_id[i] << " " << ce_emcal_row[i] << " " << ce_emcal_col[i] << endl;
 	      //	      cout << ce_emcal_id[i] << " [" << ce_emcal_xcrs[i] << " " << ce_emcal_ycrs[i] << " " << ce_emcal_zcrs[i] << "]" << endl;
 	    }
+	  */
 	}
 
+      /*
       g_px = gen_prt_dir_x[1] * gen_prt_tot_mom[1];
       g_py = gen_prt_dir_y[1] * gen_prt_tot_mom[1];
       g_pz = gen_prt_dir_z[1] * gen_prt_tot_mom[1];
@@ -726,7 +746,18 @@ void multi_cluster_recons()
       e_py = gen_prt_dir_y[0] * gen_prt_tot_mom[0];
       e_pz = gen_prt_dir_z[0] * gen_prt_tot_mom[0];
       e_E = gen_prt_tot_e[0];
+      */
+      
+      int num_primary_g = gen_prt_tot_mom.GetSize();
+      //      cout << "Number of primary photons: " << num_primary_g << endl;
+      for(int i = 0 ; i < num_primary_g ; i++)
+	{
+	  g_pjt_x.push_back((2240. * gen_prt_dir_x[i] / TMath::Abs(gen_prt_dir_z[i])));
+	  g_pjt_y.push_back((2240. * gen_prt_dir_y[i] / TMath::Abs(gen_prt_dir_z[i])));
+	  g_E_all.push_back(gen_prt_tot_e[i]);
+	}
 
+      
 
       primary_g_ratio_x_z->Fill( (gen_prt_dir_x[1] / gen_prt_dir_z[1]) );
       //      if( (gen_prt_dir_x[1] / gen_prt_dir_z[1]) < 0. )
@@ -768,6 +799,7 @@ void multi_cluster_recons()
 	  
 	      double cce = cluster.C_seed_energy[i];
 	      double ccx = cluster.C_seed_x[i], ccy = cluster.C_seed_y[i], ccz = cluster.C_seed_z[i];
+	      double ccrow = cluster.C_seed_row[i], cccol = cluster.C_seed_col[i];
 	      double cx = cluster.C_x[i], cy = cluster.C_y[i];
 	      double cR = cluster.C_radius[i], cT = cluster.C_theta[i], cP = cluster.C_phi[i]; 
 	      double cets = cluster.C_Energy_tot_simul[i], css = cluster.C_size_simul[i];
@@ -799,7 +831,23 @@ void multi_cluster_recons()
 		}
 	      //	  cout << cluster.C_seed_x[i] << endl;
 	      */
+
+	      //	      if( (N_cluster == 3) && (events_numer == 5627) )
+	      //	      if( N_cluster == 3 )
+	      //		cout << cce << " seed pos:[" << ccx << " " << ccy << "] || seed row & col: [" << ccrow << " " << cccol << "]" << endl; 
+		  //cluster pos:[" << cx << " " << cy << "]" << endl;
+	      
 	    }
+	  //	  if( N_cluster == 3 )
+	  //	    cout << endl;
+	  
+	  if( N_cluster > 0 )
+	    {
+	      //	      cout << events_numer << endl;
+	      for(int i = 0 ; i < N_hit_emcal ; i++)
+		hit_pos_crystal->Fill(ce_emcal_xcrs[i], ce_emcal_ycrs[i], ce_emcal_etot_dep[i]);
+	    }
+	
 	}
       else
 	{
@@ -808,6 +856,9 @@ void multi_cluster_recons()
 	  Cl_radius.clear();  Cl_theta.clear();  Cl_phi.clear();
 	  Cl_Energy_tot_simul.clear();  Cl_size_simul.clear();
 	  Cl_par_a.clear();  Cl_x_corr.clear();  Cl_y_corr.clear();
+
+	  g_pjt_x.clear();  g_pjt_y.clear();  g_E_all.clear();
+	  
 	  //	  cout << events_numer << " th have " << N_hit_emcal << ".........." << endl;
 		
 	  continue;
@@ -821,6 +872,7 @@ void multi_cluster_recons()
       Cl_Energy_tot_simul.clear();  Cl_size_simul.clear();
       Cl_par_a.clear();  Cl_x_corr.clear();  Cl_y_corr.clear();
 
+      g_pjt_x.clear();  g_pjt_y.clear();  g_E_all.clear();
       
       g_flag_emcal = 0;  e_flag_emcal = 0;  hit_energy = 0.;
       
@@ -875,18 +927,18 @@ void multi_cluster_recons()
   auto *c3 = new TCanvas("c3", "c3", 1600, 800);
   c3->Divide(2, 1);
   c3->cd(1);
-  hit_row_col_cry->Draw("colorz");
+  //  hit_row_col_cry->Draw("colorz");
   //  hit_pos_crystal->SetStats(0);
-  //  hit_pos_crystal->Draw("colorz");
+  hit_pos_crystal->Draw("colorz");
   //  emcal_e_of_bad_res->Draw();
   c3->cd(2);
-  hit_row_col_gla->Draw("colorz");
+  //  hit_row_col_gla->Draw("colorz");
   //  hit_pos_glass->SetStats(0);
   //  hit_pos_glass->Draw("colorz");
   //  eloss_of_bad_res->Draw();
   
-  auto *c4 = new TCanvas("c4", "c4", 800, 800);
-  hhh->Draw();
+  //  auto *c4 = new TCanvas("c4", "c4", 800, 800);
+  //  hhh->Draw();
   //  primary_g_ratio_x_z->Draw();
 }
            

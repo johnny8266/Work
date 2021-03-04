@@ -4,7 +4,8 @@ using namespace std;
 
 void norm_foam()
 {
-  TFile *hfile = new TFile("result.root");
+  //  TFile *hfile = new TFile("result.root");
+  TFile *hfile = new TFile("DVCS_foam_100k.root");
   TTree *DVCS = (TTree*)hfile->Get("DVCS");
   TCanvas *c1 = new TCanvas("c1", "c1", 800, 800);
   Double_t phi, phi_def, e1_S_angle, p1_S_angle, photon_S_angle, Q2, xb, t_var, xsec, psf;
@@ -50,27 +51,38 @@ void norm_foam()
   ofstream myfile;
   //  myfile.open ("/home/pu-kai/mnt/g4e/DVCS/test.txt");
   myfile.open ("./dvcs_input.txt");
-    
+
+  cout << "Total events: " << N_events << endl;
+  //  N_events = N_events / 5;
+  cout << "Half events: " << N_events << endl;
+  
   for(int i = 0 ; i < N_events ; i++)
     {
+
       DVCS->GetEntry(i);
-      Q2_weight = SLdt / N_events * xsec * psf;
-      if( i % 1 == 0 )
-      	{
+      
+      if(i > 59999)
+	{ 
+
+	  //	  Q2_weight = SLdt / N_events * xsec * psf;
 	  //	  cout <<  Q2 << " " << xb << " " << t_var << " " << phi_def << " " << psf << endl;
 	  //	  cout << xsec << "  " << psf << "  " << Q2_weight << endl;
 
-	  double G_Px = -0.05, G_Py = g_px, G_Pz = g_pz, G_Ene = TMath::Sqrt(G_Px * G_Px + G_Py * G_Py + G_Pz * G_Pz);
+	  //      double G_Px = -0.05, G_Py = g_px, G_Pz = g_pz, G_Ene = TMath::Sqrt(G_Px * G_Px + G_Py * G_Py + G_Pz * G_Pz);
 	  
 	  myfile << "3 " << Q2 << " " << xb << " " << t_var << " " << phi_def << " " << psf << " " << e1_S_angle << " " << p1_S_angle << " " << photon_S_angle << " " << xsec << endl;
 	  myfile << "1 " << "-1 " << "1 " << "11 " << "1 " << "1 " << e1_px << " " << e1_py << " " << e1_pz << " " << e1_E << " " << "0.000511 " << "0.0 0.0 0.0" << endl;
-	  //	  myfile << "2 " << "0 " << "1 " << "22 " << "1 " << "1 " << g_px << " " << g_py << " " << g_pz << " " << g_E << " " << "0.0 " << "0.0 0.0 0.0" << endl;
-	  myfile << "2 " << "0 " << "1 " << "22 " << "1 " << "1 " << G_Px << " " << G_Py << " " << G_Pz << " " << G_Ene << " " << "0.0 " << "0.0 0.0 0.0" << endl;
+	  myfile << "2 " << "0 " << "1 " << "22 " << "1 " << "1 " << g_px << " " << g_py << " " << g_pz << " " << g_E << " " << "0.0 " << "0.0 0.0 0.0" << endl;
+	  //      myfile << "2 " << "0 " << "1 " << "22 " << "1 " << "1 " << G_Px << " " << G_Py << " " << G_Pz << " " << G_Ene << " " << "0.0 " << "0.0 0.0 0.0" << endl;
 	  myfile << "3 " << "1 " << "1 " << "2212 " << "1 " << "1 " << p1_px << " " << p1_py << " " << p1_pz << " " << p1_E << " " << "0.938272 " << "0.0 0.0 0.0" << endl;  
 		  
+	  if( i % 500 == 0 ) cout << i << " th events finished......" << endl;
+
+	  //	  NTOT = NTOT + Q2_weight;
 	}
-      if( i % 500 == 0 ) cout << i << " th events finished......" << endl;
-      NTOT = NTOT + Q2_weight;
+      
+      if(i > 99999)
+	break;
     }
   myfile.close();
   cout << "NTOT: " << NTOT << endl;
