@@ -28,7 +28,7 @@ void Read_test()
   bookread.open("record.txt");
 
   if(bookread.is_open())
-    { 
+   { 
       while(!(bookread.eof()))
 	{ 
 	  line = ""; 

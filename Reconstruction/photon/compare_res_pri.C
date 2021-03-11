@@ -29,14 +29,19 @@ Double_t Eresolution_fit(double *x, double *par)
 }
 
 
+Double_t E_resolu_fit(double *x, double *par)
+{
+  return ( par[0] + par[1] / sqrt(x[0]) + par[2] / x[0]);
+}
+
+
 void compare_res_pri()
 {
   
-  //  std::string path = "./data/3_photons/";
-  //  std::string fileName = path + "outCluster_9990_events.root";
   std::string path = "./data/";
+  //  std::string fileName = path + "outCluster_9990_events.root";
+  //  std::string path = "./data/glass/";
   std::string fileName = path + "outCluster.root";
-  //  std::string fileName = path + "outCluster_multiclus_8k.root";
     
   cout << "************ " << fileName << " ************" << endl;
 
@@ -94,10 +99,10 @@ void compare_res_pri()
   // TH1F
   //  auto diffE_e_res_pri = new TH1F("diffE_e_res_pri", "diffE_e_res_pri", 100, -5., 5.);
   auto diffE_g_res_pri = new TH1F("diffE_g_res_pri", "diffE_g_res_pri", 50, -2., 2.);
-  auto diff_posx_g_res_pri = new TH1F("diff_posx_g_res_pri", "diff_posx_g_res_pri", 40, -80., 80.);
-  auto diff_posy_g_res_pri = new TH1F("diff_posy_g_res_pri", "diff_posy_g_res_pri", 40, -80., 80.);
-  auto diff_posx_cor_g_res_pri = new TH1F("diff_posx_cor_g_res_pri", "diff_posx_cor_g_res_pri", 120, -30., 30.);
-  auto diff_posy_cor_g_res_pri = new TH1F("diff_posy_cor_g_res_pri", "diff_posy_cor_g_res_pri", 120, -30., 30.);
+  auto diff_posx_g_res_pri = new TH1F("diff_posx_g_res_pri", "diff_posx_g_res_pri", 60, -300., 300.);
+  auto diff_posy_g_res_pri = new TH1F("diff_posy_g_res_pri", "diff_posy_g_res_pri", 60, -300., 300.);
+  auto diff_posx_cor_g_res_pri = new TH1F("diff_posx_cor_g_res_pri", "diff_posx_cor_g_res_pri", 50, -50., 50.);
+  auto diff_posy_cor_g_res_pri = new TH1F("diff_posy_cor_g_res_pri", "diff_posy_cor_g_res_pri", 50, -50., 50.);
   auto hit_cl_size = new TH1F("hit_cl_size", "hit_cl_size", 20, 0., 20.);
   auto Ratio_E_seed_E_recons = new TH1F("Ratio_E_seed_E_recons", "Ratio_E_seed_E_recons", 50, 0., 1.);
   auto E_reso_all_particles = new TH1F("E_reso_all_particles", "E_reso_all_particles", 10, 0., 10.);
@@ -122,7 +127,7 @@ void compare_res_pri()
 
   TH1F* E_diff_per_bin[10];
   for(int i = 0 ; i < 10 ; i++)
-    E_diff_per_bin[i] = new TH1F(Form("E_diff_per_bin_%d", i), Form("E_diff_per_bin_%d", i), 100, -0.2, 0.8);
+    E_diff_per_bin[i] = new TH1F(Form("E_diff_per_bin_%d", i), Form("E_diff_per_bin_%d", i), 70, -0.5, 3.);
 
 
   double g_eD, g_poxD, g_poyD, g_poxD_cor, g_poyD_cor;
@@ -138,7 +143,7 @@ void compare_res_pri()
   
   while (fReader.Next())
     {
-      if(++events_numer > 19900)
+      if(++events_numer > 20000)
 	break;
       auto count = static_cast<size_t>(*N_cluster.Get());
 	      
@@ -147,24 +152,24 @@ void compare_res_pri()
       if(count == 3)
 	{
 	  /*
-	  cout << "Without correction  "; 
-	  for(int i = 0 ; i < count ; i++)
-	    cout << "[" << Cl_x[i] << ", " << Cl_y[i] << "] || ";
-	  cout << endl;
+	      cout << "Without correction  "; 
+	      for(int i = 0 ; i < count ; i++)
+		cout << "[" << Cl_x[i] << ", " << Cl_y[i] << "] || ";
+	      cout << endl;
 	  
-	  cout << "Correction  "; 
-	  for(int i = 0 ; i < count ; i++)
-	    cout << "[" << Cl_x_corr[i] << ", " << Cl_y_corr[i] << "] || ";
-	  cout << endl;
+	      cout << "Correction  "; 
+	      for(int i = 0 ; i < count ; i++)
+		cout << "[" << Cl_x_corr[i] << ", " << Cl_y_corr[i] << "] || ";
+	      cout << endl;
 	  
-	  for(int i = 0 ; i < count ; i++)
-	    //	    cout << g_E_all[i] << " ";
-	    cout << "[" << g_pjt_x[i] << ", " << g_pjt_y[i] << "] || ";
-	  cout << endl << endl;
+	      for(int i = 0 ; i < count ; i++)
+		//	    cout << g_E_all[i] << " ";
+		cout << "[" << g_pjt_x[i] << ", " << g_pjt_y[i] << "] || ";
+	      cout << endl << endl;
 	  */
-
+	  
 	  for(int i = 0 ; i < count ; i++)
-	    {
+	    {	      
 	      //	  cout <<  Cl_seed_energy[i] << " " << Cl_x[i] << " " << Cl_y[i] << " ";
 
 	      for(int j = 0 ; j < count ; j++)
@@ -177,24 +182,42 @@ void compare_res_pri()
 		  g_poxD_cor = g_pjt_x[j] - Cl_x_corr[i];
 		  g_poyD_cor = g_pjt_y[j] - Cl_y_corr[i];
 		  double criteria = TMath::Sqrt(g_poxD_cor * g_poxD_cor + g_poyD_cor * g_poyD_cor);
-		  //		  if( (criteria < 20.) && (g_pjt_x[j] < 300.) && (g_pjt_x[j] > -300.) && (g_pjt_y[j] < 300.) && (g_pjt_y[j] > -300.) )
-		  if( criteria < 10. )
-		    {
-		      diffE_g_res_pri->Fill(g_eD);
-		      diff_posx_g_res_pri->Fill(g_poxD);
-		      diff_posy_g_res_pri->Fill(g_poyD);
-		      diff_posx_cor_g_res_pri->Fill(g_poxD_cor);
-		      diff_posy_cor_g_res_pri->Fill(g_poyD_cor);
+		  
 
-		      if( (Cl_Energy_tot_simul[i] / 1000.) < 10. )
+		  if( criteria < 50. )
+		    {
+
+		      if( ((g_poxD < 30.) && (g_poxD > -30.)) || ((g_poyD < 30.) && (g_poyD > -30.)) )
+			cout << "[" << Cl_x[i] << ", " << Cl_y[i] << "] || [" << g_pjt_x[j] << ", " << g_pjt_y[j] << "]" << endl;
+
+		      
+		      diffE_g_res_pri->Fill(g_eD);
+
+		      double rect_bord = 700.;
+		      //		      if( ((Cl_x_corr[i] < rect_bord) && (Cl_x_corr[i] > -rect_bord)) && ( (Cl_y_corr[i] < rect_bord) && (Cl_y_corr[i] > -rect_bord) ) )
+		      //		      if( ((Cl_x_corr[i] < -200.) && (Cl_x_corr[i] > -400.)) && ( (Cl_y_corr[i] < 400.) && (Cl_y_corr[i] > 200.) ) )
+
+		      if( ((Cl_x_corr[i] < -850.) || (Cl_x_corr[i] > 850.)) || ( (Cl_y_corr[i] < -850.) || (Cl_y_corr[i] > 850.) ) )
+		      //		      if( Cl_x_corr[i] < -850. )
 			{
-			  int bin = (Cl_Energy_tot_simul[i] / 1000.);
-			  E_diff_per_bin[bin]->Fill(g_eD);
+			  diff_posx_g_res_pri->Fill(g_poxD);
+			  diff_posy_g_res_pri->Fill(g_poyD);
+			  diff_posx_cor_g_res_pri->Fill(g_poxD_cor);
+			  diff_posy_cor_g_res_pri->Fill(g_poyD_cor);
+
+
 			}
+
+			  if( (Cl_Energy_tot_simul[i] / 1000.) < 10. )
+			    {
+			      int bin = (Cl_Energy_tot_simul[i] / 1000.);
+			      E_diff_per_bin[bin]->Fill(g_eD);
+			    }
+		      
 		      
 		      if( g_eD > 0.5 )
 			{
-			  if( g_pjt_x[j] < 600. && g_pjt_x[j] > -600. && g_pjt_y[j] < 600. && g_pjt_y[j] > -600. )
+			  if( g_pjt_x[j] < 200. && g_pjt_x[j] > -200. && g_pjt_y[j] < 200. && g_pjt_y[j] > -200. )
 			    {
 			      cout << "Primary photon energy: " << g_E_all[j] << endl;
 			      cout << "Primary photon position: [" << g_pjt_x[j] << ", " << g_pjt_y[j] << "]" << endl;
@@ -291,9 +314,9 @@ void compare_res_pri()
   
   */
 
-  /*
-  auto *fun_e_res = new TF1("fun_e_res", GausM, -0.1, 0.3, 4);
-  auto c10 = new TCanvas("c10", "c10", 1400, 1050);
+  
+  auto *fun_e_res = new TF1("fun_e_res", GausM, -0.5, 2., 4);
+  auto c10 = new TCanvas("c10", "c10", 1200, 900);
   c10->Divide(4,3);
   for(int i = 0 ; i < 10 ; i++)
     {
@@ -303,13 +326,17 @@ void compare_res_pri()
       double plot_mean = E_diff_per_bin[i]->GetMean();
       double plot_std = E_diff_per_bin[i]->GetStdDev();
       fun_e_res->SetParLimits(0, 0.1, up_lim);
-      fun_e_res->SetParLimits(1, -0.01, 0.4);
-      fun_e_res->SetParLimits(2, 0.005, 2.);
+      fun_e_res->SetParLimits(1, -0.1, 1.5);
+      fun_e_res->SetParLimits(2, 0.01, 3.);
       fun_e_res->SetParLimits(3, 0.1, 50.);      
       E_diff_per_bin[i]->Fit("fun_e_res", "", "R", ( plot_mean - 3. * plot_std), plot_mean);
+      E_diff_per_bin[i]->SetStats(0);
+      E_diff_per_bin[i]->GetXaxis()->SetTitle("Delta E [GeV]");
+      E_diff_per_bin[i]->SetTitle(Form("Energy %d ~ %d GeV", i, i+1));
       E_diff_per_bin[i]->Draw();
+      cout << fun_e_res->GetChisquare() / fun_e_res->GetNDF() << endl;
       
-      double e_resolu = (fun_e_res->GetParameter(2)) / (i + 0.5);
+      double e_resolu = (fun_e_res->GetParameter(2)) / (i + 0.5) * 100.;
       E_reso_all_particles->SetBinContent( i+1, e_resolu );
       //      E_reso_all_particles->SetBinError( i+1, (fun_e_res->GetParError(2)) );
 
@@ -318,19 +345,33 @@ void compare_res_pri()
 
     }
 
-  
+  auto *fun_recons_e_res = new TF1("fun_recons_e_res", E_resolu_fit, 0., 10., 3);  
   auto c9 = new TCanvas("c9", "c9", 1200, 600);
   c9->Divide(2,1);
   c9->cd(1);
+  E_reso_all_particles->SetStats(0);
   E_reso_all_particles->SetMarkerStyle(2);
   E_reso_all_particles->SetMarkerSize(1);
   E_reso_all_particles->GetXaxis()->SetTitle("E [GeV]");
+  E_reso_all_particles->GetYaxis()->SetTitle("E_sig / E [%]");
+  E_reso_all_particles->Fit("fun_recons_e_res", "", "R", 0., 10.);
   E_reso_all_particles->Draw("p");
+  cout << fun_recons_e_res->GetChisquare() / fun_recons_e_res->GetNDF() << endl;
+  legend[0] = new TLegend(0.5, 0.6, 0.75, 0.8);
+  legend[0]->SetBorderSize(0);
+  legend[0]->AddEntry((TObject*)0, Form("Par A:  %.3f", (fun_recons_e_res->GetParameter(0)) ), "");
+  legend[0]->AddEntry((TObject*)0, Form("Par B:  %.3f", (fun_recons_e_res->GetParameter(1)) ), "");
+  legend[0]->AddEntry((TObject*)0, Form("Par C:  %.3f", (fun_recons_e_res->GetParameter(2)) ), "");
+  legend[0]->Draw("same");
+        
   c9->cd(2);
+  E_correction_all_particles->SetStats(0);
   E_correction_all_particles->SetMarkerStyle(2);
   E_correction_all_particles->SetMarkerSize(1);
+  E_correction_all_particles->GetXaxis()->SetTitle("E [GeV]");
+  E_correction_all_particles->GetYaxis()->SetTitle("delta E [GeV]");
   E_correction_all_particles->Draw("p");
-  */
+  
 
   
   /*  
@@ -397,8 +438,8 @@ void compare_res_pri()
   c4->cd(2);
   auto *fun_y = new TF1("fun_y", GausM, -40., 40., 4);
   fun_y->SetParLimits(0, 10., 20000.);
-  fun_y->SetParLimits(1, -1., 1.);
-  fun_y->SetParLimits(2, 0.1, 10.);
+  fun_y->SetParLimits(1, -3., 3.);
+  fun_y->SetParLimits(2, 2., 15.);
   fun_y->SetParLimits(3, 0.1, 100.);
   //  diff_posy_g_res_pri->Fit("fun_y");
   //  cout << "Before correction: " << fun_y->GetChisquare() / fun_y->GetNDF() << endl;
@@ -415,17 +456,17 @@ void compare_res_pri()
   
   
   c4->cd(3);
-  auto *fun_x_cor = new TF1("fun_x_cor", GausM, -30., 30., 4);
-  fun_x_cor->SetParLimits(0, 10., 20000.);
-  fun_x_cor->SetParLimits(1, -1., 1.);
-  fun_x_cor->SetParLimits(2, 0.2, 10.);
+  auto *fun_x_cor = new TF1("fun_x_cor", GausM, -40., 40., 4);
+  fun_x_cor->SetParLimits(0, 5., 20000.);
+  fun_x_cor->SetParLimits(1, -3., 3.);
+  fun_x_cor->SetParLimits(2, 2., 15.);
   fun_x_cor->SetParLimits(3, 0.1, 100.);
-  diff_posx_cor_g_res_pri->Fit("fun_x_cor", "R", "", -30., 30.);
+  diff_posx_cor_g_res_pri->Fit("fun_x_cor", "R", "", -40., 40.);
   //  cout << "After correction: " << fun_x_cor->GetChisquare() / fun_x_cor->GetNDF() << endl;
   diff_posx_cor_g_res_pri->SetStats(0);
   diff_posx_cor_g_res_pri->GetXaxis()->SetTitle("difference [mm]");
   diff_posx_cor_g_res_pri->Draw();
-  legend[0] = new TLegend(0.12, 0.6, 0.45, 0.8);
+  legend[0] = new TLegend(0.12, 0.6, 0.4, 0.8);
   legend[0]->SetBorderSize(0);
   legend[0]->AddEntry((TObject*)0, Form("Resolution: %.3fmm", (fun_x_cor->GetParameter(2)) ), "");
   legend[0]->AddEntry((TObject*)0, Form("Difference: %.3fmm", (fun_x_cor->GetParameter(1)) ), "");
@@ -434,12 +475,12 @@ void compare_res_pri()
 
   
   c4->cd(4);
-  diff_posy_cor_g_res_pri->Fit("fun_y", "R", "", -30., 30.);
+  diff_posy_cor_g_res_pri->Fit("fun_y", "R", "", -40., 40.);
   cout << "After correction: " << fun_y->GetChisquare() / fun_y->GetNDF() << endl;
   diff_posy_cor_g_res_pri->SetStats(0);
   diff_posy_cor_g_res_pri->GetXaxis()->SetTitle("difference [mm]");
   diff_posy_cor_g_res_pri->Draw();
-  legend[0] = new TLegend(0.12, 0.6, 0.45, 0.8);
+  legend[0] = new TLegend(0.12, 0.6, 0.4, 0.8);
   legend[0]->SetBorderSize(0);
   legend[0]->AddEntry((TObject*)0, Form("Resolution: %.3fmm", (fun_y->GetParameter(2)) ), "");
   legend[0]->AddEntry((TObject*)0, Form("Difference: %.3fmm", (fun_y->GetParameter(1)) ), "");

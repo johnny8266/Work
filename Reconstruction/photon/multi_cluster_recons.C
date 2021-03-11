@@ -41,8 +41,7 @@ struct Hit {
   int c_ID, c_sec;   // crystal ID: 1000*row+col(section:0), 1000000+1000*row+col(section:1)
 };
 
-struct Cluster
-{
+struct Cluster {
   int num_cluster;
   vector<int> C_seed_row, C_seed_col;
   vector<double> C_seed_energy, C_seed_x, C_seed_y, C_seed_z, C_x, C_y;  
@@ -124,7 +123,7 @@ Cluster ComputeCluster(vector<Hit> hit)
 	      region_flag.push_back(0);
 	      seed_cry++;
 	    }
-
+	  /*
 	  // Below is to find the event in the crystal border
 	  i_row = hit.at(i).c_row;  i_col = hit.at(i).c_col;
 	  
@@ -180,9 +179,9 @@ Cluster ComputeCluster(vector<Hit> hit)
 		  i_glass_row++;
 		}
 	    }
-      	  
+	  */
 	} //crystal section
-
+	  
 
       
       else if(hit.at(i).c_sec == 1)    //For glass region
@@ -205,7 +204,20 @@ Cluster ComputeCluster(vector<Hit> hit)
 		      count++;
 		} //scan col
 	    } //scan row
+	  if( (count == 8 && i_et_dep > 200.) || (count == 9 && i_et_dep > 200.) )
+	    {
+	      cluster.C_seed_energy.push_back(i_et_dep);
+	      cluster.C_seed_x.push_back(i_xcrs); cluster.C_seed_y.push_back(i_ycrs); cluster.C_seed_z.push_back(i_zcrs);
+	      cluster.C_seed_row.push_back(i_row);  cluster.C_seed_col.push_back(i_col);
 
+	      ClusSeed_xcrs.push_back(i_xcrs);  ClusSeed_ycrs.push_back(i_ycrs);  ClusSeed_zcrs.push_back(i_zcrs);
+	      region_flag.push_back(1);
+	      //	      cout << hit.at(i).c_col << " " << hit.at(i).c_row << " count: " << count << endl;
+	      //	      cout << "glass seed: " << i_et_digi << "  " << i_et_dep << " [" << i_xcrs << " " << i_ycrs << "] || row, col: [" << hit.at(i).c_col << " " << hit.at(i).c_row << "]" << endl;
+	      seed_gla++;
+	    }
+	
+	  /*
 	  i_row = hit.at(i).c_row;  i_col = hit.at(i).c_col;
 	  
 	  if( (count == 5) && (i_row == 11) && (i_et_dep > 200.) )
@@ -269,20 +281,10 @@ Cluster ComputeCluster(vector<Hit> hit)
 	      //	      if( count == 8 )
 	      //		cout << "!!! !!!" << endl;
 	    }
-	  
-	  if( (count == 8 && i_et_dep > 200.) || (count == 9 && i_et_dep > 200.) )
-	    {
-	      cluster.C_seed_energy.push_back(i_et_dep);
-	      cluster.C_seed_x.push_back(i_xcrs); cluster.C_seed_y.push_back(i_ycrs); cluster.C_seed_z.push_back(i_zcrs);
-	      cluster.C_seed_row.push_back(i_row);  cluster.C_seed_col.push_back(i_col);
-
-	      ClusSeed_xcrs.push_back(i_xcrs);  ClusSeed_ycrs.push_back(i_ycrs);  ClusSeed_zcrs.push_back(i_zcrs);
-	      region_flag.push_back(1);
-	      //	      cout << hit.at(i).c_col << " " << hit.at(i).c_row << " count: " << count << endl;
-	      //	      cout << "glass seed: " << i_et_digi << "  " << i_et_dep << " [" << i_xcrs << " " << i_ycrs << "] || row, col: [" << hit.at(i).c_col << " " << hit.at(i).c_row << "]" << endl;
-	      seed_gla++;
-	    }
+	  */
 	} //glass section
+
+	  
     } //loop ce_emcal hits
 
   seed_total = seed_gla + seed_cry;
@@ -326,10 +328,11 @@ Cluster ComputeCluster(vector<Hit> hit)
 
       double a = 0.;
       if( region_flag[i] == 0 )
-	a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 4.062) * 10.;       // *10. -> change cm to mm
-	//	a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 4.862) * 10.;       // *10. -> change cm to mm (PbF2)
+	a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 2.862) * 10.;       // *10. -> change cm to mm
+      //	a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 4.862) * 10.;       // *10. -> change cm to mm (PbF2)
       else
-	a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 5.062) * 10. * 2.2;  // *10. * 3. -> change cm to mm & in the glass region
+	a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 2.862) * 10. * 3.;       // *10. -> change cm to mm (PbF2)
+      //	a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 5.062) * 10. * 2.2;  // *10. * 3. -> change cm to mm & in the glass region
 
       par_a.push_back(a);
       cluster.C_par_a.push_back(a);
@@ -348,6 +351,11 @@ Cluster ComputeCluster(vector<Hit> hit)
       Clus_Etot = ClusEtotsimu[i];
       Clus_x = 0.; Clus_xx = 0.;
       Clus_y = 0.; Clus_yy = 0.;
+
+      if( region_flag[i] == 0 )  // Change the rmoliere with different region
+	Rmoliere = C_Rmoliere;
+      else
+	Rmoliere = G_Rmoliere;
       
       for(int k = 0 ; k < Size ; k++)
 	{
@@ -421,7 +429,8 @@ void multi_cluster_recons()
   //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_imposed_swap_gpx_gpy_5k_events.root");
   //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_imposed_gpx_removed_5k_events.root");
   //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_total_100k.root");
-  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_crystal_20k.root");
+  //  TFile *file = TFile::Open("../Data/g4e_simulation/pure_photon/g4e_all_photons_crystal_20k.root");
+  TFile *file = TFile::Open("../Data/g4e_simulation/pure_photon/g4e_all_photons_glass_20k.root");
   //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_single_event_3_photons.root");
   TTree *events = (TTree *) file->Get("events");
 
@@ -597,14 +606,14 @@ void multi_cluster_recons()
   size_t events_numer = 0;  
   while (fReader.Next())
     {
-      //      if(++events_numer < 5000)
-      //	continue;
+      //      if(++events_numer < 7)
+      //       	continue;
       
-      if(++events_numer > 19990)
+      if(++events_numer > 1)
 	break;
 	//	continue;
       
-      if(events_numer%2000 == 0)
+      if(events_numer % 500 == 0)
       	cout << "Read " << events_numer << " th events..." << endl;
       
       std::unordered_set<uint64_t> track_ids_in_ecap_emcal;  // Get tracks information that have hits in ion EMCAL
@@ -704,13 +713,8 @@ void multi_cluster_recons()
 	  hit.c_sec = ce_emcal_section[i];
 	  
 	  hhit.push_back(hit);
-	  /*
-	  cout << ce_emcal_id[i] << " ";
-          cout << ce_emcal_row[i] << " " << ce_emcal_col[i] << " " << ce_emcal_section[i] << " ";
-	  cout << ce_emcal_etot_dep[i] << endl;
-          cout << "[" << ce_emcal_xcrs[i] << " " << ce_emcal_ycrs[i] << " " << ce_emcal_zcrs[i] << "]" << endl;
-	  */
 
+	  
 	  hit_pos_crystal->Fill(ce_emcal_xcrs[i], ce_emcal_ycrs[i], ce_emcal_etot_dep[i]);
 	  
 	  if( ce_emcal_section[i] == 0 )
@@ -807,7 +811,7 @@ void multi_cluster_recons()
 	      double cets = cluster.C_Energy_tot_simul[i], css = cluster.C_size_simul[i];
 	      double cpa = cluster.C_par_a[i], ccxr = cluster.C_x_corr[i], ccyr = cluster.C_y_corr[i];
 
-	      cout << "[" << ccxr << " " << ccyr << "]" << endl; 
+	      //	      cout << "[" << ccxr << " " << ccyr << "]" << endl; 
 	      
 	      Cl_seed_energy.push_back(cce);
 	      Cl_seed_x.push_back(ccx);
@@ -824,33 +828,17 @@ void multi_cluster_recons()
 	      Cl_x_corr.push_back(ccxr);
 	      Cl_y_corr.push_back(ccyr);
 
-	      //	      cout << "[" << cx << ", " << cy << "] || [" << ccxr << ", " << ccyr << "] || " << cpa << endl;
-	      /*
-	      if( (e_flag_emcal==0) && (g_flag_emcal==1) && (N_cluster==1) )
-		{
-		  //		  cout << events_numer << "th seed pos: [" << ccx << ", " << ccy << ", " << ccz << "] || g project pos: [" << g_pjt_emcal_x << ", " << g_pjt_emcal_y << "]" << endl;
-		  //		  cout << "primary g energy: " << g_E << " GeV || Reconstructed energy: " << cets / 1000. << " GeV || Seed energy: " << cce/1000. << " GeV" << endl;
-		  cout << setprecision(6) << "Project photon: [" << g_pjt_emcal_x << ", " << g_pjt_emcal_y << "]";
-		  cout << " || Hit photon: [" << g_hit_emcal_x << ", " << g_hit_emcal_y << ", " << g_hit_emcal_z << "]" << endl;
-		}
-	      //	  cout << cluster.C_seed_x[i] << endl;
-	      */
-
-	      //	      if( (N_cluster == 3) && (events_numer == 5627) )
-	      //	      if( N_cluster == 3 )
-	      //		cout << cce << " seed pos:[" << ccx << " " << ccy << "] || seed row & col: [" << ccrow << " " << cccol << "]" << endl; 
-		  //cluster pos:[" << cx << " " << cy << "]" << endl;
-	      
+	      if( N_cluster > 0 && N_cluster < 3 )
+	       	cout << "[" << cx << ", " << cy << "]" << endl;
 	    }
-	  //	  if( N_cluster == 3 )
-	  //	    cout << endl;
 	  
-	  if( N_cluster > 0 )
-	    {
-	      //	      cout << events_numer << endl;
-	      for(int i = 0 ; i < N_hit_emcal ; i++)
-		hit_pos_crystal->Fill(ce_emcal_xcrs[i], ce_emcal_ycrs[i], ce_emcal_etot_dep[i]);
-	    }
+	   if( N_cluster > 0 && N_cluster < 3 )
+	     {
+	       cout << endl;
+	       for(int i = 0 ; i < num_primary_g ; i++)
+		 cout << "[" << g_pjt_x[i] << ", " << g_pjt_y[i] << "] || E: " << g_E_all[i] << endl;
+	     }
+	   cout << events_numer << "th has: " << N_cluster << endl << endl;
 	
 	}
       else
