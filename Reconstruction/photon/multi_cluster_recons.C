@@ -49,7 +49,7 @@ struct Cluster {
   vector<double> C_Energy_tot_simul, C_size_simul;
   vector<double> C_par_a, C_x_corr, C_y_corr;  //correction of the hit position  
   
-  vector<double> C_energy, C_size;  // these 2 variables were not used now.
+  vector<double> C_Energy_pe, C_size;  // C_size variable is not used now.
 };
 
 Cluster ComputeCluster(vector<Hit> hit)
@@ -62,13 +62,15 @@ Cluster ComputeCluster(vector<Hit> hit)
   double C_Rmoliere = 20.01; // in mm->Rmolier for PbWO is 20 mm + gap (0.01mm)
   double G_Rmoliere = 40.01; // in mm->Rmolier for Glass is 40 mm + gap (0.01mm)
   int Clus_size_simul = 0;
-  double Clus_Energy_tot_simul = 0, Clus_Etot = 0.;
+  double Clus_Energy_tot_simul = 0, Clus_Etot_simul = 0.;
+  double Clus_Energy_tot_pe = 0, Clus_Etot_pe = 0.;
   double Clus_x = 0., Clus_y = 0., Clus_xx = 0., Clus_yy = 0.;
   double Clus_sigmaX = 0., Clus_sigmaY = 0.;
   double Clus_Radius = 0, Clus_Theta = 0, Clus_phi = 0; //in deg;
 
   vector<double> par_a;
-  vector<double> ClusSeed_xcrs, ClusSeed_ycrs, ClusSeed_zcrs, ClusEtotsimu;
+  vector<double> ClusSeed_xcrs, ClusSeed_ycrs, ClusSeed_zcrs;
+  vector<double> ClusEtotsimu, ClusEtotpe;
   vector<int> region_flag;
   map<int, double> map_crystal;  // ID, row, col, E
   Cluster cluster;
@@ -301,7 +303,7 @@ Cluster ComputeCluster(vector<Hit> hit)
   
   for(int i = 0 ; i < seed_total ; i++)
     {
-      Clus_Energy_tot_simul = 0.;  Clus_size_simul = 0;
+      Clus_Energy_tot_simul = 0.;  Clus_Energy_tot_pe = 0.;  Clus_size_simul = 0;
       
       if( region_flag[i] == 0 )  // Change the rmoliere with different region
 	Rmoliere = C_Rmoliere;
@@ -317,21 +319,26 @@ Cluster ComputeCluster(vector<Hit> hit)
 	  if (sqrt(Dx * Dx + Dy * Dy) <= 3. * Rmoliere)
 	    {
 	      Clus_Energy_tot_simul += hit.at(k).Et_dep;
+	      Clus_Energy_tot_pe += hit.at(k).E_digi;
 	      Clus_size_simul++;
 	    }
 	}
       //      cout << "Reconstructed energy: " << Clus_Energy_tot_simul << " || cluster size: " << Clus_size_simul << endl;
-      cluster.C_Energy_tot_simul.push_back(Clus_Energy_tot_simul);  
+      cluster.C_Energy_tot_simul.push_back(Clus_Energy_tot_simul);
+      cluster.C_Energy_pe.push_back(Clus_Energy_tot_pe);
       cluster.C_size_simul.push_back(Clus_size_simul);
 
       ClusEtotsimu.push_back(Clus_Energy_tot_simul);
+      ClusEtotpe.push_back(Clus_Energy_tot_pe);
 
       double a = 0.;
       if( region_flag[i] == 0 )
-	a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 2.862) * 10.;       // *10. -> change cm to mm
+	a = (0.3 * TMath::Power(Clus_Energy_tot_pe, 0.28) + 2.862) * 10.;       // *10. -> change cm to mm
+	//	a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 2.862) * 10.;       // *10. -> change cm to mm
       //	a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 4.862) * 10.;       // *10. -> change cm to mm (PbF2)
       else
-	a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 2.862) * 10. * 3.;       // *10. -> change cm to mm (PbF2)
+	a = (0.3 * TMath::Power(Clus_Energy_tot_pe, 0.28) + 2.862) * 10. * 3.;       // *10. -> change cm to mm (PbF2)
+	//	a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 2.862) * 10. * 3.;       // *10. -> change cm to mm (PbF2)
       //	a = (0.3 * TMath::Power(Clus_Energy_tot_simul, 0.28) + 5.062) * 10. * 2.2;  // *10. * 3. -> change cm to mm & in the glass region
 
       par_a.push_back(a);
@@ -348,7 +355,8 @@ Cluster ComputeCluster(vector<Hit> hit)
   for(int i = 0 ; i < seed_total ; i++ )
     {
       w_tot = 0.;  x = 0.;  y = 0.;
-      Clus_Etot = ClusEtotsimu[i];
+      Clus_Etot_simul = ClusEtotsimu[i];
+      Clus_Etot_pe = ClusEtotpe[i];
       Clus_x = 0.; Clus_xx = 0.;
       Clus_y = 0.; Clus_yy = 0.;
 
@@ -364,7 +372,8 @@ Cluster ComputeCluster(vector<Hit> hit)
 
 	  if (sqrt(Dx * Dx + Dy * Dy) <= 3. * Rmoliere)
 	    {
-	      double w1 = std::max(0., (3.45 + std::log(hit.at(k).E_digi / Clus_Etot))); 
+	      //	      double w1 = std::max(0., (3.45 + std::log(hit.at(k).E_digi / Clus_Etot_simul)));
+	      double w1 = std::max(0., (3.45 + std::log(hit.at(k).E_digi / Clus_Etot_pe)));
 	      x += w1 * hit.at(k).x_crs;
 	      y += w1 * hit.at(k).y_crs;
 	      Clus_xx += w1 * hit.at(k).x_crs * hit.at(k).x_crs;
@@ -430,7 +439,7 @@ void multi_cluster_recons()
   //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_imposed_gpx_removed_5k_events.root");
   //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_total_100k.root");
   //  TFile *file = TFile::Open("../Data/g4e_simulation/pure_photon/g4e_all_photons_crystal_20k.root");
-  TFile *file = TFile::Open("../Data/g4e_simulation/pure_photon/g4e_all_photons_glass_20k.root");
+  TFile *file = TFile::Open("../../Data/g4e_simulation/pure_photon/g4e_all_photons_glass_20k.root");
   //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_single_event_3_photons.root");
   TTree *events = (TTree *) file->Get("events");
 
@@ -540,13 +549,13 @@ void multi_cluster_recons()
 
   vector<double> Cl_seed_energy, Cl_seed_x, Cl_seed_y, Cl_seed_z, Cl_x, Cl_y;
   vector<double> Cl_radius, Cl_theta, Cl_phi;
-  vector<double> Cl_Energy_tot_simul, Cl_size_simul;
+  vector<double> Cl_Energy_tot_simul, Cl_Energy_pe, Cl_size_simul;
   vector<double> Cl_par_a, Cl_x_corr, Cl_y_corr;
 
   vector<double> g_pjt_x, g_pjt_y, g_E_all;
 
   
-  string fileName_out = "./data/outCluster.root";
+  string fileName_out = "../data/outCluster.root";
   TFile *fout = new TFile(fileName_out.c_str(), "Recreate");
   TTree *outTree = new TTree("outTree", "outTree");
 
@@ -562,6 +571,7 @@ void multi_cluster_recons()
   outTree->Branch("Cl_theta", &Cl_theta);
   outTree->Branch("Cl_phi", &Cl_phi);
   outTree->Branch("Cl_Energy_tot_simul", &Cl_Energy_tot_simul);
+  outTree->Branch("Cl_Energy_pe", &Cl_Energy_pe);
   outTree->Branch("Cl_size_simul", &Cl_size_simul);
   outTree->Branch("Cl_par_a", &Cl_par_a);
   outTree->Branch("Cl_x_corr", &Cl_x_corr);
@@ -609,7 +619,7 @@ void multi_cluster_recons()
       //      if(++events_numer < 7)
       //       	continue;
       
-      if(++events_numer > 1)
+      if(++events_numer > 20000)
 	break;
 	//	continue;
       
@@ -808,7 +818,7 @@ void multi_cluster_recons()
 	      double ccrow = cluster.C_seed_row[i], cccol = cluster.C_seed_col[i];
 	      double cx = cluster.C_x[i], cy = cluster.C_y[i];
 	      double cR = cluster.C_radius[i], cT = cluster.C_theta[i], cP = cluster.C_phi[i]; 
-	      double cets = cluster.C_Energy_tot_simul[i], css = cluster.C_size_simul[i];
+	      double cets = cluster.C_Energy_tot_simul[i], cetpe = cluster.C_Energy_pe[i], css = cluster.C_size_simul[i];
 	      double cpa = cluster.C_par_a[i], ccxr = cluster.C_x_corr[i], ccyr = cluster.C_y_corr[i];
 
 	      //	      cout << "[" << ccxr << " " << ccyr << "]" << endl; 
@@ -823,22 +833,23 @@ void multi_cluster_recons()
 	      Cl_theta.push_back(cT);
 	      Cl_phi.push_back(cP);
 	      Cl_Energy_tot_simul.push_back(cets);
+	      Cl_Energy_pe.push_back(cetpe);
 	      Cl_size_simul.push_back(css);
 	      Cl_par_a.push_back(cpa);
 	      Cl_x_corr.push_back(ccxr);
 	      Cl_y_corr.push_back(ccyr);
 
-	      if( N_cluster > 0 && N_cluster < 3 )
-	       	cout << "[" << cx << ", " << cy << "]" << endl;
+	      // if( N_cluster > 0 && N_cluster < 3 )
+	      //  	cout << "[" << cx << ", " << cy << "]" << endl;
 	    }
 	  
-	   if( N_cluster > 0 && N_cluster < 3 )
-	     {
-	       cout << endl;
-	       for(int i = 0 ; i < num_primary_g ; i++)
-		 cout << "[" << g_pjt_x[i] << ", " << g_pjt_y[i] << "] || E: " << g_E_all[i] << endl;
-	     }
-	   cout << events_numer << "th has: " << N_cluster << endl << endl;
+	   // if( N_cluster > 0 && N_cluster < 3 )
+	   //   {
+	   //     cout << endl;
+	   //     for(int i = 0 ; i < num_primary_g ; i++)
+	   // 	 cout << "[" << g_pjt_x[i] << ", " << g_pjt_y[i] << "] || E: " << g_E_all[i] << endl;
+	   //   }
+	   // cout << events_numer << "th has: " << N_cluster << endl << endl;
 	
 	}
       else
@@ -846,7 +857,7 @@ void multi_cluster_recons()
 	  Cl_seed_energy.clear();  Cl_seed_x.clear();  Cl_seed_y.clear();  Cl_seed_z.clear();
 	  Cl_x.clear();  Cl_y.clear();
 	  Cl_radius.clear();  Cl_theta.clear();  Cl_phi.clear();
-	  Cl_Energy_tot_simul.clear();  Cl_size_simul.clear();
+	  Cl_Energy_tot_simul.clear();  Cl_Energy_pe.clear();  Cl_size_simul.clear();
 	  Cl_par_a.clear();  Cl_x_corr.clear();  Cl_y_corr.clear();
 
 	  g_pjt_x.clear();  g_pjt_y.clear();  g_E_all.clear();
@@ -861,7 +872,7 @@ void multi_cluster_recons()
       Cl_seed_energy.clear();  Cl_seed_x.clear();  Cl_seed_y.clear();  Cl_seed_z.clear();
       Cl_x.clear();  Cl_y.clear();
       Cl_radius.clear();  Cl_theta.clear();  Cl_phi.clear();
-      Cl_Energy_tot_simul.clear();  Cl_size_simul.clear();
+      Cl_Energy_tot_simul.clear();  Cl_Energy_pe.clear();  Cl_size_simul.clear();
       Cl_par_a.clear();  Cl_x_corr.clear();  Cl_y_corr.clear();
 
       g_pjt_x.clear();  g_pjt_y.clear();  g_E_all.clear();

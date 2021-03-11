@@ -38,7 +38,7 @@ Double_t E_resolu_fit(double *x, double *par)
 void compare_res_pri()
 {
   
-  std::string path = "./data/";
+  std::string path = "../data/";
   //  std::string fileName = path + "outCluster_9990_events.root";
   //  std::string path = "./data/glass/";
   std::string fileName = path + "outCluster.root";
@@ -62,6 +62,7 @@ void compare_res_pri()
   TTreeReaderArray<double>     Cl_theta = {fReader, "Cl_theta"};
   TTreeReaderArray<double>     Cl_phi = {fReader, "Cl_phi"};
   TTreeReaderArray<double>     Cl_Energy_tot_simul = {fReader, "Cl_Energy_tot_simul"};
+  TTreeReaderArray<double>     Cl_Energy_pe = {fReader, "Cl_Energy_pe"};
   TTreeReaderArray<double>     Cl_size_simul = {fReader, "Cl_size_simul"};
   TTreeReaderArray<double>     Cl_par_a = {fReader, "Cl_par_a"};
   TTreeReaderArray<double>     Cl_x_corr = {fReader, "Cl_x_corr"};
@@ -107,6 +108,7 @@ void compare_res_pri()
   auto Ratio_E_seed_E_recons = new TH1F("Ratio_E_seed_E_recons", "Ratio_E_seed_E_recons", 50, 0., 1.);
   auto E_reso_all_particles = new TH1F("E_reso_all_particles", "E_reso_all_particles", 10, 0., 10.);
   auto E_correction_all_particles = new TH1F("E_correction_all_particles", "E_correction_all_particles", 10, 0., 10.);
+  auto difference_E_simul_E_adc = new TH1F("difference_E_simul_E_adc", "difference_E_simul_E_adc", 20, -100., 100.);
  
   
   // TH2F
@@ -120,7 +122,7 @@ void compare_res_pri()
   auto Ratio_E_seed_E_recons_xpos = new TH2F("Ratio_E_seed_E_recons_xpos", "Ratio_E_seed_E_recons_xpos", 50, 0., 1., 150, -1500., 0.);
   auto Ratio_E_seed_recons_vs_E_recons = new TH2F("Ratio_E_seed_recons_vs_E_recons", "Ratio_E_seed_recons_vs_E_recons", 50, 0., 1., 100, 0., 10.);
   auto delta_E_pos = new TH2F("delta_E_pos", "delta_E_pos", 140, -1400., 1400., 140, -1400., 1400.);
-  
+  auto DE_simul_E_adc_vs_E_primary = new TH2F("DE_simul_E_adc_vs_E_primary", "DE_simul_E_adc_vs_E_primary", 20, -100., 100., 100, 0., 10000.);
     
 
   TLegend *legend[4];
@@ -171,12 +173,15 @@ void compare_res_pri()
 	  for(int i = 0 ; i < count ; i++)
 	    {	      
 	      //	  cout <<  Cl_seed_energy[i] << " " << Cl_x[i] << " " << Cl_y[i] << " ";
-
+	      double DE_simul_adc = Cl_Energy_tot_simul[i] - Cl_Energy_pe[i];
+	      difference_E_simul_E_adc->Fill(DE_simul_adc);
+	      
 	      for(int j = 0 ; j < count ; j++)
 		{
 		  Eseed_vs_Et = Cl_seed_energy[i] / Cl_Energy_tot_simul[i];
 	      
-		  g_eD = g_E_all[j] - (Cl_Energy_tot_simul[i] / 1000.);
+		  //		  g_eD = g_E_all[j] - (Cl_Energy_tot_simul[i] / 1000.);
+		  g_eD = g_E_all[j] - (Cl_Energy_pe[i] / 1000.);
 		  g_poxD = g_pjt_x[j] - Cl_x[i];
 		  g_poyD = g_pjt_y[j] - Cl_y[i];
 		  g_poxD_cor = g_pjt_x[j] - Cl_x_corr[i];
@@ -187,10 +192,10 @@ void compare_res_pri()
 		  if( criteria < 50. )
 		    {
 
-		      if( ((g_poxD < 30.) && (g_poxD > -30.)) || ((g_poyD < 30.) && (g_poyD > -30.)) )
-			cout << "[" << Cl_x[i] << ", " << Cl_y[i] << "] || [" << g_pjt_x[j] << ", " << g_pjt_y[j] << "]" << endl;
+		      // if( ((g_poxD < 30.) && (g_poxD > -30.)) || ((g_poyD < 30.) && (g_poyD > -30.)) )
+		      // 	cout << "[" << Cl_x[i] << ", " << Cl_y[i] << "] || [" << g_pjt_x[j] << ", " << g_pjt_y[j] << "]" << endl;
 
-		      
+		      DE_simul_E_adc_vs_E_primary->Fill(DE_simul_adc, g_E_all[j]*1000.);
 		      diffE_g_res_pri->Fill(g_eD);
 
 		      double rect_bord = 700.;
@@ -208,11 +213,11 @@ void compare_res_pri()
 
 			}
 
-			  if( (Cl_Energy_tot_simul[i] / 1000.) < 10. )
-			    {
-			      int bin = (Cl_Energy_tot_simul[i] / 1000.);
-			      E_diff_per_bin[bin]->Fill(g_eD);
-			    }
+		      if( (Cl_Energy_tot_simul[i] / 1000.) < 10. )
+			{
+			  int bin = (Cl_Energy_tot_simul[i] / 1000.);
+			  E_diff_per_bin[bin]->Fill(g_eD);
+			}
 		      
 		      
 		      if( g_eD > 0.5 )
@@ -488,7 +493,17 @@ void compare_res_pri()
   legend[0]->Draw("same");
 
 
-  // auto c5 = new TCanvas("c5", "c5", 1000, 1000);
+  auto c5 = new TCanvas("c5", "c5", 800, 400);
+  c5->Divide(2,1);
+  c5->cd(1);
+  difference_E_simul_E_adc->SetStats(0);
+  difference_E_simul_E_adc->GetXaxis()->SetTitle("[MeV]");
+  difference_E_simul_E_adc->Draw();
+  c5->cd(2);
+  DE_simul_E_adc_vs_E_primary->SetStats(0);
+  DE_simul_E_adc_vs_E_primary->GetXaxis()->SetTitle("[MeV]");
+  DE_simul_E_adc_vs_E_primary->GetYaxis()->SetTitle("[MeV]");
+  DE_simul_E_adc_vs_E_primary->Draw("colorz");
   // delta_E_pos->Draw("colorz");
   
 
