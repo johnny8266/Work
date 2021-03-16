@@ -281,7 +281,8 @@ void g4e_read()
   //===================================
   
   //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_10k_events_crossing_angle.root");
-  TFile *file = TFile::Open("../../Data/g4e_simulation/g4e_output_foam_imposed_0_to_20k.root");
+  //  TFile *file = TFile::Open("../../Data/g4e_simulation/g4e_output_foam_imposed_0_to_20k.root");
+  TFile *file = TFile::Open("./g4e_output.root");
   TTree *events = (TTree *) file->Get("events");
 
   TTreeReader fReader("events", file);
@@ -363,7 +364,7 @@ void g4e_read()
   auto emcal_e_of_bad_res = new TH1F("emcal_e_of_bad_res", "emcal_e_of_bad_res", 100, 0., 10000.);
   
   auto RPOT_2_hit_xyz_proton = new TH3F("RPOT_2_hit_xyz_proton", "RPOT_2_hit_xyz_proton", 40, 550., 950., 40, -200., 200., 50, 26000., 26250.);
-  auto RPOT_3_hit_xyz_proton = new TH3F("RPOT_3_hit_xyz_proton", "RPOT_3_hit_xyz_proton", 40, 550., 950., 40, -200., 200., 50, 28000., 28250.);
+  auto RPOT_3_hit_xyz_proton = new TH3F("RPOT_3_hit_xyz_proton", "RPOT_3_hit_xyz_proton", 40, 750., 1150., 20, -100., 100., 50, 28080., 28150.);
   
 
   
@@ -403,15 +404,15 @@ void g4e_read()
   // Loop the Event
   //==================================
 
+  cout << "start" << endl;
   size_t events_numer = 0;  
   while (fReader.Next())
     {
-      if(++events_numer > 10000)
+      if(++events_numer > 2000)
 	break;
-	//	continue;
       
-      if(events_numer%1000 == 0)
-	cout << "Read " << events_numer << " th events..." << endl;
+      if(events_numer%1 == 0)
+      	cout << "Read " << events_numer << " th events..." << endl;
       
       std::unordered_set<uint64_t> track_ids_in_ecap_emcal;  // Get tracks information that have hits in ion EMCAL
       std::unordered_set<uint64_t> track_ids_in_ffi_RPOTS;  // Get tracks information that have hits in Roman Pots(FarForward ion direction area)
@@ -448,7 +449,7 @@ void g4e_read()
 	  if(vol_name.rfind("ffi_RPOT", 0) == 0)
 	    {
 	      //	      if( hit_parent_track_id == 22 && hit_track_id == 2 )
-	      //	      cout << hit_parent_track_id << " " << hit_track_id << " " << hit_vol_name[i] << " " << "[" << x << ", " << y << ", " << z << "] " << endl;
+	      cout << hit_parent_track_id << " " << hit_track_id << " " << hit_vol_name[i] << " " << "[" << x << ", " << y << ", " << z << "] " << endl;
 	      //	      cout << hit_e_loss[i] * 1000. << "[MeV]" << endl;
 	      //	      hit_energy+=hit_e_loss[i];
 		      	      

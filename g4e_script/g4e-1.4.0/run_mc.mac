@@ -1,0 +1,34 @@
+#------------------------------------------------------------------------
+# Example macro. Process one of
+#------------------------------------------------------------------------
+
+/eic/beamline/name erhic
+/eic/refdet/eBeam 10
+/eic/refdet/pBeam 100
+
+/eic/ffi_RPOT_2/Sensor_Layer 2
+# The default unit is [mm]
+/eic/ffi_RPOT_2/Big_plate_a 150. 
+/eic/ffi_RPOT_2/Big_plate_b 30. 
+/eic/ffi_RPOT_2/Small_plate_a 50. 
+#/eic/ffi_RPOT_2/Small_plate_b 6.
+
+/run/initialize
+
+# Include default setup
+# Use jleic.mac for headless mode or jleicvis.mac for GUI visualization
+/control/execute refdet.vis.mac
+#/control/execute refdet.mac
+
+# Select Beagle generator
+# Options are: particleGun hepmcAscii pythiaAscii beagle
+/generator/select pythiaAscii
+
+# Open file and run some MC file
+/generator/pythiaAscii/open /vol0/pwang-l/Work/Data/g4e_input/dvcs_input.txt
+/generator/pythiaAscii/verbose 2
+
+/run/initialize
+
+/run/beamOn 1
+exit
