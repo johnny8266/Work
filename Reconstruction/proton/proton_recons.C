@@ -273,16 +273,15 @@ Cluster ComputeCluster(vector<Hit> hit)
 
 
 
-void g4e_read()
+void proton_recons()
 {
   
   //===================================
   // Open the g4e output file
   //===================================
   
-  //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_10k_events_crossing_angle.root");
-  //  TFile *file = TFile::Open("../../Data/g4e_simulation/g4e_output_foam_imposed_0_to_20k.root");
-  TFile *file = TFile::Open("./g4e_output.root");
+  //  TFile *file = TFile::Open("./g4e_output_only_proton.root");
+    TFile *file = TFile::Open("./g4e_output_dvcs.root");
   TTree *events = (TTree *) file->Get("events");
 
   TTreeReader fReader("events", file);
@@ -362,9 +361,24 @@ void g4e_read()
 
   auto eloss_of_bad_res = new TH1F("eloss_of_bad_res", "eloss_of_bad_res", 100, 0., 0.1);
   auto emcal_e_of_bad_res = new TH1F("emcal_e_of_bad_res", "emcal_e_of_bad_res", 100, 0., 10000.);
+
+  TH2F* RPOT_2_hit_xy_proton[4];
+  TH2F* RPOT_3_hit_xy_proton[4];
+  for(int i = 0 ; i < 4 ; i++)
+    {
+      RPOT_2_hit_xy_proton[i] = new TH2F(Form("RPOT_2_hit_xy_proton_%d", i), Form("RPOT_2_hit_xy_proton_%d", i), 140, 300., 1000., 120, -300., 300.);
+      RPOT_3_hit_xy_proton[i] = new TH2F(Form("RPOT_3_hit_xy_proton_%d", i), Form("RPOT_3_hit_xy_proton_%d", i), 80, 600., 1000., 80, -200., 200.);
+    }
   
-  auto RPOT_2_hit_xyz_proton = new TH3F("RPOT_2_hit_xyz_proton", "RPOT_2_hit_xyz_proton", 40, 550., 950., 40, -200., 200., 50, 26000., 26250.);
-  auto RPOT_3_hit_xyz_proton = new TH3F("RPOT_3_hit_xyz_proton", "RPOT_3_hit_xyz_proton", 40, 750., 1150., 20, -100., 100., 50, 28080., 28150.);
+  TH2F* Pjt_xy_proton = new TH2F("Pjt_xy_proton", "Pjt_xy_proton", 140, 300., 1000., 120, -300., 300.);
+
+  //  TH2F* Pjt_xy_proton[4];
+  //  for(int i = 0 ; i < 4 ; i++)
+  //    Pjt_xy_proton[i] = new TH2F(Form("Pjt_xy_proton_%d", i), Form("Pjt_xy_proton_%d", i), 80, 600., 1000., 80, -200., 200.);
+
+  
+  auto RPOT_2_hit_xyz_proton = new TH3F("RPOT_2_hit_xyz_proton", "RPOT_2_hit_xyz_proton", 40, 550., 950., 40, -200., 200., 30, 25800., 26100.);
+  auto RPOT_3_hit_xyz_proton = new TH3F("RPOT_3_hit_xyz_proton", "RPOT_3_hit_xyz_proton", 40, 750., 1150., 20, -100., 100., 10, 27900., 28000.);
   
 
   
@@ -408,10 +422,10 @@ void g4e_read()
   size_t events_numer = 0;  
   while (fReader.Next())
     {
-      if(++events_numer > 2000)
+      if(++events_numer > 9000)
 	break;
       
-      if(events_numer%1 == 0)
+      if(events_numer % 500 == 0)
       	cout << "Read " << events_numer << " th events..." << endl;
       
       std::unordered_set<uint64_t> track_ids_in_ecap_emcal;  // Get tracks information that have hits in ion EMCAL
@@ -449,7 +463,7 @@ void g4e_read()
 	  if(vol_name.rfind("ffi_RPOT", 0) == 0)
 	    {
 	      //	      if( hit_parent_track_id == 22 && hit_track_id == 2 )
-	      cout << hit_parent_track_id << " " << hit_track_id << " " << hit_vol_name[i] << " " << "[" << x << ", " << y << ", " << z << "] " << endl;
+	      //	      cout << hit_parent_track_id << " " << hit_track_id << " " << hit_vol_name[i] << " " << "[" << x << ", " << y << ", " << z << "] " << endl;
 	      //	      cout << hit_e_loss[i] * 1000. << "[MeV]" << endl;
 	      //	      hit_energy+=hit_e_loss[i];
 		      	      
@@ -459,10 +473,17 @@ void g4e_read()
 	      
 	      if( hit_track_id == 3 )
 		{
-		  if(z < 27000.)
-		    RPOT_2_hit_xyz_proton->Fill(x, y, z);
-		  else if(z > 27000.)
-		    RPOT_3_hit_xyz_proton->Fill(x, y, z);
+		  double D2_start = 25900., D3_start = 27900., interval = 30.;
+		  
+		  for(int i = 0 ; i < 4 ; i++)
+		    {
+		      if( (z > (D2_start + i * interval)) && (z < (D2_start + (i+1) * interval)) )
+			RPOT_2_hit_xy_proton[i]->Fill(x, y);
+
+		      if( (z > (D3_start + i * interval)) && (z < (D3_start + (i+1) * interval)) )
+			RPOT_3_hit_xy_proton[i]->Fill(x, y);
+		    }
+		  
 		}
 
 	      /*
@@ -503,6 +524,14 @@ void g4e_read()
 	  lv.SetXYZM(px, py, pz, mass_electron);
 	  //	  h1_el_e_tot->Fill(lv.Energy());
 	}
+
+
+      int num_primary_g = gen_prt_tot_mom.GetSize();
+      for(int i = 0 ; i < num_primary_g ; i++)
+	{
+	  double pjt_x = 25900. * gen_prt_dir_x[i] / gen_prt_dir_z[i], pjt_y = 25900. * gen_prt_dir_y[i] / gen_prt_dir_z[i]; 
+	  Pjt_xy_proton->Fill(pjt_x, pjt_y);	  
+	}
       
       
       g_flag_emcal = 0;  e_flag_emcal = 0;  hit_energy = 0.;
@@ -531,8 +560,71 @@ void g4e_read()
   Int_t nb=50;
   TColor::CreateGradientColorTable(Number,Length,Red,Green,Blue,nb);
   
-  auto *c1 = new TCanvas("c1", "c1", 1600, 800);
-  c1->Divide(2,1);
+  auto *c1 = new TCanvas("c1", "c1", 800, 800);
+  c1->Divide(2,2);
+  for(int j = 0 ; j < 4 ; j++)
+    {
+      c1->cd(j+1);
+      RPOT_2_hit_xy_proton[j]->SetStats(0);
+      RPOT_2_hit_xy_proton[j]->Draw("colorz");
+    }
+
+  /*
+  auto *c2 = new TCanvas("c2", "c2", 800, 800);
+  c2->Divide(2,2);
+  for(int j = 0 ; j < 4 ; j++)
+    {
+      c2->cd(j+1);
+      RPOT_3_hit_xy_proton[j]->SetStats(0);
+      RPOT_3_hit_xy_proton[j]->Draw("colorz");
+    }
+  */
+
+
+  TLine *line1 = new TLine(725, 50, 975, 50);
+  TLine *line2 = new TLine(725, -50, 975, -50);
+  TLine *line3 = new TLine(725, -50, 725, 50);
+  TLine *line4 = new TLine(975, -50, 975, 50);
+  TLine *line5 = new TLine(785, 30, 915, 30);
+  TLine *line6 = new TLine(785, -30, 915, -30);
+  TLine *line7 = new TLine(785, -30, 785, 30);
+  TLine *line8 = new TLine(915, -30, 915, 30);
+
+  line1->SetLineColor(1);
+  line2->SetLineColor(1);
+  line3->SetLineColor(1);
+  line4->SetLineColor(1);
+  line5->SetLineColor(1);
+  line6->SetLineColor(1);
+  line7->SetLineColor(1);
+  line8->SetLineColor(1);
+  
+  auto *c3 = new TCanvas("c3", "c3", 800, 400);
+  c3->Divide(2,1);
+  c3->cd(1);
+  RPOT_2_hit_xy_proton[0]->SetStats(0);
+  RPOT_2_hit_xy_proton[0]->Draw("colorz");
+  line1->Draw("same");
+  line2->Draw("same");
+  line3->Draw("same");
+  line4->Draw("same");
+  line5->Draw("same");
+  line6->Draw("same");
+  line7->Draw("same");
+  line8->Draw("same");
+  c3->cd(2);
+  Pjt_xy_proton->SetStats(0);
+  Pjt_xy_proton->Draw("colorz");
+  line1->Draw("same");
+  line2->Draw("same");
+  line3->Draw("same");
+  line4->Draw("same");
+  line5->Draw("same");
+  line6->Draw("same");
+  line7->Draw("same");
+  line8->Draw("same");
+  
+  /*
   c1->cd(1);
   RPOT_2_hit_xyz_proton->SetStats(0);
   RPOT_2_hit_xyz_proton->SetContour(nb);
@@ -541,6 +633,8 @@ void g4e_read()
   RPOT_3_hit_xyz_proton->SetStats(0);
   RPOT_3_hit_xyz_proton->SetContour(nb);
   RPOT_3_hit_xyz_proton->Draw("box");
+  */
+
   //  RPOT_2_hit_xyz_proton->Draw("colorz");
   /*
   auto *c2 = new TCanvas("c2", "c2", 1600, 800);

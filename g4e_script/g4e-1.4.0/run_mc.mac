@@ -6,19 +6,29 @@
 /eic/refdet/eBeam 10
 /eic/refdet/pBeam 100
 
-/eic/ffi_RPOT_2/Sensor_Layer 2
+/eic/ffi_RPOT_2/Sensor_Layer 4
 # The default unit is [mm]
 /eic/ffi_RPOT_2/Big_plate_a 150. 
 /eic/ffi_RPOT_2/Big_plate_b 30. 
-/eic/ffi_RPOT_2/Small_plate_a 50. 
-#/eic/ffi_RPOT_2/Small_plate_b 6.
+/eic/ffi_RPOT_2/Small_plate_a 75. 
+/eic/ffi_RPOT_2/Small_plate_b 75.
+/eic/ffi_RPOT_2/Sensor_x_shift 200.
+
+
+/eic/ffi_RPOT_3/Sensor_Layer 4
+# The default unit is [mm]
+/eic/ffi_RPOT_3/Big_plate_a 150. 
+/eic/ffi_RPOT_3/Big_plate_b 30. 
+/eic/ffi_RPOT_3/Small_plate_a 50. 
+/eic/ffi_RPOT_3/Small_plate_b 50.
+/eic/ffi_RPOT_3/Sensor_x_shift 200.
 
 /run/initialize
 
 # Include default setup
 # Use jleic.mac for headless mode or jleicvis.mac for GUI visualization
-/control/execute refdet.vis.mac
-#/control/execute refdet.mac
+#/control/execute refdet.vis.mac
+/control/execute refdet.mac
 
 # Select Beagle generator
 # Options are: particleGun hepmcAscii pythiaAscii beagle
@@ -30,5 +40,5 @@
 
 /run/initialize
 
-/run/beamOn 1
+/run/beamOn 1000
 exit
