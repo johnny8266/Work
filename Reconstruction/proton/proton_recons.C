@@ -280,8 +280,8 @@ void proton_recons()
   // Open the g4e output file
   //===================================
   
-  //  TFile *file = TFile::Open("./g4e_output_only_proton.root");
-    TFile *file = TFile::Open("./g4e_output_dvcs.root");
+  TFile *file = TFile::Open("./g4e_output_only_proton.root");
+  //  TFile *file = TFile::Open("./g4e_output_dvcs.root");
   TTree *events = (TTree *) file->Get("events");
 
   TTreeReader fReader("events", file);
@@ -337,6 +337,7 @@ void proton_recons()
   TTreeReaderArray<double>        gen_vtx_z = {fReader, "gen_vtx_z"};
 
   // The information of the emcal
+  /*
   TTreeReaderArray<int>           ce_emcal_npe = {fReader, "ce_emcal_npe"};
   TTreeReaderArray<int>           ce_emcal_id = {fReader, "ce_emcal_id"};
   TTreeReaderArray<int>           ce_emcal_row = {fReader, "ce_emcal_row"};
@@ -348,7 +349,7 @@ void proton_recons()
   TTreeReaderArray<double>        ce_emcal_xcrs = {fReader, "ce_emcal_xcrs"};  // x, y, z are translation value relative to the mother frame
   TTreeReaderArray<double>        ce_emcal_ycrs = {fReader, "ce_emcal_ycrs"};
   TTreeReaderArray<double>        ce_emcal_zcrs = {fReader, "ce_emcal_zcrs"};
-
+  */
   double mass_electron = 0.00051099895;
   double mass_proton = 0.0938271998;
   double hit_energy = 0.;
@@ -366,11 +367,11 @@ void proton_recons()
   TH2F* RPOT_3_hit_xy_proton[4];
   for(int i = 0 ; i < 4 ; i++)
     {
-      RPOT_2_hit_xy_proton[i] = new TH2F(Form("RPOT_2_hit_xy_proton_%d", i), Form("RPOT_2_hit_xy_proton_%d", i), 140, 300., 1000., 120, -300., 300.);
+      RPOT_2_hit_xy_proton[i] = new TH2F(Form("RPOT_2_hit_xy_proton_%d", i), Form("RPOT_2_hit_xy_proton_%d", i), 120, 450., 1050., 120, -300., 300.);
       RPOT_3_hit_xy_proton[i] = new TH2F(Form("RPOT_3_hit_xy_proton_%d", i), Form("RPOT_3_hit_xy_proton_%d", i), 80, 600., 1000., 80, -200., 200.);
     }
   
-  TH2F* Pjt_xy_proton = new TH2F("Pjt_xy_proton", "Pjt_xy_proton", 140, 300., 1000., 120, -300., 300.);
+  TH2F* Pjt_xy_proton = new TH2F("Pjt_xy_proton", "Pjt_xy_proton", 120, 450., 1050., 120, -300., 300.);
 
   //  TH2F* Pjt_xy_proton[4];
   //  for(int i = 0 ; i < 4 ; i++)
@@ -422,7 +423,7 @@ void proton_recons()
   size_t events_numer = 0;  
   while (fReader.Next())
     {
-      if(++events_numer > 9000)
+      if(++events_numer > 3000)
 	break;
       
       if(events_numer % 500 == 0)
@@ -507,6 +508,7 @@ void proton_recons()
       //      cout << "hit counts in emcal: " << count << " || energy loss: " << hit_energy * 1000. << endl << endl;
 
       // iterate over the hit emcal tracks
+      /*
       for(size_t i=0; i < hits_count; i++)
 	{
 	  if (trk_pdg[i] != 11) continue;       // Take only electrons for now
@@ -524,7 +526,7 @@ void proton_recons()
 	  lv.SetXYZM(px, py, pz, mass_electron);
 	  //	  h1_el_e_tot->Fill(lv.Energy());
 	}
-
+      */
 
       int num_primary_g = gen_prt_tot_mom.GetSize();
       for(int i = 0 ; i < num_primary_g ; i++)
@@ -598,12 +600,20 @@ void proton_recons()
   line6->SetLineColor(1);
   line7->SetLineColor(1);
   line8->SetLineColor(1);
+
+  
+  TEllipse *el1 = new TEllipse(820., 0., 200., 200.);
+  //  el1->SetFillColorAlpha(0, 1);
+  el1->SetFillStyle(0);
+  el1->SetLineColor(2);
   
   auto *c3 = new TCanvas("c3", "c3", 800, 400);
   c3->Divide(2,1);
   c3->cd(1);
   RPOT_2_hit_xy_proton[0]->SetStats(0);
   RPOT_2_hit_xy_proton[0]->Draw("colorz");
+  el1->Draw("same");
+  
   line1->Draw("same");
   line2->Draw("same");
   line3->Draw("same");
@@ -612,9 +622,14 @@ void proton_recons()
   line6->Draw("same");
   line7->Draw("same");
   line8->Draw("same");
+  
+  
   c3->cd(2);
   Pjt_xy_proton->SetStats(0);
+
   Pjt_xy_proton->Draw("colorz");
+  el1->Draw("same");
+  
   line1->Draw("same");
   line2->Draw("same");
   line3->Draw("same");
@@ -623,6 +638,7 @@ void proton_recons()
   line6->Draw("same");
   line7->Draw("same");
   line8->Draw("same");
+  
   
   /*
   c1->cd(1);
