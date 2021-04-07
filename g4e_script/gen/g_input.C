@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void e_input()
+void g_input()
 {
 
   Int_t N_events = 0, loop = 0;
@@ -18,7 +18,7 @@ void e_input()
   TRandom *R = new TRandom();
   R->SetSeed(0);
   ofstream myfile;
-  myfile.open ("../Data/g4e_input/e_input.txt");
+  myfile.open ("../../Data/g4e_input/g_input.txt");
 
   double gx = 0., gy = 0., gz = 0., gE = 0.;
   vector<double> g_x, g_y, g_z, g_E;
@@ -42,7 +42,7 @@ void e_input()
 	  
 	  //	  if( ((((gx < (-0.067 * gz)) && (gx > 0.)) || ((gx > (0.067 * gz)) && (gx < 0.))) && (((gy < (-0.067 * gz)) && (gy > 0.)) || ((gy > (0.067 * gz)) && (gy < 0.)))) || (ring_R > 1320.) )
 	  //	  if( (((gx < (-0.067 * gz)) && (gx > 0.)) || ((gx > (0.067 * gz)) && (gx < 0.))) && (((gy < (-0.067 * gz)) && (gy > 0.)) || ((gy > (0.067 * gz)) && (gy < 0.))) )
-	  if( ((((gx < (-0.375 * gz)) && (gx > 0.)) || ((gx > (0.375 * gz)) && (gx < 0.))) && (((gy < (-0.375 * gz)) && (gy > 0.)) || ((gy > (0.375 * gz)) && (gy < 0.)))) || (ring_R > 1320.) )
+	  if( ((((gx < (-0.4 * gz)) && (gx > 0.)) || ((gx > (0.4 * gz)) && (gx < 0.))) && (((gy < (-0.4 * gz)) && (gy > 0.)) || ((gy > (0.4 * gz)) && (gy < 0.)))) || (ring_R > 1100.) ) // Glass region range
 	    {
 	      //	      cout << ring_R << endl;
 	      empty_flag = 1;

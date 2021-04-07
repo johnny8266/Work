@@ -206,7 +206,7 @@ Cluster ComputeCluster(vector<Hit> hit)
 		      count++;
 		} //scan col
 	    } //scan row
-	  if( (count == 8 && i_et_dep > 200.) || (count == 9 && i_et_dep > 200.) )
+	  if( (count == 8 && i_et_dep > 200.) )
 	    {
 	      cluster.C_seed_energy.push_back(i_et_dep);
 	      cluster.C_seed_x.push_back(i_xcrs); cluster.C_seed_y.push_back(i_ycrs); cluster.C_seed_z.push_back(i_zcrs);
@@ -304,19 +304,22 @@ Cluster ComputeCluster(vector<Hit> hit)
   for(int i = 0 ; i < seed_total ; i++)
     {
       Clus_Energy_tot_simul = 0.;  Clus_Energy_tot_pe = 0.;  Clus_size_simul = 0;
+
+      double res_range = 0.;
       
       if( region_flag[i] == 0 )  // Change the rmoliere with different region
-	Rmoliere = C_Rmoliere;
+	//	Rmoliere = C_Rmoliere;
+	res_range = 3. * C_Rmoliere;
       else
-	Rmoliere = G_Rmoliere;
-      
+	//	Rmoliere = G_Rmoliere;
+      	res_range = 9. * G_Rmoliere;
       
       for(int k = 0 ; k < Size ; k++)
 	{
 	  double Dx = hit.at(k).x_crs - ClusSeed_xcrs[i];
 	  double Dy = hit.at(k).y_crs - ClusSeed_ycrs[i];
 
-	  if (sqrt(Dx * Dx + Dy * Dy) <= 3. * Rmoliere)
+	  if (sqrt(Dx * Dx + Dy * Dy) <= res_range)
 	    {
 	      Clus_Energy_tot_simul += hit.at(k).Et_dep;
 	      Clus_Energy_tot_pe += hit.at(k).E_digi;
@@ -435,12 +438,9 @@ void multi_cluster_recons()
   // Open the g4e output file
   //===================================
   
-  //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_imposed_swap_gpx_gpy_5k_events.root");
-  //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_imposed_gpx_removed_5k_events.root");
-  //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_foam_total_100k.root");
-  //  TFile *file = TFile::Open("../Data/g4e_simulation/pure_photon/g4e_all_photons_crystal_20k.root");
-  TFile *file = TFile::Open("../../Data/g4e_simulation/pure_photon/g4e_all_photons_glass_20k.root");
-  //  TFile *file = TFile::Open("../Data/g4e_simulation/g4e_output_single_event_3_photons.root");
+  TFile *file = TFile::Open("../../Data/g4e_simulation/pure_photon/g4e_all_photons_glass_900_1100mm_20k.root");
+  //  TFile *file = TFile::Open("/vol0/pwang-l/g4e-1.4.0/build/g4e_output.root");
+  
   TTree *events = (TTree *) file->Get("events");
 
   TTreeReader fReader("events", file);
@@ -617,9 +617,9 @@ void multi_cluster_recons()
   while (fReader.Next())
     {
       //      if(++events_numer < 7)
-      //       	continue;
+      //	continue;
       
-      if(++events_numer > 20000)
+      if(++events_numer > 3000)
 	break;
 	//	continue;
       
@@ -692,9 +692,6 @@ void multi_cluster_recons()
 	      count++;
 	    }
 	}
-
-      //      cout << "e flag: " << e_flag_emcal << " || g flag: " << g_flag_emcal << endl;
-      //      cout << "hit counts in emcal: " << count << " || energy loss: " << hit_energy * 1000. << endl << endl;
       
       
       // =============================
@@ -724,7 +721,7 @@ void multi_cluster_recons()
 	  
 	  hhit.push_back(hit);
 
-	  
+	  /*
 	  hit_pos_crystal->Fill(ce_emcal_xcrs[i], ce_emcal_ycrs[i], ce_emcal_etot_dep[i]);
 	  
 	  if( ce_emcal_section[i] == 0 )
@@ -732,7 +729,7 @@ void multi_cluster_recons()
 	  else
 	    hit_row_col_gla->Fill(ce_emcal_row[i], ce_emcal_col[i]);
 
-	  /*
+	  
 	  if(ce_emcal_section[i] == 0)
 	    {
 	      //	      hit_pos_crystal->Fill(ce_emcal_xcrs[i], ce_emcal_ycrs[i], ce_emcal_etot_dep[i]);
@@ -752,17 +749,6 @@ void multi_cluster_recons()
 	  */
 	}
 
-      /*
-      g_px = gen_prt_dir_x[1] * gen_prt_tot_mom[1];
-      g_py = gen_prt_dir_y[1] * gen_prt_tot_mom[1];
-      g_pz = gen_prt_dir_z[1] * gen_prt_tot_mom[1];
-      g_E = gen_prt_tot_e[1];
-
-      e_px = gen_prt_dir_x[0] * gen_prt_tot_mom[0];
-      e_py = gen_prt_dir_y[0] * gen_prt_tot_mom[0];
-      e_pz = gen_prt_dir_z[0] * gen_prt_tot_mom[0];
-      e_E = gen_prt_tot_e[0];
-      */
       
       int num_primary_g = gen_prt_tot_mom.GetSize();
       //      cout << "Number of primary photons: " << num_primary_g << endl;
@@ -772,7 +758,6 @@ void multi_cluster_recons()
 	  g_pjt_y.push_back((2240. * gen_prt_dir_y[i] / TMath::Abs(gen_prt_dir_z[i])));
 	  g_E_all.push_back(gen_prt_tot_e[i]);
 	}
-
       
 
       primary_g_ratio_x_z->Fill( (gen_prt_dir_x[1] / gen_prt_dir_z[1]) );
@@ -839,9 +824,23 @@ void multi_cluster_recons()
 	      Cl_x_corr.push_back(ccxr);
 	      Cl_y_corr.push_back(ccyr);
 
-	      // if( N_cluster > 0 && N_cluster < 3 )
-	      //  	cout << "[" << cx << ", " << cy << "]" << endl;
+	      //	      if( (N_cluster == 2) && (events_numer == 20) )
+	      //		cout << "[" << cx << ", " << cy << "] || Radius: " << cR << " || R_E: " << cetpe << endl;
 	    }
+
+	  
+	  //	  if( (N_cluster == 2) && (events_numer == 20) )
+	  //	  if( (N_cluster == 2) )
+	  //	    {
+	      cout << events_numer << endl;
+	      for(int i = 0 ; i < N_hit_emcal ; i++)
+		hit_pos_crystal->Fill(ce_emcal_xcrs[i], ce_emcal_ycrs[i], ce_emcal_etot_dep[i]);
+
+	      // for(int i = 0 ; i < 3 ; i++)
+	      // 	cout << gen_prt_tot_e[i] << " || " << g_pjt_x[i] << ", " << g_pjt_y[i] << endl;
+	      // cout << endl;
+	      
+	      //	    }
 	  
 	   // if( N_cluster > 0 && N_cluster < 3 )
 	   //   {
@@ -883,7 +882,7 @@ void multi_cluster_recons()
   fout->Write();
   fout->Close();
 
-  cout << g_possible_hit_emcal_count << endl;
+  //  cout << endl << g_possible_hit_emcal_count << endl;
   
   // ======================================
   // Draw the Results
@@ -944,6 +943,8 @@ void multi_cluster_recons()
   //  eloss_of_bad_res->Draw();
   
   auto *c4 = new TCanvas("c4", "c4", 800, 800);
+  hit_pos_crystal->SetTitle("");
+  hit_pos_crystal->SetStats(0);
   hit_pos_crystal->Draw("colorz");
   //  hhh->Draw();
   //  primary_g_ratio_x_z->Draw();

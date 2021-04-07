@@ -29,9 +29,21 @@ Double_t Eresolution_fit(double *x, double *par)
 }
 
 
-Double_t E_resolu_fit(double *x, double *par)
+Double_t E_resolu_fit_quardratic_sum(double *x, double *par)
+{
+  return sqrt( par[0] * par[0] + (par[1] * par[1]) / x[0] + (par[2] * par[2]) / (x[0] * x[0]) );
+}
+
+
+Double_t E_resolu_fit_high(double *x, double *par)
 {
   return ( par[0] + par[1] / sqrt(x[0]) + par[2] / x[0]);
+}
+
+
+Double_t E_resolu_fit(double *x, double *par)
+{
+  return ( par[0] + par[1] / sqrt(x[0]) );
 }
 
 
@@ -39,8 +51,7 @@ void compare_res_pri()
 {
   
   std::string path = "../data/";
-  //  std::string fileName = path + "outCluster_9990_events.root";
-  //  std::string path = "./data/glass/";
+  //  std::string path = "../data/glass/";
   std::string fileName = path + "outCluster.root";
     
   cout << "************ " << fileName << " ************" << endl;
@@ -129,7 +140,7 @@ void compare_res_pri()
 
   TH1F* E_diff_per_bin[10];
   for(int i = 0 ; i < 10 ; i++)
-    E_diff_per_bin[i] = new TH1F(Form("E_diff_per_bin_%d", i), Form("E_diff_per_bin_%d", i), 70, -0.5, 3.);
+    E_diff_per_bin[i] = new TH1F(Form("E_diff_per_bin_%d", i), Form("E_diff_per_bin_%d", i), 35, -0.5, 3.);
 
 
   double g_eD, g_poxD, g_poyD, g_poxD_cor, g_poyD_cor;
@@ -140,7 +151,9 @@ void compare_res_pri()
   //========================================
   // Read the events and fill the plots
   //========================================
-  
+
+
+  int good_events = 0;
   size_t events_numer = 0;  
   
   while (fReader.Next())
@@ -151,7 +164,7 @@ void compare_res_pri()
 	      
       //      double ge = *g_E.Get(), g_pjx = *g_pjt_emcal_x.Get(), g_pjy = *g_pjt_emcal_y.Get();
 
-      if(count == 3)
+      if( (count < 4) && (count > 0) )
 	{
 	  /*
 	      cout << "Without correction  "; 
@@ -209,30 +222,31 @@ void compare_res_pri()
 			  diff_posy_g_res_pri->Fill(g_poyD);
 			  diff_posx_cor_g_res_pri->Fill(g_poxD_cor);
 			  diff_posy_cor_g_res_pri->Fill(g_poyD_cor);
-
-
 			}
 
-		      if( (Cl_Energy_tot_simul[i] / 1000.) < 10. )
+		      if( (Cl_Energy_pe[i] / 1000.) < 10. )
 			{
-			  int bin = (Cl_Energy_tot_simul[i] / 1000.);
+			  //			  int bin = (Cl_Energy_tot_simul[i] / 1000.);
+			  int bin = (Cl_Energy_pe[i] / 1000.);
 			  E_diff_per_bin[bin]->Fill(g_eD);
+			  good_events++;
 			}
 		      
 		      
-		      if( g_eD > 0.5 )
+		      if( g_eD > 1.5 )
 			{
-			  if( g_pjt_x[j] < 200. && g_pjt_x[j] > -200. && g_pjt_y[j] < 200. && g_pjt_y[j] > -200. )
-			    {
+			  //			  if( g_pjt_x[j] < 200. && g_pjt_x[j] > -200. && g_pjt_y[j] < 200. && g_pjt_y[j] > -200. )
+			  //			    {
 			      cout << "Primary photon energy: " << g_E_all[j] << endl;
 			      cout << "Primary photon position: [" << g_pjt_x[j] << ", " << g_pjt_y[j] << "]" << endl;
+			      cout << "Reconstructed energy: " << (Cl_Energy_pe[i] / 1000.) << endl;
+			      cout << "Reconstructed position: [" << Cl_x_corr[i] << ", " << Cl_y_corr[i] << "]" << endl;
 			      cout << "Energy difference: " << g_eD << "GeV || Seed E: " << Cl_seed_energy[i] << "GeV" << endl;
 			      cout << "Position difference: [" << g_poxD_cor << ", " << g_poyD_cor << "]" << endl << endl;
-
 			      delta_E_pos->Fill(g_pjt_x[j], g_pjt_y[j]);
-			    }
+			      //			    }
 			}
-		      break;
+		      //		      break;
 		    }
 		}
 
@@ -290,6 +304,8 @@ void compare_res_pri()
 	}// N cluster < 3
     }
 
+
+  cout << "Good reconstructed events: " << good_events << endl;
   
 
   //============================
@@ -333,16 +349,21 @@ void compare_res_pri()
       fun_e_res->SetParLimits(0, 0.1, up_lim);
       fun_e_res->SetParLimits(1, -0.1, 1.5);
       fun_e_res->SetParLimits(2, 0.01, 3.);
-      fun_e_res->SetParLimits(3, 0.1, 50.);      
-      E_diff_per_bin[i]->Fit("fun_e_res", "", "R", ( plot_mean - 3. * plot_std), plot_mean);
-      E_diff_per_bin[i]->SetStats(0);
+      fun_e_res->SetParLimits(3, 0.1, 50.);
+      if( i <= 2 )
+	E_diff_per_bin[i]->Fit("fun_e_res", "", "R", ( plot_mean - 3. * plot_std), (plot_mean + plot_std) );
+      else
+	E_diff_per_bin[i]->Fit("fun_e_res", "", "R", ( plot_mean - 3. * plot_std), plot_mean);
+      //      E_diff_per_bin[i]->SetStats(0);
       E_diff_per_bin[i]->GetXaxis()->SetTitle("Delta E [GeV]");
       E_diff_per_bin[i]->SetTitle(Form("Energy %d ~ %d GeV", i, i+1));
       E_diff_per_bin[i]->Draw();
       cout << fun_e_res->GetChisquare() / fun_e_res->GetNDF() << endl;
       
-      double e_resolu = (fun_e_res->GetParameter(2)) / (i + 0.5) * 100.;
-      E_reso_all_particles->SetBinContent( i+1, e_resolu );
+      double e_resolu = (fun_e_res->GetParameter(2)) / (i + 0.5) * 100.;  // x100% 
+
+      if( (i >= 1) )
+	E_reso_all_particles->SetBinContent( i+1, e_resolu );
       //      E_reso_all_particles->SetBinError( i+1, (fun_e_res->GetParError(2)) );
 
       double e_correction = fun_e_res->GetParameter(1);
@@ -350,7 +371,11 @@ void compare_res_pri()
 
     }
 
-  auto *fun_recons_e_res = new TF1("fun_recons_e_res", E_resolu_fit, 0., 10., 3);  
+  //  auto *fun_recons_e_res = new TF1("fun_recons_e_res", E_resolu_fit_high, 0., 10., 3);
+  auto *fun_recons_e_res = new TF1("E_resolu_fit_quardratic_sum", E_resolu_fit, 0., 10., 3);
+  fun_recons_e_res->SetParLimits(0, 0.1, 10.);
+  fun_recons_e_res->SetParLimits(1, 0.1, 10.);
+  fun_recons_e_res->SetParLimits(2, 0.1, 10.);
   auto c9 = new TCanvas("c9", "c9", 1200, 600);
   c9->Divide(2,1);
   c9->cd(1);
@@ -359,7 +384,7 @@ void compare_res_pri()
   E_reso_all_particles->SetMarkerSize(1);
   E_reso_all_particles->GetXaxis()->SetTitle("E [GeV]");
   E_reso_all_particles->GetYaxis()->SetTitle("E_sig / E [%]");
-  E_reso_all_particles->Fit("fun_recons_e_res", "", "R", 0., 10.);
+  E_reso_all_particles->Fit("E_resolu_fit_quardratic_sum", "", "R", 0., 10.);
   E_reso_all_particles->Draw("p");
   cout << fun_recons_e_res->GetChisquare() / fun_recons_e_res->GetNDF() << endl;
   legend[0] = new TLegend(0.5, 0.6, 0.75, 0.8);
