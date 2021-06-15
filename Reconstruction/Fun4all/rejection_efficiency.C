@@ -35,11 +35,11 @@ void rejection_efficiency()
 
   
 
-  const int E_bin = 8;
-  int flag = 1; // 0: glass, 1: crystal
-  int par_N = 3;
-  string File_num[E_bin] = {"0.5", "1", "2", "3", "5", "7", "10", "13"};
-  double e_per_bin[E_bin] = {0.5, 1., 2., 3., 5., 7., 10., 13.};
+  const int E_bin = 9;
+  int flag = 0; // 0: glass, 1: crystal
+  int par_N = 2;
+  string File_num[E_bin] = {"0.5", "1", "2", "3", "5", "7", "10", "13", "18"};
+  double e_per_bin[E_bin] = {0.5, 1., 2., 3., 5., 7., 10., 13., 18.};
   double pion_rejection_factor[E_bin] = {};
   double e_corr[2] = {}, e_reso_pars_2[2] = {}, e_reso_pars_3[3] = {};
   double err_x[E_bin] = {0.}, err_y[E_bin] = {}; 
@@ -60,8 +60,8 @@ void rejection_efficiency()
 
   TLorentzVector v_g;
   TH1F *h1[E_bin];
-  TCanvas *c1 = new TCanvas("c1", "c1", 1600, 800);
-  c1->Divide(4,2);
+  TCanvas *c1 = new TCanvas("c1", "c1", 960, 960);
+  c1->Divide(3,3);
 
   
   for(int i = 0 ; i < E_bin ; i ++)
@@ -220,7 +220,7 @@ void rejection_efficiency()
   
   TGraphErrors *pion_reject = new TGraphErrors(E_bin, e_per_bin, pion_rejection_factor, err_x, err_y);
 
-  //  TFile *g = new TFile("result.root", "UPDATE");
+  TFile *g = new TFile("result.root", "UPDATE");
   
   TCanvas *c2 = new TCanvas("c2", "c2", 800, 800);
   gPad->SetLogy();
@@ -245,8 +245,8 @@ void rejection_efficiency()
   pion_reject->GetYaxis()->SetTitle("Rejection factor");
   pion_reject->GetXaxis()->SetTitle("E [GeV]");
   pion_reject->Draw("AP");
-  //  pion_reject->Write();
+  pion_reject->Write();
 
-  //  g->Close();
+  g->Close();
 
 }

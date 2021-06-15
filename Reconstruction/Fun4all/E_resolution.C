@@ -27,7 +27,7 @@ void E_resolution()
   string File_num[N_E_bin] = {"0.5", "1", "2", "3", "4", "5", "7", "10", "13", "18"};
   double e_per_bin[N_E_bin] = {0.5, 1., 2., 3., 4., 5., 7., 10., 13., 18.};
   double e_statement[11] = {0.5, 1., 2., 3., 4., 5., 7., 10., 13., 18., 20.};
-  int flag = 1; // 0: glass, 1: crystal
+  int flag = 0; // 0: glass, 1: crystal
   
   TH1F *h1_e_diff[N_E_bin];
   for(int i = 0 ; i < N_E_bin ; i++)
@@ -41,9 +41,6 @@ void E_resolution()
       else if( (i >= 7) && (i < N_E_bin) )
       	h1_e_diff[i] = new TH1F(Form("h1_e_diff_%d", i), Form("h1_e_diff_%d", i), 80, 0.5, 4.5);
     }
-
-  // auto E_reso = new TH1F("E_reso", "E_reso", 40, 0., 20.);
-  // auto E_shift = new TH1F("E_shift", "E_shift", 40, 0., 20.);
 
 
   
@@ -193,6 +190,12 @@ void E_resolution()
     }
 
 
+
+
+
+
+
+  TFile *g = new TFile("E_Reso_result.root", "UPDATE");
   
   TGraphErrors* E_reso = new TGraphErrors(N_E_bin, e_per_bin, fit_E_resolu, x_err, y_err);
   TGraph* E_shift = new TGraph(N_E_bin, e_per_bin, fit_E_mean);
@@ -204,7 +207,7 @@ void E_resolution()
   // c4->Divide(2,1);
   // c4->cd(1);
   TLegend *legend_e_reso;
-  legend_e_reso = new TLegend(0.45, 0.4, 0.9, 0.85);
+  legend_e_reso = new TLegend(0.3, 0.55, 0.8, 0.85);
   legend_e_reso->SetBorderSize(0);
   
   auto *fun_recons_e_res_2 = new TF1("E_resolu_fit_quardratic_sum_2", E_resolu_fit_quardratic_sum_2, 0., 19., 2);
@@ -222,9 +225,16 @@ void E_resolution()
   E_reso->SetMarkerStyle(21);
   E_reso->SetMarkerSize(1);
   if( flag == 1 )
-    E_reso->SetTitle("crystal pe/GeV = 15000, noise = 0, 0");
+    {
+      E_reso->SetTitle("crystal pe/GeV = 15000, noise = 0, 0");
+      E_reso->SetName("Eresolution_crystal");
+    }
   else
-    E_reso->SetTitle("glass pe/GeV = 5000, noise = 0, 0");
+    {
+      E_reso->SetTitle("glass pe/GeV = 5000, noise = 0, 0");
+      E_reso->SetName("Eresolution_glass");
+    }
+
   E_reso->GetXaxis()->SetTitle("E [GeV]");
   E_reso->GetYaxis()->SetTitle("E_sig / E [%]");
   E_reso->Draw("AP");
@@ -234,22 +244,31 @@ void E_resolution()
   fun_recons_e_res_3->Draw("same");
   //  cout << fun_recons_e_res_2->GetChisquare() / fun_recons_e_res_2->GetNDF() << endl;
   cout << fun_recons_e_res_2->GetChisquare() << endl;
-  legend_e_reso->AddEntry((TObject*)0, Form(" #alpha:  %.3f", (fun_recons_e_res_2->GetParameter(0)) ), "");
-  legend_e_reso->AddEntry((TObject*)0, Form(" #beta:  %.3f", (fun_recons_e_res_2->GetParameter(1)) ), "");
-  legend_e_reso->AddEntry((TObject*)0, "", "");
-  legend_e_reso->AddEntry("E_resolu_fit_quardratic_sum_2", "#frac{#sigma}{E} = #alpha #oplus #frac{#beta}{#sqrt{E}}", "l");
-  legend_e_reso->AddEntry((TObject*)0, "", "");
-  legend_e_reso->AddEntry((TObject*)0, "", "");
-  legend_e_reso->AddEntry((TObject*)0, Form(" #alpha:  %.3f", (fun_recons_e_res_3->GetParameter(0)) ), "");
-  legend_e_reso->AddEntry((TObject*)0, Form(" #beta:  %.3f", (fun_recons_e_res_3->GetParameter(1)) ), "");
-  legend_e_reso->AddEntry((TObject*)0, Form(" #gamma:  %.3f", (fun_recons_e_res_3->GetParameter(2)) ), "");
-  legend_e_reso->AddEntry((TObject*)0, "", "");
-  legend_e_reso->AddEntry("E_resolu_fit_quardratic_sum_3", "#frac{#sigma}{E} = #alpha #oplus #frac{#beta}{#sqrt{E}} #oplus #frac{#gamma}{E}", "l");
-  legend_e_reso->AddEntry((TObject*)0, "", "");
-  legend_e_reso->AddEntry((TObject*)0, "", "");
-  legend_e_reso->AddEntry(E_reso, "#frac{#sigma[fit]}{E} [%]", "p");
-  legend_e_reso->Draw("same");
+
+  double alpha_2 = fun_recons_e_res_2->GetParameter(0),
+         beta_2 = fun_recons_e_res_2->GetParameter(1);
+  double alpha_3 = fun_recons_e_res_3->GetParameter(0),
+         beta_3 = fun_recons_e_res_3->GetParameter(1),
+         gamma_3 = fun_recons_e_res_3->GetParameter(2);
   
+  //  legend_e_reso->AddEntry((TObject*)0, Form(" #alpha:  %.3f", (fun_recons_e_res_2->GetParameter(0)) ), "");
+  //  legend_e_reso->AddEntry((TObject*)0, Form(" #beta:  %.3f", (fun_recons_e_res_2->GetParameter(1)) ), "");
+  legend_e_reso->AddEntry((TObject*)0, "", "");
+  legend_e_reso->AddEntry("E_resolu_fit_quardratic_sum_2",
+			  Form("#frac{#sigma}{E} = %.2f #oplus #frac{%.2f}{#sqrt{E}}", alpha_2, beta_2),
+			  "l");
+  // legend_e_reso->AddEntry((TObject*)0, Form(" #alpha:  %.3f", (fun_recons_e_res_3->GetParameter(0)) ), "");
+  // legend_e_reso->AddEntry((TObject*)0, Form(" #beta:  %.3f", (fun_recons_e_res_3->GetParameter(1)) ), "");
+  // legend_e_reso->AddEntry((TObject*)0, Form(" #gamma:  %.3f", (fun_recons_e_res_3->GetParameter(2)) ), "");
+  legend_e_reso->AddEntry((TObject*)0, "", "");
+  legend_e_reso->AddEntry("E_resolu_fit_quardratic_sum_3",
+			  Form("#frac{#sigma}{E} = %.2f #oplus #frac{%.2f}{#sqrt{E}} #oplus #frac{%.2f}{E}", alpha_3, beta_3, gamma_3),
+			  "l");
+  legend_e_reso->Draw("same");
+  E_reso->Write();
+  g->Close();
+
+
 
   /* 
   c4->cd(2);
