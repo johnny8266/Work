@@ -60,6 +60,8 @@ void rejection_efficiency()
 
   TLorentzVector v_g;
   TH1F *h1[E_bin];
+  TH2F *h2[E_bin];
+
   TCanvas *c1 = new TCanvas("c1", "c1", 960, 960);
   c1->Divide(3,3);
 
@@ -95,6 +97,7 @@ void rejection_efficiency()
       Int_t n_cluster = (Int_t)ntp_cluster->GetEntries();
       
       h1[i] = new TH1F(Form("h1_%d", i), Form("h1_%d", i), 110, 0., 1.1);
+      h2[i] = new TH2F(Form("h2_%d", i), Form("h2_%d", i), 110, 0., 11., 110, 0., 11.);
 
       
       cout << File_num[i] << " GeV have: " << n_gshower << " pions." << endl;
