@@ -6,40 +6,110 @@ void tower_pos_gen()
 {
 
   // The Default unit if the fun4all is cm
+  // Here are all the parameters you would like to change
+  // One thing need to be noticed here, when you want to change the tower width,
+  // no matter the inner or outer tower, please keep their width ratio always at 2 (outer/inner)
+  // Or there will be an overlap problem.
+  // material para: 0.5[G4_PbWO4],
+  //                1.5[G4_GLASS_LEAD],
+  //                2.5[G4_BARIUM_SULFATE],
+  //                3.5[G4_CESIUM_IODIDE],
+  //                4.5[Sci-glass-selfdefined]
+  //                5.5[heavier Sci-glass-selfdefined]
+  //                6.5[Sci-glass(lead)-selfdefined]
+  //                7.5[Sci-glass Nathaly]
+  //                8.5[Sci-glass g4e]
   
-
-
-
-  cout << "========================================================" << endl << endl;
-  cout << " The following are default parameters for the EEMC configuartion......." << endl;
-  cout << "";
-  cout <<  ; 
-  cout << " If you want to personalize the ones for yourself, please press [Y], or press [N] for default value." << endl;
-  cout << "========================================================" << endl << endl;
- 
-
-
   double PWO_carbon_Gap = 0.1,
          PWO_air_Gap = 0.,
          PWO_Gap = PWO_carbon_Gap + PWO_air_Gap,
-         PWO_Width = (2.0 - 2. * PWO_Gap),
+         PWO_tower_width = 2.0,
+         PWO_Width = (PWO_tower_width - 2. * PWO_Gap),
          PWO_Thickness = 20,
-         PWO_OuterR = 84.,
-         PWO_InnerR = 15.;
-
+         PWO_OuterR = 53.,
+         PWO_InnerR = 10.,
+         Inner_mat = 0.5; 
+  
   double Glass_carbon_Gap = 0.1,
          Glass_air_Gap = 0.,
          Glass_Gap = Glass_carbon_Gap + Glass_air_Gap,
-         Glass_Width = (4.0 - 2. * Glass_Gap),
+         Glass_tower_width = PWO_tower_width * 2.,
+         Glass_Width = (Glass_tower_width - 2. * Glass_Gap),
          Glass_Thickness = 40.,
          Glass_InnerR = PWO_OuterR,
-         Glass_OuterR = 132.;
-    
-  double inner_glo_zpos = 0.,
-         outer_glo_zpos = 0.;
-    //         outer_glo_zpos = inner_glo_zpos + (PWO_Thickness / 2. - Glass_Thickness / 2.);
+         Glass_OuterR = 85.,
+         Outer_mat = 7.5; 
+  
+  double inner_glo_zpos = -200.,
+         outer_glo_zpos = inner_glo_zpos - (Glass_Thickness - PWO_Thickness) / 2.;
+
+  char Y_N;
 
 
+  /*
+  cout << endl << " The following are default parameters for the EEMC configuartion......." << endl << endl;
+  cout << "=================================================================" << endl << endl;
+  cout << " Inner configuration:" << endl;
+  cout << " inner R[cm]: " << PWO_InnerR << "  ||  outer R[cm]: " << PWO_OuterR << endl;
+  cout << " crystal width[cm]: " << PWO_Width;
+  cout << "  ||  shell thickness[cm]: " << PWO_carbon_Gap;
+  cout << "  ||  air gap[cm]: " << PWO_air_Gap << endl;
+  cout << " crystal thickness[cm]: " << PWO_Thickness << endl;
+  cout << " Global position of inner: [0, 0, " << inner_glo_zpos << "cm]" << endl << endl;
+  cout << " Outer configuration:" << endl;
+  cout << " inner R[cm]: " << Glass_InnerR << "  ||  outer R[cm]: " << Glass_OuterR << endl;
+  cout << " sci-glass width[cm]: " << Glass_Width;
+  cout << "  ||  shell thickness[cm]: " << Glass_carbon_Gap;
+  cout << "  ||  air gap[cm]: " << Glass_air_Gap << endl;
+  cout << " sci-glass thickness[cm]: " << Glass_Thickness << endl;
+  cout << " Global position of outer: [0, 0, " << outer_glo_zpos << "cm]" << endl << endl;
+  cout << "=================================================================" << endl << endl << endl;
+
+  cout << " If you want to personalize the ones for yourself, please press [Y], or press [N] for default value......" << endl << endl;
+  cin >> Y_N;
+  cout << endl << endl;
+ 
+  if( (Y_N == 'Y') || (Y_N == 'y') )
+    {
+      cout << " Please key in the desired parameters for the inner configuration......" << endl;
+      cout << " inner R[cm]: ";
+      cin >> PWO_InnerR;
+      cout << endl << " outer R[cm]: ";
+      cin >> PWO_OuterR;
+      cout << endl << " crystal width[cm]: ";
+      cin >> PWO_Width;
+      cout << endl << " shell thickness[cm]: ";
+      cin >> PWO_carbon_Gap;
+      cout << endl << " air gap[cm]: ";
+      cin >> PWO_air_Gap;
+      cout << "Tower width for the inner is: " << PWO_Width + 2. * (PWO_carbon_Gap + PWO_air_Gap) << endl;
+      cout << "Global z position of inner, should be < 0: ";
+      cin >> inner_glo_zpos;
+      cout << endl << endl;
+      
+      cout << " Please key in the desired parameters for the outer configuration......" << endl;
+      Glass_InnerR = PWO_OuterR ;
+      cout << endl << " outer R[cm]: ";
+      cin >> Glass_OuterR;
+      cout << endl << " shell thickness[cm]: ";
+      cin >> Glass_carbon_Gap;
+      cout << endl << " air gap[cm]: ";
+      cin >> Glass_air_Gap;
+      Glass_Width = (PWO_Width + 2. * (PWO_carbon_Gap + PWO_air_Gap)) * 2. - 2. * (Glass_carbon_Gap + Glass_air_Gap);
+      cout << "Tower width for the inner is: " << Glass_Width + 2. * (Glass_carbon_Gap + Glass_air_Gap) << endl;
+      cout << "Global z position of inner, should be < 0: ";
+      cin >> outer_glo_zpos;
+    }
+  else if( (Y_N == 'N') || (Y_N == 'n') )
+    cout << "The default parameters would be applied...." << endl;
+  else
+    cout << "Meaning less choice, the default value would be apply." << endl << endl;
+
+  //         outer_glo_zpos = inner_glo_zpos + (PWO_Thickness / 2. - Glass_Thickness / 2.);
+  */
+
+
+  
 
   
   // CRYSTAL
@@ -50,7 +120,7 @@ void tower_pos_gen()
   //  int towersInRow = std::ceil((diameter + 2. * PWO_Gap) /  (PWO_Width + 2. * PWO_Gap));
   //  int towersInRow = std::floor((diameter + 2. * PWO_Gap) /  (PWO_Width + 2. * PWO_Gap));
   int towersInRow = std::floor((diameter + 2. * Glass_Gap) /  (Glass_Width + 2. * Glass_Gap));
-  cout << "towersInRow: " << towersInRow << endl;
+  //  cout << "towersInRow: " << towersInRow << endl;
   
   // Is it odd or even number of towersInRow
 
@@ -107,7 +177,7 @@ void tower_pos_gen()
   ofs << "Gdz " << PWO_Thickness << endl;
   ofs << "Gx0 " << 0 << endl;
   ofs << "Gy0 " << 0 << endl;
-  ofs << "Gz0 " << inner_glo_zpos << endl;
+  ofs << "Gz0 " << 0 << endl;
   ofs << "Grot_x " << 0 << endl;
   ofs << "Grot_y " << 0 << endl;
   ofs << "Grot_z " << 0 << endl;
@@ -116,19 +186,10 @@ void tower_pos_gen()
   ofs << "Gcrystal_dz " << PWO_Thickness << endl;
   ofs << "Gcarbon_gap " << PWO_carbon_Gap << endl;
   ofs << "Gair_gap " << PWO_air_Gap << endl;
-  // material para: 0.5[G4_PbWO4],
-  //                1.5[G4_GLASS_LEAD],
-  //                2.5[G4_BARIUM_SULFATE],
-  //                3.5[G4_CESIUM_IODIDE],
-  //                4.5[Sci-glass-selfdefined]
-  //                5.5[heavier Sci-glass-selfdefined]
-  //                6.5[Sci-glass(lead)-selfdefined]
-  //                7.5[Sci-glass Nathely]
-  //                8.5[Sci-glass g4e] 
-  ofs << "Gmaterial " << 0.5 << endl;
-  ofs << "Gcolor_R " << 1.0 << endl;
+  ofs << "Gmaterial " << Inner_mat << endl;
+  ofs << "Gcolor_R " << 0.0 << endl;
   ofs << "Gcolor_G " << 0.0 << endl;
-  ofs << "Gcolor_B " << 0.0 << endl;
+  ofs << "Gcolor_B " << 1.0 << endl;
   ofs << "#Tower: type, idx_j, idx_k, idx_l, x[cm], y[cm], z[cm], dx[cm], dy[cm], dz[cm], rot_x, rot_y, rot_z" << endl;
   
   for(int colIndex = 0 ; colIndex < towersInRow ; colIndex++)
@@ -139,7 +200,8 @@ void tower_pos_gen()
 	  // double y = topTowerPos + rowIndex * (PWO_Width + 2. * PWO_Gap);
 	  double x = leftTowerPos + colIndex * (Glass_Width + 2. * Glass_Gap);
 	  double y = topTowerPos + rowIndex * (Glass_Width + 2. * Glass_Gap);
-	  double z = -250.;
+	  double z = inner_glo_zpos;
+	  //	  double z = -250.;
 	  double Cry_R = std::sqrt(x * x + y * y);
 	  double inner_r = 0.;
 	  
@@ -284,7 +346,7 @@ void tower_pos_gen()
   ofs << "Gdz " << Glass_Thickness << endl;
   ofs << "Gx0 " << 0 << endl;
   ofs << "Gy0 " << 0 << endl;
-  ofs << "Gz0 " << outer_glo_zpos << endl;
+  ofs << "Gz0 " << 0 << endl;
   ofs << "Grot_x " << 0 << endl;
   ofs << "Grot_y " << 0 << endl;
   ofs << "Grot_z " << 0 << endl;
@@ -293,19 +355,10 @@ void tower_pos_gen()
   ofs << "Gcrystal_dz " << Glass_Thickness << endl;
   ofs << "Gcarbon_gap " << Glass_carbon_Gap << endl;
   ofs << "Gair_gap " << Glass_air_Gap << endl;
-  // material para: 0.5[G4_PbWO4],
-  //                1.5[G4_GLASS_LEAD],
-  //                2.5[G4_BARIUM_SULFATE],
-  //                3.5[G4_CESIUM_IODIDE],
-  //                4.5[Sci-glass-selfdefined]
-  //                5.5[heavier Sci-glass-selfdefined]
-  //                6.5[Sci-glass(lead)-selfdefined]
-  //                7.5[Sci-glass Nathely]
-  //                8.5[Sci-glass g4e] 
-  ofs << "Gmaterial " << 7.5 << endl;
-  ofs << "Gcolor_R " << 0.0 << endl;
-  ofs << "Gcolor_G " << 1.0 << endl;
-  ofs << "Gcolor_B " << 1.0 << endl;
+  ofs << "Gmaterial " << Outer_mat << endl;
+  ofs << "Gcolor_R " << 1.0 << endl;
+  ofs << "Gcolor_G " << 0.0 << endl;
+  ofs << "Gcolor_B " << 0.0 << endl;
   ofs << "#Tower: type, idx_j, idx_k, idx_l, x[cm], y[cm], z[cm], dx[cm], dy[cm], dz[cm], rot_x, rot_y, rot_z" << endl;
   
   for(int colIndex = 0 ; colIndex < towersInRow ; colIndex++)
@@ -314,7 +367,8 @@ void tower_pos_gen()
 	{
 	  double x = leftTowerPos + colIndex * (Glass_Width + 2. * Glass_Gap);
 	  double y = topTowerPos + rowIndex * (Glass_Width + 2. * Glass_Gap);
-	  double z = -260.;
+	  double z = outer_glo_zpos;
+	  //	  double z = -260.;
 	  double Cry_R = std::sqrt(x * x + y * y);
 
 	  //	  if ( (Cry_R < Glass_OuterR) && (std::abs(y) > Glass_InnerR || std::abs(x) > Glass_InnerR) )

@@ -102,34 +102,12 @@ void EEMCSetup(PHG4Reco *g4Reco)
   if (!G4EEMC::use_projective_geometry)
   {
     mapping_eemc_1 << "/vol0/pwang-l/Singularity/my_det/crystal_mapping/tower_map_crystal.txt";
-    //   mapping_eemc_1 << getenv("CALIBRATIONROOT") << "/CrystalCalorimeter/mapping/crystal_mapping/tower_map_crystal.txt";
     eemc_crystal->set_string_param("mappingtower", mapping_eemc_1.str());
   }
   eemc_crystal->OverlapCheck(OverlapCheck);
 
   g4Reco->registerSubsystem(eemc_crystal);
-  
-
-  
-  
-  PHG4CrystalCalorimeterSubsystem *eemc_glass = new PHG4CrystalCalorimeterSubsystem("EEMC_glass");
-  eemc_glass->SuperDetector("EEMC_glass");
-  eemc_glass->SetActive();
-  if (AbsorberActive)
-    eemc_glass->SetAbsorberActive();
-
-  if (!G4EEMC::use_projective_geometry)
-    {
-      mapping_eemc_2 << "/vol0/pwang-l/Singularity/my_det/crystal_mapping/tower_map_glass.txt";
-      //      mapping_eemc_2 << getenv("CALIBRATIONROOT") << "/CrystalCalorimeter/mapping/crystal_mapping/tower_map_glass.txt";
-      eemc_glass->set_string_param("mappingtower", mapping_eemc_2.str());
-    }
-  
-  eemc_glass->OverlapCheck(OverlapCheck);
-
-  g4Reco->registerSubsystem(eemc_glass);
-  
-  
+   
 }
 
 void EEMC_Cells()
@@ -141,49 +119,25 @@ void EEMC_Towers()
 
   Fun4AllServer *se = Fun4AllServer::instance();
 
-  ostringstream mapping_eemc_1, mapping_eemc_2;
-  //  mapping_eemc_1 << getenv("CALIBRATIONROOT") << "/CrystalCalorimeter/mapping/crystal_mapping/tower_map_crystal.txt";
-  //  mapping_eemc_2 << getenv("CALIBRATIONROOT") << "/CrystalCalorimeter/mapping/crystal_mapping/tower_map_glass.txt";
+  ostringstream mapping_eemc_1;
+  //  mapping_eemc_1 << getenv("CALIBRATIONROOT") << "/CrystalCalorimeter/mapping/towerMap_EEMC_v006.txt";
   mapping_eemc_1 << "/vol0/pwang-l/Singularity/my_det/crystal_mapping/tower_map_crystal.txt";
-  mapping_eemc_2 << "/vol0/pwang-l/Singularity/my_det/crystal_mapping/tower_map_glass.txt";
   
   // CMS lead tungstate barrel ECAL at 18 degree centrigrade: 4.5 photoelectrons per MeV
   // lead tungsten test in Orsay is 15~20 p.e. per MeV, sci-glass is 5 p.e. per MeV
   const double EEMC_photoelectron_per_GeV_crystal = 15000;
-  const double EEMC_photoelectron_per_GeV_glass = 5000;
-
+  
   //the original values are [8, 16], no noise case[0, 0], really high case[80, 160]
   const double crystal_pedestal_ADC = 0, crystal_zero_suppression_ADC = 0;
-  const double glass_pedestal_ADC = 0, glass_zero_suppression_ADC = 0;
   
 
-  RawTowerBuilderByHitIndex *tower_EEMC_glass = new RawTowerBuilderByHitIndex("TowerBuilder_EEMC_glass");
-  tower_EEMC_glass->Detector("EEMC_glass");
-  tower_EEMC_glass->set_sim_tower_node_prefix("SIM");
-  tower_EEMC_glass->GeometryTableFile(mapping_eemc_2.str());
-  se->registerSubsystem(tower_EEMC_glass);
+
   
   RawTowerBuilderByHitIndex *tower_EEMC_crystal = new RawTowerBuilderByHitIndex("TowerBuilder_EEMC_crystal");
   tower_EEMC_crystal->Detector("EEMC");
   tower_EEMC_crystal->set_sim_tower_node_prefix("SIM");
   tower_EEMC_crystal->GeometryTableFile(mapping_eemc_1.str());
   se->registerSubsystem(tower_EEMC_crystal);
-
-
-
-
-
-  RawTowerDigitizer *TowerDigitizer_EEMC_glass = new RawTowerDigitizer("EEMCRawTowerDigitizer_glass");
-  TowerDigitizer_EEMC_glass->Detector("EEMC_glass");
-  TowerDigitizer_EEMC_glass->Verbosity(verbosity);
-  TowerDigitizer_EEMC_glass->set_raw_tower_node_prefix("RAW");
-  TowerDigitizer_EEMC_glass->set_digi_algorithm(G4EEMC::TowerDigi);
-  TowerDigitizer_EEMC_glass->set_pedstal_central_ADC(0);
-  TowerDigitizer_EEMC_glass->set_pedstal_width_ADC(glass_pedestal_ADC);  // eRD1 test beam setting
-  TowerDigitizer_EEMC_glass->set_photonelec_ADC(1);     //not simulating ADC discretization error
-  TowerDigitizer_EEMC_glass->set_photonelec_yield_visible_GeV(EEMC_photoelectron_per_GeV_glass);
-  TowerDigitizer_EEMC_glass->set_zero_suppression_ADC(glass_zero_suppression_ADC);  // eRD1 test beam setting
-  se->registerSubsystem(TowerDigitizer_EEMC_glass);  
   
   // Calorimeter digitization 
   RawTowerDigitizer *TowerDigitizer_EEMC_crystal = new RawTowerDigitizer("EEMCRawTowerDigitizer_crystal");
@@ -198,25 +152,6 @@ void EEMC_Towers()
   TowerDigitizer_EEMC_crystal->set_zero_suppression_ADC(crystal_zero_suppression_ADC);  // eRD1 test beam setting
   se->registerSubsystem(TowerDigitizer_EEMC_crystal);
 
-
-
-
-
-
-
-
-
-  RawTowerCalibration *TowerCalibration_EEMC_glass = new RawTowerCalibration("EEMCRawTowerCalibration_glass");
-  TowerCalibration_EEMC_glass->Detector("EEMC_glass");
-  TowerCalibration_EEMC_glass->Verbosity(verbosity);
-  TowerCalibration_EEMC_glass->set_calib_algorithm(RawTowerCalibration::kSimple_linear_calibration);
-  if (G4EEMC::TowerDigi == RawTowerDigitizer::kNo_digitization)
-    TowerCalibration_EEMC_glass->set_calib_const_GeV_ADC(1.);
-  else
-    TowerCalibration_EEMC_glass->set_calib_const_GeV_ADC(1. / EEMC_photoelectron_per_GeV_glass);
-  TowerCalibration_EEMC_glass->set_pedstal_ADC(0);
-  se->registerSubsystem(TowerCalibration_EEMC_glass);
-  
   // Calorimeter calibration 
   RawTowerCalibration *TowerCalibration_EEMC_crystal = new RawTowerCalibration("EEMCRawTowerCalibration_crystal");
   TowerCalibration_EEMC_crystal->Detector("EEMC");
@@ -229,8 +164,6 @@ void EEMC_Towers()
   TowerCalibration_EEMC_crystal->set_pedstal_ADC(0);
   se->registerSubsystem(TowerCalibration_EEMC_crystal);
   
-  
-
   
 }
 
@@ -250,12 +183,6 @@ void EEMC_Clusters()
     ClusterBuilder_crystal->Verbosity(2);
     se->registerSubsystem(ClusterBuilder_crystal);
     
-    
-    RawClusterBuilderTemplate *ClusterBuilder_glass = new RawClusterBuilderTemplate("EEMCRawClusterBuilderTemplate_glass");
-    ClusterBuilder_glass->Detector("EEMC_glass");
-    ClusterBuilder_glass->Verbosity(verbosity);
-    se->registerSubsystem(ClusterBuilder_glass);
-    
   }
   else if (G4EEMC::Eemc_clusterizer == G4EEMC::kEemcGraphClusterizer)
   {
@@ -265,12 +192,6 @@ void EEMC_Clusters()
     ClusterBuilder_crystal->Verbosity(verbosity);
     ClusterBuilder_crystal->Verbosity(2);
     se->registerSubsystem(ClusterBuilder_crystal);
-    
-    
-    RawClusterBuilderFwd *ClusterBuilder_glass = new RawClusterBuilderFwd("EEMCRawClusterBuilderFwd_glass");
-    ClusterBuilder_glass->Detector("EEMC_glass");
-    ClusterBuilder_glass->Verbosity(verbosity);
-    se->registerSubsystem(ClusterBuilder_glass);
     
   }
   else
@@ -282,28 +203,17 @@ void EEMC_Clusters()
 }
 
 
-void EEMC_Eval(const std::string &outputfile, const bool &flag)
+void EEMC_Eval(const std::string &outputfile)
 {
   int verbosity = std::max(Enable::VERBOSITY, Enable::EEMC_VERBOSITY);
 
   Fun4AllServer *se = Fun4AllServer::instance();
-
-  if( flag == true )
-    {
-      CaloEvaluator *eval_crystal = new CaloEvaluator("EEMCEVALUATOR", "EEMC", outputfile.c_str());
-      eval_crystal->Verbosity(verbosity);
-      eval_crystal->set_do_cluster_eval(true);
-      se->registerSubsystem(eval_crystal);      
-    }
-  else
-    {
-      CaloEvaluator *eval_glass = new CaloEvaluator("EEMCGLASSEVALUATOR", "EEMC_glass", outputfile.c_str());
-      eval_glass->Verbosity(verbosity);
-      eval_glass->set_do_cluster_eval(true);
-      se->registerSubsystem(eval_glass);        
-    }
-
-    
+     
+  CaloEvaluator *eval_crystal = new CaloEvaluator("EEMCEVALUATOR", "EEMC", outputfile.c_str());
+  eval_crystal->Verbosity(verbosity);
+  eval_crystal->set_do_cluster_eval(true);
+  se->registerSubsystem(eval_crystal);
+  
   return;
 }
 #endif

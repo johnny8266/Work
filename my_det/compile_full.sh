@@ -71,8 +71,8 @@ do
 done
 
 
-#for PKW1 in g4calo g4eval g4detectors
-for PKW1 in g4calo g4detectors
+for PKW1 in g4calo g4eval g4detectors
+#for PKW1 in g4calo g4detectors
 do
     echo -e "\n\n\n"
     echo "entering " $PKW1 " building"

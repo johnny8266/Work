@@ -26,9 +26,10 @@ void close_event()
   const int N_E_bin = 1;
   // string File_num[N_E_bin] = {"1.0", "5.0", "10.0"};
   // double e_per_bin[N_E_bin] = {1.0, 5.0, 10.0};
-  string File_num[N_E_bin] = {"10.0"};
-  double e_per_bin[N_E_bin] = {10.0};
+  string File_num[N_E_bin] = {"1.0"};
+  double e_per_bin[N_E_bin] = {1.0};
   double e_statement[13] = {0.5, 1., 2., 3., 4., 5., 7., 10., 13., 18., 30., 50., 52.};
+  double angle_statement[9] = {0., 0.3, 0.6, 0.9, 1.2, 1.6, 2., 3., 4.};
   
   int flag = 1; // 0: glass, 1: crystal
   TLorentzVector LV;
@@ -49,11 +50,25 @@ void close_event()
   TH1F *zpos_reco_1[N_E_bin];
   TH1F *zpos_reco_2[N_E_bin];
 
+  TH1F *angle_range[N_E_bin][8];
+  
+  for(int i = 0 ; i < N_E_bin ; i++)
+    for(int j = 0 ; j < 8 ; j++)
+      angle_range[i][j] = new TH1F(Form("angle_range_%d_%d", i, j), Form("angle_range_%d_%d", i, j), 110, 0., (e_per_bin[i]*2.2) );
+
+  
   TH2F *h2_posx_diff[N_E_bin], *h2_posy_diff[N_E_bin];
   TH2F *cluster_1 = new TH2F("cluster_1", "cluster_1", 30, 0., 60., 30, 0., 60.);
   TH2F *cluster_2 = new TH2F("cluster_2", "cluster_2", 30, 0., 60., 30, 0., 60.);
+
   TProfile *hprof_x[N_E_bin], *hprof_y[N_E_bin];
-  
+
+  TGraph *clusters_effi[N_E_bin];
+
+
+
+  // Start read the files and fill data
+  //
   for(int i = 0 ; i < N_E_bin ; i++)
     {
       recons_1_angle[i] = new TH1F(Form("recons_1_angle_%d", i), Form("recons_1_angle_%d", i), 120, 0., 6.);
@@ -90,7 +105,8 @@ void close_event()
       
       if( flag == 1 )
 	{
-	  root_file_name = "/vol0/pwang-l/Singularity/my_det/sub_crystal/data/pos/g4eemc_crystal_eval_mono_" + File_num[i] + "_GeV_close_event_study.root";
+	  root_file_name = "/vol0/pwang-l/Singularity/my_det/sub_crystal/data/pos/g4eemc_crystal_eval_mono_" + File_num[i] + "_GeV.root";
+	  //	  root_file_name = "/vol0/pwang-l/Singularity/my_det/sub_crystal/g4eemc_crystal_eval_mono_" + File_num[i] + "_GeV.root";
 	}
       else
 	{
@@ -104,12 +120,11 @@ void close_event()
 
       TTree *ntp_shower = (TTree*)f->Get("ntp_gshower");
       Int_t n_shower = (Int_t)ntp_shower->GetEntries();
-      TTree *ntp_tower = (TTree*)f->Get("ntp_tower");
-      Int_t n_tower = (Int_t)ntp_tower->GetEntries();
       TTree *ntp_cluster = (TTree*)f->Get("ntp_cluster");
       Int_t n_cluster = (Int_t)ntp_cluster->GetEntries();
+      // TTree *ntp_tower = (TTree*)f->Get("ntp_tower");
+      // Int_t n_tower = (Int_t)ntp_tower->GetEntries();
 
-      cout << n_tower << endl;
       
       
       //declare the variables used in the following ntuples
@@ -169,7 +184,7 @@ void close_event()
 
 
 
-      
+      /*
       ntp_tower->SetBranchAddress("event", &event);
       ntp_tower->SetBranchAddress("x", &x);
       ntp_tower->SetBranchAddress("y", &y);
@@ -182,14 +197,14 @@ void close_event()
 
 	  int j_eve = (int)event;
 
-	  if( j_eve == 1054 )
+	  //	  if( j_eve == 1054 )
 	    //	    cout << x << " " << y << " " << e << endl;
-	    cluster_1->Fill(x, y, e);
+	  cluster_1->Fill(x, y, e);
 
-	  if( j_eve == 1053 )
-	    cluster_2->Fill(x, y, e);
+	  //	  if( j_eve == 1053 )
+	  //	    cluster_2->Fill(x, y, e);
 	}
-      
+      */
 
 
 
@@ -241,6 +256,7 @@ void close_event()
 		{
 		  //		  cout << "2 clusters reconstructed: " << j_eve << endl;
 		  //		  recons_2_angle[i]->Fill(angle_2p[j_eve]);
+		    
 		  e_2_1 = e;
 		  E_reco_2[i]->Fill(e_2_1);
 		  zpos_reco_2[i]->Fill(z);
@@ -248,8 +264,8 @@ void close_event()
 		  float D_1_1 = std::sqrt( std::pow((z / p1z[j_eve] * p1x[j_eve] - x), 2) + std::pow((z / p1z[j_eve] * p1y[j_eve] - y), 2) );
 		  float D_1_2 = std::sqrt( std::pow((z / p2z[j_eve] * p2x[j_eve] - x), 2) + std::pow((z / p2z[j_eve] * p2y[j_eve] - y), 2) );
 
-		  if( (D_1_1 > 10.) && (D_1_2 > 10.) )
-		    cout << j_eve << " " << z / p1z[j_eve] * p1x[j_eve] << " " << z / p1z[j_eve] * p1y[j_eve] << " || " << x << " " << y << endl;
+		  //		  if( (D_1_1 > 10.) && (D_1_2 > 10.) )
+		  //		    cout << j_eve << " " << z / p1z[j_eve] * p1x[j_eve] << " " << z / p1z[j_eve] * p1y[j_eve] << " || " << x << " " << y << endl;
 		  /*
 		  if( gparticleID < 1.5 )
 		    {
@@ -273,8 +289,8 @@ void close_event()
 		  float D_2_2 = std::sqrt( std::pow((z / p2z[j_eve] * p2x[j_eve] - x), 2) + std::pow((z / p2z[j_eve] * p2y[j_eve] - y), 2) );
 
 		  //		  if( (D_2_1 > 10.) && (D_2_2 > 10.) )
-		  if( (D_1_1 > 10.) && (D_1_2 > 10.) )
-		    cout << j_eve << " " << z / p1z[j_eve] * p1x[j_eve] << " " << z / p1z[j_eve] * p1y[j_eve] << " || " << x << " " << y << endl << endl;
+		  //		  if( (D_1_1 > 10.) && (D_1_2 > 10.) )
+		  //		    cout << j_eve << " " << z / p1z[j_eve] * p1x[j_eve] << " " << z / p1z[j_eve] * p1y[j_eve] << " || " << x << " " << y << endl << endl;
 
 		  /*
 		  if( gparticleID < 1.5 )
@@ -289,23 +305,30 @@ void close_event()
 		    }
 		  */
 
+		  for(int k = 0 ; k < 8 ; k++)
+		    {
+		      if( (angle_2p[j_eve] >= angle_statement[k]) && (angle_2p[j_eve] < angle_statement[k+1]) )
+			{
+			  angle_range[i][k]->Fill(e_2_1);
+			  angle_range[i][k]->Fill(e_2_2);			  
+			}		      
+		    }
+		  
 		  
 		  // if( (ID_sum != 3) && (angle_2p[j_eve] > 1.5) )
 		  //   cout << e_2_1 << " " << e_2_2 << " " << ID_sum << " " << angle_2p[j_eve] << endl;
 
 		  ID_sum = 0;
-
+		  count_double_clu++;
 
 		  
 		  //		  E_reco_2[i]->Fill((e_2_1 + e_2_2));
 		  //		  if( (e_2_1 < e_per_bin[i]) && (e_2_2 < e_per_bin[i]) )
-		  if( (e_2_1 > e_per_bin[i]) || (e_2_2 > e_per_bin[i]) )		 
+		  if( (e_2_1 < e_per_bin[i]) || (e_2_2 < e_per_bin[i]) )		 
 		    {
-		      //		      cout << e_2_1 << " " << e_2_2 << endl;
-		      count_double_clu++;
+		      cout << e_2_1 << " " << e_2_2 << endl;
+		      //		      count_double_clu++;
 		      recons_2_angle[i]->Fill(angle_2p[j_eve]);
-
-		      
 		    }
 
 
@@ -327,19 +350,82 @@ void close_event()
 
 	      e_base = 0.;  x_base = 0.;  y_base = 0.; z_base = 0.; n_tow_base = 0.;
 	    }
-	}
+	}// Finish the cluster ntuple
 
+
+      
+      
       cout << endl << endl << "Single cluster count: " << count_single_clu << endl;
       cout << "Double cluster count: " << count_double_clu << endl << endl;
       count_single_clu = 0;  count_double_clu = 0;
-      
-    }      
 
+      
+    }// Finish the files read      
+
+
+
+  //  TF1 fit_gauss = new TF1();
+  TGraph *angle_effi[N_E_bin];
+  TCanvas *c1 = new TCanvas("c1", "c1", 1600, 800);
+  c1->Divide(4,2);
+  for(int i = 0 ; i < N_E_bin ; i++)
+    {
+      auto *fun_e_res = new TF1("fun_e_res", GausM, e_per_bin[i]*0.6, e_per_bin[i]*1.1, 3);
+      double x[8], y[8];
+      for(int j = 0 ; j < 8 ; j++)
+	{
+	  c1->cd(j+1);
+	  int mean_bin = e_per_bin[i] / 0.02;
+	  int width_bin = mean_bin * 0.5;
+	  int fit_flag = angle_range[i][j]->Integral((mean_bin - width_bin), (mean_bin + width_bin));
+	  cout << "INT: " << mean_bin << " " << width_bin << " " << fit_flag << endl;
+	  angle_range[i][j]->Draw();
+
+	  
+	  if( fit_flag < 10 )
+	    {
+	      x[j] = (angle_statement[j] + angle_statement[j+1]) / 2.;
+	      y[j] = 0.;
+	    }
+	  else
+	    {
+	      fun_e_res->SetParLimits(0, 5., fit_flag);
+	      fun_e_res->SetParLimits(1, (e_per_bin[i]*0.7), (e_per_bin[i]*0.95) );
+	      fun_e_res->SetParLimits(2, 0.02, 1.5);
+	      angle_range[i][j]->Fit("fun_e_res", "", "R", e_per_bin[i]*0.6, e_per_bin[i]*1.1);
+
+	      mean_bin = angle_range[i][j]->FindBin(fun_e_res->GetParameter(1));
+	      int inte_min = angle_range[i][j]->FindBin((fun_e_res->GetParameter(1) - 3. * fun_e_res->GetParameter(2)));
+	      int inte_max = angle_range[i][j]->FindBin((fun_e_res->GetParameter(1) + 3. * fun_e_res->GetParameter(2)));
+	      cout << "range: " << inte_min << ", " << inte_max << endl;
+	      double selected_2_clus_events = angle_range[i][j]->Integral(inte_min, inte_max);
+	      double all_2_clus_events = angle_range[i][j]->GetEntries();
+	      x[j] = (angle_statement[j] + angle_statement[j+1]) / 2.;
+	      y[j] = selected_2_clus_events / all_2_clus_events;
+	      //	      cout << angle_range[i][j]->Integral((mean_bin - width_bin), (mean_bin + width_bin)) << endl;
+	      //	      cout << angle_range[i][j]->GetEntries() << endl << endl;	      
+	    }
+	  cout << x[j] << ", " << y[j] << endl;	  
+	}
+
+      angle_effi[i] = new TGraph(8, x, y);
+    }
+
+  TCanvas *c3 = new TCanvas("c3", "c3", 1500, 500);
+  c3->Divide(3,1);
+  for(int i = 0 ; i < N_E_bin ; i++)
+    {
+      c3->cd(i+1);
+      angle_effi[i]->SetTitle(Form("Efficiency of %.1f GeV gamma", e_per_bin[i]));
+      angle_effi[i]->Draw("AC*");      
+    }
 
 
 
   
   /*
+  //Drawing the plots
+  //
   TCanvas *c1 = new TCanvas("c1", "c1", 1800, 600);
   c1->Divide(3,1);
   for(int i = 0 ; i < N_E_bin ; i++)
@@ -352,8 +438,8 @@ void close_event()
 
 	  if(j == 0)
 	    recons_2_angle[i]->Draw();
-	  //	  else
-	    //	    recons_1_angle[i]->Draw("same");
+	  else
+	    recons_1_angle[i]->Draw("same");
 	}
     }
 
@@ -377,13 +463,13 @@ void close_event()
   */
 
 
-  
-  TCanvas *c2 = new TCanvas("c2", "c2", 1600, 800);
-  c2->Divide(2,1);
-  c2->cd(1);
+  /*
+  TCanvas *c2 = new TCanvas("c2", "c2", 800, 800);
+  //  c2->Divide(2,1);
+  //  c2->cd(1);
   cluster_1->Draw("colorz");
-  c2->cd(2);
-  cluster_2->Draw("colorz");
-  
+  //  c2->cd(2);
+  //  cluster_2->Draw("colorz");
+  */
   
 }

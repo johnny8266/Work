@@ -18,7 +18,6 @@
 /vis/scene/create
 # open graphics (opengl QT)
 /vis/open OGL
-/vis/scene/add/axes 0 0 0 1.9 m
-#/vis/scene/add/axes 0 0 -1.9 1.9 m
+/vis/scene/add/axes 0 0 -1.9 0.6 m
 /material/verbose 1
 

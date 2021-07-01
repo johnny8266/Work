@@ -28,7 +28,7 @@
 
 R__LOAD_LIBRARY(libfun4all.so)
 
-int Fun4All_G4_EICDetector(
+int Fun4All_G4_EICDetector_glass(
     const int nEvents = 1,
     const string &inputFile = "https://www.phenix.bnl.gov/WWW/publish/phnxbld/sPHENIX/files/sPHENIX_G4Hits_sHijing_9-11fm_00000_00010.root",
     const string &outputFile = "G4EICDetector.root",
@@ -126,11 +126,21 @@ int Fun4All_G4_EICDetector(
   // if you run more than one of these Input::SIMPLE_NUMBER > 1
   // add the settings for other with [1], next with [2]...
   // If you didn't input any generator, this one would be a default generator.
+  bool mono_E = true;
+  double E_beam = 1.;
+  double eta_fix = -1.8;
+  double interval = 5., inipos = 55., front_pos = 190.;
+  double phi_increment = M_PI / 36.;
+  double theta_min = std::atan(inipos / front_pos), theta_max = std::atan((inipos + interval) / front_pos); 
+  double eta_min = std::log(std::tan(theta_min / 2.));
+  double eta_max = std::log(std::tan(theta_max / 2.));
+  std::cout << "eta min: " << eta_min << " || eta max: " << eta_max << " || phi increment: " << phi_increment << std::endl;
+  
+  
   if (Input::SIMPLE)
   {
-    //    INPUTGENERATOR::SimpleEventGenerator[0]->add_particles("pi-", 5);
     //    INPUTGENERATOR::SimpleEventGenerator[0]->add_particles("pi-", 1);
-    INPUTGENERATOR::SimpleEventGenerator[0]->add_particles("gamma", 5);
+    INPUTGENERATOR::SimpleEventGenerator[0]->add_particles("gamma", 1);
     //    INPUTGENERATOR::SimpleEventGenerator[0]->add_particles("e-", 1);
     
     if (Input::HEPMC || Input::EMBED)
@@ -148,22 +158,19 @@ int Fun4All_G4_EICDetector(
     }
     // v1 eta: glass[-1.6 ~ -1.22], crystal[-3.2 ~ -1.7]
     // v2 eta: glass[-1.51 ~ -1.18], crystal[-3.2 ~ -1.7]
-    //    INPUTGENERATOR::SimpleEventGenerator[0]->set_eta_range(-2.8, -2.2);
-    //    INPUTGENERATOR::SimpleEventGenerator[0]->set_eta_range(-1.8, -1.5);
-    //    INPUTGENERATOR::SimpleEventGenerator[0]->set_eta_range(-1.724, -1.724);
-    //    INPUTGENERATOR::SimpleEventGenerator[0]->set_eta_range(-2.5, -2.5);
-    INPUTGENERATOR::SimpleEventGenerator[0]->set_eta_range(-2.06, -1.94);
-    
+    //   INPUTGENERATOR::SimpleEventGenerator[0]->set_eta_range(-1.8, -1.5);
+    INPUTGENERATOR::SimpleEventGenerator[0]->set_eta_range(eta_min, eta_max);
 
-    INPUTGENERATOR::SimpleEventGenerator[0]->set_phi_range(-M_PI, M_PI);
-    INPUTGENERATOR::SimpleEventGenerator[0]->set_p_range(1., 1.);
+    INPUTGENERATOR::SimpleEventGenerator[0]->set_phi_range(M_PI / 4., (M_PI / 4. + phi_increment));
+    INPUTGENERATOR::SimpleEventGenerator[0]->set_p_range(E_beam, E_beam);
   }
 
+  
   
   // Upsilons
   // if you run more than one of these Input::UPSILON_NUMBER > 1
   // add the settings for other with [1], next with [2]...
- if (Input::UPSILON)
+  if (Input::UPSILON)
   {
     INPUTGENERATOR::VectorMesonGenerator[0]->add_decay_particles("mu", 0);
     INPUTGENERATOR::VectorMesonGenerator[0]->set_rapidity_range(-1, 1);
@@ -269,7 +276,7 @@ int Fun4All_G4_EICDetector(
   // whether to simulate the Be section of the beam pipe
   //  Enable::PIPE = true;
   // EIC beam pipe extension beyond the Be-section:
-  //  G4PIPE::use_forward_pipes = true;
+  G4PIPE::use_forward_pipes = false;
   //EIC hadron far forward magnets and detectors. IP6 and IP8 are incompatible (pick either or);
   //  Enable::HFARFWD_MAGNETS_IP6=true;
   //  Enable::HFARFWD_VIRTUAL_DETECTORS_IP6=true;
@@ -525,8 +532,18 @@ int Fun4All_G4_EICDetector(
   if (Enable::FWDJETS_EVAL) Jet_FwdEval(outputroot + "_g4fwdjet_eval.root");
   */
   //  if (Enable::EEMC_EVAL) EEMC_Eval(outputroot + "_g4eemc_eval.root");
-  if (Enable::EEMC_EVAL) EEMC_Eval("g4eemc_eval_crystal.root", true);
-  if (Enable::EEMC_EVAL) EEMC_Eval("g4eemc_eval_glass.root", false);
+
+  if( mono_E == true )
+    {
+      // if (Enable::EEMC_EVAL)
+      // 	EEMC_Eval( Form("g4eemc_glass_eval_mono_%.1f_GeV_%.1f.root", E_beam, eta_fix) );
+      if (Enable::EEMC_EVAL)
+       	EEMC_Eval( Form("g4eemc_glass_eval_mono_%.1f_GeV_close_event_study.root", E_beam) );
+    }
+  else
+    {
+      if (Enable::EEMC_EVAL) EEMC_Eval("g4eemc_glass_eval.root");
+    }
 
   if (Enable::USER) UserAnalysisInit();
 

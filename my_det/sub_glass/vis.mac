@@ -31,7 +31,7 @@
 
 # increase display limit for more complex detectors
 /vis/ogl/set/displayListLimit 500000
-/vis/viewer/set/viewpointThetaPhi 0 0
+/vis/viewer/set/viewpointThetaPhi 60 135
 #/vis/viewer/addCutawayPlane 0 0 0 m 0 -1 0
 
 # our world is 4x4 meters, the detector is about 1m across
@@ -40,7 +40,7 @@
 
 #
 # Add a axes
-/vis/scene/add/axes 0 0 0 0.8 m
+/vis/scene/add/axes 0 0 0 3. m
 #
 
 # Use this open statement instead to get a HepRep version 1 file
