@@ -69,9 +69,9 @@ void read()
 	      if( ichannel == 0 )
 		base_v = V[ichannel][irsheet][iratio];
 
-	      // if( (ichannel == 14) || (ichannel == 15) )
-	      // 	continue;
-	      // else
+	      if( (ichannel == 14) || (ichannel == 15) )
+		continue;
+	      else
 		{
 		  si_response[irsheet][iratio]->Fill(x, y, (V[ichannel][irsheet][iratio]));		  
 		  W = W + ((V[ichannel][irsheet][iratio]) - base_v);
