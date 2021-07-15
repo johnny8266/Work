@@ -20,14 +20,14 @@ double E_shift_fit(double *x, double *par)
 
 
 
-void close_event()
+void close_event_diffE()
 {
 
-  const int N_E_bin = 1;
-  // string File_num[N_E_bin] = {"1.0", "5.0", "10.0"};
-  // double e_per_bin[N_E_bin] = {1.0, 5.0, 10.0};
-  string File_num[N_E_bin] = {"1.0"};
-  double e_per_bin[N_E_bin] = {1.0};
+  const int N_E_bin = 3;
+  string File_num[N_E_bin] = {"1.0", "5.0", "10.0"};
+  double e_per_bin[N_E_bin] = {1.0, 5.0, 10.0};
+  // string File_num[N_E_bin] = {"1.0"};
+  // double e_per_bin[N_E_bin] = {1.0};
   double e_statement[13] = {0.5, 1., 2., 3., 4., 5., 7., 10., 13., 18., 30., 50., 52.};
   double angle_statement[9] = {0., 0.3, 0.6, 0.9, 1.2, 1.6, 2., 3., 4.};
   
@@ -51,10 +51,10 @@ void close_event()
   TH1F *zpos_reco_2[N_E_bin];
 
   TH1F *angle_range[N_E_bin][8];
-  
+  const int N_bin_plot = 220;
   for(int i = 0 ; i < N_E_bin ; i++)
     for(int j = 0 ; j < 8 ; j++)
-      angle_range[i][j] = new TH1F(Form("angle_range_%d_%d", i, j), Form("angle_range_%d_%d", i, j), 110, 0., (e_per_bin[i]*2.2) );
+      angle_range[i][j] = new TH1F(Form("angle_range_%d_%d", i, j), Form("angle_range_%d_%d", i, j), N_bin_plot, 0., (e_per_bin[i]+10.0) * 1.1 );
 
   
   TH2F *h2_posx_diff[N_E_bin], *h2_posy_diff[N_E_bin];
@@ -93,20 +93,19 @@ void close_event()
 
     }
 
+  
 
 
   // Read the data and calculate the reconstruction
   //
   for( int i = 0 ; i < N_E_bin ; i++ )
-  //  for( int i = 0 ; i < 1 ; i++ )
     {
       string root_file_name;
 
       
       if( flag == 1 )
 	{
-	  root_file_name = "/vol0/pwang-l/Singularity/my_det/sub_crystal/data/pos/g4eemc_crystal_eval_mono_" + File_num[i] + "_GeV.root";
-	  //	  root_file_name = "/vol0/pwang-l/Singularity/my_det/sub_crystal/g4eemc_crystal_eval_mono_" + File_num[i] + "_GeV.root";
+	  root_file_name = "/vol0/pwang-l/Singularity/my_det/sub_crystal/data/pos/E_portion/g4eemc_crystal_eval_E_portion_10.0_" + File_num[i] + "_GeV.root";
 	}
       else
 	{
@@ -326,7 +325,7 @@ void close_event()
 		  //		  if( (e_2_1 < e_per_bin[i]) && (e_2_2 < e_per_bin[i]) )
 		  if( (e_2_1 < e_per_bin[i]) || (e_2_2 < e_per_bin[i]) )		 
 		    {
-		      cout << e_2_1 << " " << e_2_2 << endl;
+		      //		      cout << e_2_1 << " " << e_2_2 << endl;
 		      //		      count_double_clu++;
 		      recons_2_angle[i]->Fill(angle_2p[j_eve]);
 		    }
@@ -334,16 +333,7 @@ void close_event()
 
 		}
 
-	      
-	      /*
-	      double e_diff = ge - e_base;
-	      LV.SetPtEtaPhiE(gpt, geta, gphi, ge);
-	      pri_Px = LV.Px();  pri_Py = LV.Py();  pri_Pz = LV.Pz();
-	      pjx = pri_Px * (z_base / pri_Pz);
-	      pjy = pri_Py * (z_base / pri_Pz);
-	      diff_x = pjx - x_base;  diff_y = pjy - y_base;
-	      */
-	      
+	     	      
 	      count++;
 	      //	      count_double_clu++;
 	      j = j - 1;
@@ -364,63 +354,118 @@ void close_event()
 
 
 
+
+
+  
   //  TF1 fit_gauss = new TF1();
-  TGraph *angle_effi[N_E_bin];
-  TCanvas *c1 = new TCanvas("c1", "c1", 1600, 800);
+  TGraphErrors *angle_effi[N_E_bin];
+  TLegend *legend_bin[3];
+  TCanvas *c1 = new TCanvas("c1", "c1", 1800, 900);
   c1->Divide(4,2);
   for(int i = 0 ; i < N_E_bin ; i++)
     {
       auto *fun_e_res = new TF1("fun_e_res", GausM, e_per_bin[i]*0.6, e_per_bin[i]*1.1, 3);
-      double x[8], y[8];
+      double x[8], y[8], x_err[8], y_err[8];
       for(int j = 0 ; j < 8 ; j++)
 	{
 	  c1->cd(j+1);
-	  int mean_bin = e_per_bin[i] / 0.02;
+
+	  int mean_bin = e_per_bin[i] / (e_per_bin[i] * 1.1 / N_bin_plot);
 	  int width_bin = mean_bin * 0.5;
 	  int fit_flag = angle_range[i][j]->Integral((mean_bin - width_bin), (mean_bin + width_bin));
-	  cout << "INT: " << mean_bin << " " << width_bin << " " << fit_flag << endl;
+
+	  //	  cout << "INT: " << mean_bin << " " << width_bin << " " << fit_flag << endl;
+	  angle_range[i][j]->SetTitle(Form("E[%.1f, 10.0]    Angle: %.1f ~ %.1f", e_per_bin[i], angle_statement[j], angle_statement[j+1]));
 	  angle_range[i][j]->Draw();
+	  c1->Update();
+
+	  double y_axis_max = gPad->GetUymax();
+	  double all_2_clus_events = angle_range[i][j]->GetEntries();
+	  double selected_2_clus_events = 0.;
+	  int mean_separa = (e_per_bin[i] * 1.4) / ((e_per_bin[i]+10.) * 1.1 / N_bin_plot);
+	  int low_separa = (e_per_bin[i] * 0.35) / ((e_per_bin[i]+10.) * 1.1 / N_bin_plot);
+	  TLine *l_1 = new TLine((e_per_bin[i] * 0.3), 0, (e_per_bin[i] * 0.3), y_axis_max);
+	  TLine *l_2 = new TLine((e_per_bin[i] * 1.2), 0, (e_per_bin[i] * 1.2), y_axis_max);
+	  l_1->SetLineColor(2);
+	  l_1->SetLineWidth(2);
+	  l_1->SetLineStyle(9);
+	  l_1->Draw("same");
+	  l_2->SetLineColor(2);
+	  l_2->SetLineWidth(2);
+	  l_2->SetLineStyle(9);
+	  l_2->Draw("same");
+	  gPad->SetLogy();
+
 
 	  
-	  if( fit_flag < 10 )
+	  //	  cout << mean_separa << " " << low_separa << endl;
+	  int low_e_count = 0, high_e_count = 0;
+	  
+	  if( j < 5 )
 	    {
-	      x[j] = (angle_statement[j] + angle_statement[j+1]) / 2.;
-	      y[j] = 0.;
-	    }
-	  else
-	    {
-	      fun_e_res->SetParLimits(0, 5., fit_flag);
-	      fun_e_res->SetParLimits(1, (e_per_bin[i]*0.7), (e_per_bin[i]*0.95) );
-	      fun_e_res->SetParLimits(2, 0.02, 1.5);
-	      angle_range[i][j]->Fit("fun_e_res", "", "R", e_per_bin[i]*0.6, e_per_bin[i]*1.1);
+	      low_e_count = angle_range[i][j]->Integral(low_separa, mean_separa);
+	      if(i < 2)
+		selected_2_clus_events = low_e_count * 2.;
+	      else
+		selected_2_clus_events = low_e_count;
 
-	      mean_bin = angle_range[i][j]->FindBin(fun_e_res->GetParameter(1));
-	      int inte_min = angle_range[i][j]->FindBin((fun_e_res->GetParameter(1) - 3. * fun_e_res->GetParameter(2)));
-	      int inte_max = angle_range[i][j]->FindBin((fun_e_res->GetParameter(1) + 3. * fun_e_res->GetParameter(2)));
-	      cout << "range: " << inte_min << ", " << inte_max << endl;
-	      double selected_2_clus_events = angle_range[i][j]->Integral(inte_min, inte_max);
-	      double all_2_clus_events = angle_range[i][j]->GetEntries();
-	      x[j] = (angle_statement[j] + angle_statement[j+1]) / 2.;
-	      y[j] = selected_2_clus_events / all_2_clus_events;
-	      //	      cout << angle_range[i][j]->Integral((mean_bin - width_bin), (mean_bin + width_bin)) << endl;
-	      //	      cout << angle_range[i][j]->GetEntries() << endl << endl;	      
+	      cout << j << ": " << mean_separa << " || " << low_e_count << endl;
 	    }
-	  cout << x[j] << ", " << y[j] << endl;	  
+	  else 
+	    {
+	      low_e_count = angle_range[i][j]->Integral(low_separa, mean_separa);
+	      if(i < 2)
+		selected_2_clus_events = low_e_count * 2.;
+	      else
+		selected_2_clus_events = low_e_count;
+
+	      high_e_count = angle_range[i][j]->Integral(mean_separa, N_bin_plot);
+
+	      legend_bin[j-5] = new TLegend(0.25, 0.6, 0.55, 0.85);
+	      legend_bin[j-5]->SetBorderSize(0);
+	      legend_bin[j-5]->AddEntry((TObject*)0, Form("Lower E count: %d", low_e_count), "");
+	      legend_bin[j-5]->AddEntry((TObject*)0, Form("Higher E count: %d", high_e_count), "");
+	      legend_bin[j-5]->Draw("same");
+	      //	      selected_2_clus_events = low_e_count + high_e_count;
+	      //	      cout << j << ": " << mean_separa << " || " << low_e_count << ", " << high_e_count << endl;
+	    }
+
+	  x[j] = (angle_statement[j] + angle_statement[j+1]) / 2.;
+	  x_err[j] = 0.;
+	  y[j] = selected_2_clus_events / all_2_clus_events;
+	  y_err[j] = y[j] * std::sqrt( 1. / selected_2_clus_events + 1. / all_2_clus_events );
+	  cout << "y error: " << y_err[j] << endl;
 	}
-
-      angle_effi[i] = new TGraph(8, x, y);
+      angle_effi[i] = new TGraphErrors(8, x, y, x_err, y_err);
     }
 
-  TCanvas *c3 = new TCanvas("c3", "c3", 1500, 500);
-  c3->Divide(3,1);
+  
+  TLegend *legend_e_reso;
+  legend_e_reso = new TLegend(0.5, 0.45, 0.85, 0.65);
+  legend_e_reso->SetBorderSize(0);
+  TCanvas *c3 = new TCanvas("c3", "c3", 800, 800);
+  //  c3->Divide(3,1);
   for(int i = 0 ; i < N_E_bin ; i++)
     {
-      c3->cd(i+1);
-      angle_effi[i]->SetTitle(Form("Efficiency of %.1f GeV gamma", e_per_bin[i]));
-      angle_effi[i]->Draw("AC*");      
+      //      c3->cd(i+1);
+      //      angle_effi[i]->SetTitle(Form("Efficiency of %.1f GeV gamma", e_per_bin[i]));
+      angle_effi[i]->SetTitle("Efficiency of different energy gamma separation");
+      angle_effi[i]->SetName(Form("angle_effi_%d", i));
+      angle_effi[i]->SetMarkerSize(1.);
+      angle_effi[i]->SetMarkerStyle(24+i);
+      angle_effi[i]->SetMarkerColor(i+1);
+
+      //      angle_effi[i]->Draw("PSame");
+      
+      if( i == 0 )
+	angle_effi[i]->Draw("AP");
+      else
+	angle_effi[i]->Draw("P same");
+
+      legend_e_reso->AddEntry(Form("angle_effi_%d", i), Form("%.1f GeV and 10.0 GeV", e_per_bin[i]), "p");
     }
-
-
+  legend_e_reso->Draw("same");
+  
 
   
   /*
@@ -460,16 +505,6 @@ void close_event()
 	    E_reco_1[i]->Draw();
 	}
     }
-  */
-
-
-  /*
-  TCanvas *c2 = new TCanvas("c2", "c2", 800, 800);
-  //  c2->Divide(2,1);
-  //  c2->cd(1);
-  cluster_1->Draw("colorz");
-  //  c2->cd(2);
-  //  cluster_2->Draw("colorz");
   */
   
 }
