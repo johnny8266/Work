@@ -30,7 +30,8 @@ R__LOAD_LIBRARY(libfun4all.so)
 
 int Fun4All_G4_EICDetector_crystal(
     const int nEvents = 1,
-    const string &inputFile = "https://www.phenix.bnl.gov/WWW/publish/phnxbld/sPHENIX/files/sPHENIX_G4Hits_sHijing_9-11fm_00000_00010.root",
+    //    const string &inputFile = "https://www.phenix.bnl.gov/WWW/publish/phnxbld/sPHENIX/files/sPHENIX_G4Hits_sHijing_9-11fm_00000_00010.root",
+    const string &inputFile = "./pi0_2g.root",
     const string &outputFile = "G4EICDetector.root",
     const string &embed_input_file = "https://www.phenix.bnl.gov/WWW/publish/phnxbld/sPHENIX/files/sPHENIX_G4Hits_sHijing_9-11fm_00000_00010.root",
     const int skip = 0,
@@ -86,7 +87,7 @@ int Fun4All_G4_EICDetector_crystal(
   //   Input::SARTRE = true;
 
   // Simple multi particle generator in eta/phi/pt ranges
-  Input::SIMPLE = true;
+  //  Input::SIMPLE = true;
   Input::SIMPLE_NUMBER = 1; // if you need 2 of them
   // Input::SIMPLE_VERBOSITY = 1;
 
@@ -103,7 +104,7 @@ int Fun4All_G4_EICDetector_crystal(
   // And/Or read generated particles from file
 
   // eic-smear output
-  //  Input::READEIC = true;
+  Input::READEIC = true;
   INPUTREADEIC::filename = inputFile;
 
   // HepMC2 files
@@ -128,9 +129,9 @@ int Fun4All_G4_EICDetector_crystal(
   // If you didn't input any generator, this one would be a default generator.
 
   bool mono_E = true;
-  double E_beam = 1., E_portion = 0.1;
+  double E_beam = 10., E_portion = 0.5;
   double eta_fix = -1.8;
-  double interval = 10., inipos = 27.5, front_pos = 190.;
+  double interval = 5., inipos = 30., front_pos = 190.;
   double phi_increment = M_PI / 20.;
   double theta_min = std::atan(inipos / front_pos), theta_max = std::atan((inipos + interval) / front_pos); 
   double eta_min = std::log(std::tan(theta_min / 2.));
@@ -161,7 +162,9 @@ int Fun4All_G4_EICDetector_crystal(
     // v1 eta: glass[-1.6 ~ -1.22], crystal[-3.2 ~ -1.7]
     // v2 eta: glass[-1.51 ~ -1.18], crystal[-3.2 ~ -1.7]
     INPUTGENERATOR::SimpleEventGenerator[0]->set_eta_range(eta_min, eta_max);
+    //    INPUTGENERATOR::SimpleEventGenerator[0]->set_eta_range(-10., -10.);
     INPUTGENERATOR::SimpleEventGenerator[0]->set_phi_range( (M_PI / 4. - phi_increment), (M_PI / 4. + phi_increment));
+    //    INPUTGENERATOR::SimpleEventGenerator[0]->set_phi_range(-M_PI, M_PI);
     INPUTGENERATOR::SimpleEventGenerator[0]->set_p_range(E_beam, E_beam);
 
 
@@ -186,7 +189,6 @@ int Fun4All_G4_EICDetector_crystal(
     
     INPUTGENERATOR::SimpleEventGenerator[1]->set_eta_range(eta_min, eta_max);
     INPUTGENERATOR::SimpleEventGenerator[1]->set_phi_range( (M_PI / 4. - phi_increment), (M_PI / 4. + phi_increment));
-    //    INPUTGENERATOR::SimpleEventGenerator[1]->set_phi_range( -(M_PI / 4. + phi_increment), -(M_PI / 4. - phi_increment));
     INPUTGENERATOR::SimpleEventGenerator[1]->set_p_range( (E_beam * E_portion), (E_beam * E_portion) );
     */
 

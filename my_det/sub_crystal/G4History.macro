@@ -30,3 +30,5 @@
 /vis/filtering/trajectories/attributeFilter-0/addInterval 2 MeV 1000 GeV
 /vis/scene/notifyHandlers scene-0
 /vis/scene/notifyHandlers scene-0
+/vis/viewer/set/viewpointThetaPhi 30 120
+/vis/viewer/refresh
